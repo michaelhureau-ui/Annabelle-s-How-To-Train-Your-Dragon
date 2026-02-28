@@ -4,65 +4,139 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🐉 Dragon Rider Game</title>
+<title>🐉 Dragon World</title>
 <style>
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { font-family:Georgia,serif; background:linear-gradient(135deg,#0a0a2e,#1a1a4e,#0d2137); min-height:100vh; color:white; padding:20px; }
-  h1 { text-align:center; font-size:2.2em; color:#ffd700; text-shadow:0 0 20px #ff6600; margin-bottom:5px; }
-  .subtitle { text-align:center; color:#aad4ff; margin-bottom:20px; }
-  .screen { display:none; }
-  .screen.active { display:block; }
-  .section-title { text-align:center; color:#ffd700; font-size:1.3em; margin-bottom:15px; }
-  .dragon-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; max-width:700px; margin:0 auto 20px; }
-  .dragon-card { background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.2); border-radius:15px; padding:15px; text-align:center; cursor:pointer; transition:all 0.3s; }
-  .dragon-card:hover,.dragon-card.selected { border-color:#ffd700; background:rgba(255,215,0,0.2); transform:scale(1.05); }
-  .d-emoji { font-size:2.8em; }
-  .d-name { font-weight:bold; color:#ffd700; margin:5px 0 2px; font-size:0.95em; }
-  .d-type { font-size:0.72em; color:#aad4ff; }
-  .cbox { background:rgba(255,255,255,0.08); border-radius:20px; padding:25px; max-width:480px; margin:0 auto; }
-  .cbox label { display:block; margin:12px 0 5px; color:#ffd700; font-weight:bold; }
-  .cbox input { width:100%; padding:10px; border-radius:10px; border:2px solid rgba(255,215,0,0.4); background:rgba(0,0,0,0.3); color:white; font-size:1em; }
-  .color-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:5px; }
-  .cbtn { width:34px; height:34px; border-radius:50%; border:3px solid transparent; cursor:pointer; transition:transform 0.2s; }
-  .cbtn:hover,.cbtn.selected { border-color:white; transform:scale(1.2); }
-  .power-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:5px; }
-  .pbtn { padding:7px 13px; border-radius:20px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:white; cursor:pointer; font-size:0.82em; transition:all 0.2s; }
-  .pbtn.selected { background:rgba(255,215,0,0.3); border-color:#ffd700; color:#ffd700; }
-  .dragon-display { text-align:center; background:rgba(255,255,255,0.08); border-radius:20px; padding:20px; max-width:600px; margin:0 auto 20px; }
-  .big-emoji { font-size:5em; }
-  .play-name { font-size:1.5em; font-weight:bold; color:#ffd700; margin:8px 0 3px; }
-  .play-stats { color:#aad4ff; font-size:0.9em; }
-  .action-buttons { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; max-width:640px; margin:0 auto 20px; }
-  .abtn { padding:14px 18px; border-radius:15px; border:none; font-size:1em; font-weight:bold; cursor:pointer; transition:all 0.2s; min-width:135px; color:white; }
-  .abtn:hover { transform:scale(1.06); }
-  .btn-quest { background:linear-gradient(135deg,#9b59b6,#6c3483); }
-  .btn-rescue { background:linear-gradient(135deg,#e74c3c,#922b21); }
-  .btn-battle { background:linear-gradient(135deg,#e67e22,#d35400); }
-  .btn-fly { background:linear-gradient(135deg,#27ae60,#1e8449); }
-  .btn-minigame { background:linear-gradient(135deg,#2980b9,#1a5276); }
-  .result-box { background:rgba(255,255,255,0.1); border:2px solid rgba(255,215,0,0.4); border-radius:20px; padding:25px; max-width:600px; margin:0 auto 15px; text-align:center; animation:fadeIn 0.5s ease; }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-  .result-title { font-size:1.3em; color:#ffd700; margin-bottom:10px; }
-  .result-text { line-height:1.7; color:#e0e0e0; }
-  .outcome { margin-top:12px; font-size:1.1em; font-weight:bold; }
-  .win { color:#2ecc71; } .lose { color:#e74c3c; }
-  .minigame-box { background:rgba(255,255,255,0.1); border:2px solid rgba(255,215,0,0.4); border-radius:20px; padding:25px; max-width:600px; margin:0 auto 15px; text-align:center; }
-  .minigame-title { font-size:1.3em; color:#ffd700; margin-bottom:10px; }
-  .target-emoji { font-size:4em; cursor:pointer; display:inline-block; transition:transform 0.1s; user-select:none; }
-  .score-display { font-size:1.2em; color:#ffd700; margin:10px 0; }
-  .timer-bar-wrap { background:rgba(255,255,255,0.2); border-radius:10px; height:15px; margin:10px 0; }
-  .timer-bar { background:linear-gradient(90deg,#ffd700,#ff6600); height:15px; border-radius:10px; transition:width 0.1s linear; }
-  .mg-instruction { color:#aad4ff; margin-bottom:10px; }
-  .big-btn { display:block; margin:15px auto 0; padding:13px 33px; border-radius:15px; border:none; background:linear-gradient(135deg,#ffd700,#ff8c00); color:#1a1a1a; font-size:1.05em; font-weight:bold; cursor:pointer; transition:all 0.2s; }
-  .big-btn:hover { transform:scale(1.05); }
-  .back-btn { display:block; margin:10px auto 0; padding:9px 22px; border-radius:15px; border:2px solid rgba(255,255,255,0.3); background:transparent; color:white; font-size:0.9em; cursor:pointer; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:Georgia,serif; background:#1a3a1a; min-height:100vh; color:white; }
+.screen { display:none; }
+.screen.active { display:block; }
+
+/* CHOOSE SCREEN */
+#s-choose { background:linear-gradient(135deg,#0a0a2e,#1a1a4e,#0d2137); min-height:100vh; padding:20px; }
+h1 { text-align:center; font-size:2em; color:#ffd700; text-shadow:0 0 20px #ff6600; margin-bottom:5px; }
+.subtitle { text-align:center; color:#aad4ff; margin-bottom:20px; }
+.section-title { text-align:center; color:#ffd700; font-size:1.2em; margin-bottom:15px; }
+.dragon-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; max-width:680px; margin:0 auto 20px; }
+.dragon-card { background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.2); border-radius:15px; padding:12px; text-align:center; cursor:pointer; transition:all 0.3s; }
+.dragon-card:hover,.dragon-card.selected { border-color:#ffd700; background:rgba(255,215,0,0.2); transform:scale(1.05); }
+.d-emoji { font-size:2.5em; }
+.d-name { font-weight:bold; color:#ffd700; margin:4px 0 2px; font-size:0.9em; }
+.d-type { font-size:0.7em; color:#aad4ff; }
+.cbox { background:rgba(255,255,255,0.08); border-radius:20px; padding:20px; max-width:460px; margin:0 auto; }
+.cbox label { display:block; margin:10px 0 4px; color:#ffd700; font-weight:bold; }
+.cbox input { width:100%; padding:9px; border-radius:10px; border:2px solid rgba(255,215,0,0.4); background:rgba(0,0,0,0.3); color:white; font-size:1em; }
+.color-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:5px; }
+.cbtn { width:32px; height:32px; border-radius:50%; border:3px solid transparent; cursor:pointer; transition:transform 0.2s; }
+.cbtn.selected { border-color:white; transform:scale(1.2); }
+.power-row { display:flex; gap:7px; flex-wrap:wrap; margin-top:5px; }
+.pbtn { padding:6px 12px; border-radius:20px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:white; cursor:pointer; font-size:0.8em; }
+.pbtn.selected { background:rgba(255,215,0,0.3); border-color:#ffd700; color:#ffd700; }
+.big-btn { display:block; margin:15px auto 0; padding:13px 30px; border-radius:15px; border:none; background:linear-gradient(135deg,#ffd700,#ff8c00); color:#1a1a1a; font-size:1.05em; font-weight:bold; cursor:pointer; }
+.big-btn:hover { transform:scale(1.05); }
+.back-btn { display:block; margin:10px auto 0; padding:8px 20px; border-radius:15px; border:2px solid rgba(255,255,255,0.3); background:transparent; color:white; font-size:0.9em; cursor:pointer; }
+
+/* WORLD SCREEN */
+#s-world { min-height:100vh; }
+
+/* BIOME */
+.biome {
+position:relative;
+min-height:100vh;
+background: linear-gradient(180deg, #87CEEB 0%, #87CEEB 35%, #4a7c3f 35%, #4a7c3f 38%, #2d5a1b 38%);
+overflow:hidden;
+}
+/* Clouds */
+.cloud { position:absolute; background:white; border-radius:50px; opacity:0.85; animation:drift linear infinite; }
+@keyframes drift { from{transform:translateX(-200px)} to{transform:translateX(110vw)} }
+/* Grass */
+.grass-area { position:absolute; top:35%; left:0; right:0; bottom:0; background:linear-gradient(180deg,#4a7c3f,#2d5a1b 60%,#1a3a0a); }
+/* Grass blades */
+.blade { position:absolute; width:6px; border-radius:3px 3px 0 0; background:linear-gradient(#6ab04c,#2d5a1b); bottom:0; }
+
+/* HUD */
+.hud { position:absolute; top:10px; left:10px; right:10px; z-index:10; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; }
+.hud-card { background:rgba(0,0,0,0.6); border:1px solid rgba(255,215,0,0.4); border-radius:12px; padding:8px 12px; min-width:130px; }
+.hud-name { color:#ffd700; font-weight:bold; font-size:0.9em; }
+.stat-row { display:flex; align-items:center; gap:6px; margin-top:4px; }
+.stat-label { font-size:0.72em; color:#aad4ff; width:50px; }
+.stat-bar { flex:1; height:10px; background:rgba(255,255,255,0.2); border-radius:5px; overflow:hidden; }
+.stat-fill { height:100%; border-radius:5px; transition:width 0.5s; }
+.fill-food { background:linear-gradient(90deg,#ff6b35,#ffd700); }
+.fill-water { background:linear-gradient(90deg,#4fc3f7,#0288d1); }
+.fill-happy { background:linear-gradient(90deg,#f06292,#e91e63); }
+
+/* LOCATIONS on the biome */
+.location {
+position:absolute;
+cursor:pointer;
+text-align:center;
+transition:transform 0.2s;
+z-index:5;
+}
+.location:hover { transform:scale(1.08); }
+.loc-icon { font-size:2.5em; display:block; filter:drop-shadow(0 3px 6px rgba(0,0,0,0.5)); }
+.loc-label { font-size:0.7em; font-weight:bold; color:white; text-shadow:0 1px 4px black; background:rgba(0,0,0,0.5); border-radius:8px; padding:2px 6px; margin-top:2px; display:block; }
+
+/* DRAGON on biome */
+#world-dragon { position:absolute; font-size:4em; z-index:8; transition:all 1s ease; filter:drop-shadow(0 5px 10px rgba(0,0,0,0.6)); cursor:default; animation:bob 2s ease-in-out infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+/* ACTION PANEL */
+.action-panel { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.75); padding:12px; z-index:10; border-top:2px solid rgba(255,215,0,0.3); }
+.action-row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+.abtn { padding:10px 14px; border-radius:12px; border:none; font-size:0.82em; font-weight:bold; cursor:pointer; color:white; transition:all 0.2s; }
+.abtn:hover { transform:scale(1.06); }
+.btn-feed { background:linear-gradient(135deg,#e67e22,#d35400); }
+.btn-water { background:linear-gradient(135deg,#2980b9,#1a5276); }
+.btn-quest { background:linear-gradient(135deg,#8e44ad,#6c3483); }
+.btn-rescue { background:linear-gradient(135deg,#c0392b,#922b21); }
+.btn-battle { background:linear-gradient(135deg,#d35400,#a04000); }
+.btn-fly { background:linear-gradient(135deg,#27ae60,#1e8449); }
+.btn-game { background:linear-gradient(135deg,#16a085,#1abc9c); }
+
+/* POPUP */
+.popup-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:100; display:none; align-items:center; justify-content:center; padding:20px; }
+.popup-overlay.open { display:flex; }
+.popup { background:linear-gradient(135deg,#1a2a1a,#0d1a0d); border:2px solid rgba(255,215,0,0.5); border-radius:20px; padding:25px; max-width:520px; width:100%; max-height:85vh; overflow-y:auto; text-align:center; position:relative; }
+.popup-title { font-size:1.3em; color:#ffd700; margin-bottom:12px; }
+.popup-text { line-height:1.7; color:#e0e0e0; margin-bottom:15px; }
+.outcome { font-size:1.1em; font-weight:bold; margin-top:10px; }
+.win { color:#2ecc71; } .lose { color:#e74c3c; }
+.close-btn { padding:10px 25px; border-radius:12px; border:none; background:linear-gradient(135deg,#ffd700,#ff8c00); color:#1a1a1a; font-weight:bold; cursor:pointer; margin-top:10px; }
+
+/* MINI GAMES */
+.game-choice { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:10px; }
+.game-choice-btn { padding:12px 18px; border-radius:15px; border:2px solid rgba(255,215,0,0.4); background:rgba(255,215,0,0.1); color:#ffd700; font-size:1em; cursor:pointer; transition:all 0.2s; }
+.game-choice-btn:hover { background:rgba(255,215,0,0.25); transform:scale(1.05); }
+
+/* TIC TAC TOE */
+.ttt-board { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-width:240px; margin:10px auto; }
+.ttt-cell { height:70px; background:rgba(255,255,255,0.1); border:2px solid rgba(255,215,0,0.3); border-radius:10px; font-size:2.2em; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s; }
+.ttt-cell:hover { background:rgba(255,215,0,0.15); }
+
+/* CARD GAME */
+.card-area { display:flex; gap:15px; justify-content:center; flex-wrap:wrap; margin:10px 0; }
+.card { width:70px; height:100px; border-radius:10px; border:2px solid #ffd700; background:linear-gradient(135deg,#1a3a6e,#0d2137); font-size:2em; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform 0.2s; }
+.card:hover { transform:scale(1.1) translateY(-5px); }
+.card.flipped { background:linear-gradient(135deg,#2d5a1b,#1a3a0a); }
+
+/* SPORTS */
+.sport-area { margin:10px 0; }
+.goal { width:120px; height:70px; border:4px solid white; border-bottom:none; margin:0 auto 10px; border-radius:5px 5px 0 0; position:relative; background:rgba(255,255,255,0.05); }
+.ball { font-size:2em; cursor:pointer; display:inline-block; transition:all 0.3s; }
+.aim-row { display:flex; gap:10px; justify-content:center; margin:10px 0; }
+.aim-btn { padding:8px 16px; border-radius:10px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:white; cursor:pointer; }
+.aim-btn:hover { background:rgba(255,215,0,0.2); border-color:#ffd700; }
 </style>
+
 </head>
 <body>
-<h1>🐉 Dragon Rider</h1>
-<p class="subtitle">How to Train Your Dragon</p>
 
-<div id="s1" class="screen active">
+<!-- SCREEN 1: Choose Dragon -->
+
+<div id="s-choose" class="screen active">
+  <h1>🐉 Dragon World</h1>
+  <p class="subtitle">How to Train Your Dragon</p>
   <p class="section-title">Choose Your Dragon!</p>
   <div class="dragon-grid">
     <div class="dragon-card" onclick="pick(this,'Toothless','Night Fury','🐉')"><div class="d-emoji">🐉</div><div class="d-name">Toothless</div><div class="d-type">Night Fury</div></div>
@@ -70,15 +144,11 @@
     <div class="dragon-card" onclick="pick(this,'Stormfly','Deadly Nadder','💙')"><div class="d-emoji">💙</div><div class="d-name">Stormfly</div><div class="d-type">Deadly Nadder</div></div>
     <div class="dragon-card" onclick="pick(this,'Hookfang','Monstrous Nightmare','🔥')"><div class="d-emoji">🔥</div><div class="d-name">Hookfang</div><div class="d-type">Monstrous Nightmare</div></div>
     <div class="dragon-card" onclick="pick(this,'Meatlug','Gronckle','🪨')"><div class="d-emoji">🪨</div><div class="d-name">Meatlug</div><div class="d-type">Gronckle</div></div>
-    <div class="dragon-card" onclick="pick(this,'Barf and Belch','Hideous Zippleback','💚')"><div class="d-emoji">💚</div><div class="d-name">Barf & Belch</div><div class="d-type">Hideous Zippleback</div></div>
+    <div class="dragon-card" onclick="pick(this,'Barf & Belch','Hideous Zippleback','💚')"><div class="d-emoji">💚</div><div class="d-name">Barf & Belch</div><div class="d-type">Hideous Zippleback</div></div>
     <div class="dragon-card" onclick="pick(this,'Cloudjumper','Stormcutter','⚡')"><div class="d-emoji">⚡</div><div class="d-name">Cloudjumper</div><div class="d-type">Stormcutter</div></div>
     <div class="dragon-card" onclick="pick(this,'Skullcrusher','Rumblehorn','💜')"><div class="d-emoji">💜</div><div class="d-name">Skullcrusher</div><div class="d-type">Rumblehorn</div></div>
   </div>
-  <button class="big-btn" onclick="go('s2')">Next: Customize! →</button>
-</div>
-
-<div id="s2" class="screen">
-  <p class="section-title">Customize Your Dragon!</p>
+  <p class="section-title" style="margin-top:10px">Customize!</p>
   <div class="cbox">
     <label>Give your dragon a nickname:</label>
     <input type="text" id="nickname" placeholder="e.g. Sparkles, Blaze, Shadow...">
@@ -102,35 +172,99 @@
       <button class="pbtn" onclick="pickPower(this,'✨ Magic Shield')">✨ Magic Shield</button>
     </div>
   </div>
-  <button class="big-btn" onclick="startPlay()">Let's Play! 🐉</button>
-  <button class="back-btn" onclick="go('s1')">← Back</button>
+  <button class="big-btn" onclick="startWorld()">Enter Dragon World! 🌍</button>
 </div>
 
-<div id="s3" class="screen">
-  <div class="dragon-display">
-    <div class="big-emoji" id="pemoji">🐉</div>
-    <div class="play-name" id="pname">Dragon</div>
-    <div class="play-stats" id="pstats"></div>
+<!-- SCREEN 2: World -->
+
+<div id="s-world" class="screen">
+  <div class="biome" id="biome">
+
+```
+<!-- Clouds -->
+<div class="cloud" style="width:120px;height:40px;top:5%;animation-duration:30s;animation-delay:0s"></div>
+<div class="cloud" style="width:80px;height:28px;top:10%;animation-duration:22s;animation-delay:-8s"></div>
+<div class="cloud" style="width:100px;height:35px;top:14%;animation-duration:26s;animation-delay:-15s"></div>
+<div class="cloud" style="width:60px;height:22px;top:8%;animation-duration:18s;animation-delay:-5s"></div>
+
+<!-- Grass area -->
+<div class="grass-area" id="grass-area"></div>
+
+<!-- Sun -->
+<div style="position:absolute;top:4%;right:8%;font-size:3em;z-index:4">☀️</div>
+
+<!-- HUD -->
+<div class="hud">
+  <div class="hud-card">
+    <div class="hud-name" id="hud-name">Dragon</div>
+    <div style="font-size:0.7em;color:#aad4ff" id="hud-type">Night Fury</div>
   </div>
-  <div class="action-buttons">
-    <button class="abtn btn-quest" onclick="doAction('quest')">🗺️ Request Quest</button>
-    <button class="abtn btn-rescue" onclick="doAction('rescue')">🆘 Save a Dragon!</button>
-    <button class="abtn btn-battle" onclick="doAction('battle')">⚔️ Battle!</button>
-    <button class="abtn btn-fly" onclick="doAction('fly')">🌤️ Fly Around</button>
-    <button class="abtn btn-minigame" onclick="startMiniGame()">🎮 Play a Game!</button>
+  <div class="hud-card" style="min-width:160px">
+    <div class="stat-row"><span class="stat-label">🍖 Food</span><div class="stat-bar"><div class="stat-fill fill-food" id="bar-food" style="width:70%"></div></div></div>
+    <div class="stat-row"><span class="stat-label">💧 Water</span><div class="stat-bar"><div class="stat-fill fill-water" id="bar-water" style="width:70%"></div></div></div>
+    <div class="stat-row"><span class="stat-label">😄 Happy</span><div class="stat-bar"><div class="stat-fill fill-happy" id="bar-happy" style="width:70%"></div></div></div>
   </div>
-  <div id="result"></div>
-  <button class="back-btn" onclick="go('s2')">← Change Dragon</button>
+</div>
+
+<!-- Dragon -->
+<div id="world-dragon" style="bottom:22%;left:42%">🐉</div>
+
+<!-- Locations -->
+<div class="location" style="bottom:50%;left:5%" onclick="visitLocation('village')">
+  <span class="loc-icon">🏘️</span>
+  <span class="loc-label">Village</span>
+</div>
+<div class="location" style="bottom:40%;left:20%" onclick="visitLocation('fish')">
+  <span class="loc-icon">🐟</span>
+  <span class="loc-label">Fish Stand</span>
+</div>
+<div class="location" style="bottom:40%;right:20%" onclick="visitLocation('water')">
+  <span class="loc-icon">💧</span>
+  <span class="loc-label">Watering Hole</span>
+</div>
+<div class="location" style="bottom:50%;right:5%" onclick="visitLocation('arena')">
+  <span class="loc-icon">⚔️</span>
+  <span class="loc-label">Arena</span>
+</div>
+<div class="location" style="bottom:35%;left:45%" onclick="visitLocation('meadow')">
+  <span class="loc-icon">🌸</span>
+  <span class="loc-label">Meadow</span>
+</div>
+
+<!-- Action Panel -->
+<div class="action-panel">
+  <div class="action-row">
+    <button class="abtn btn-feed" onclick="feedDragon()">🐟 Feed Dragon</button>
+    <button class="abtn btn-water" onclick="waterDragon()">💧 Give Water</button>
+    <button class="abtn btn-quest" onclick="doAction('quest')">🗺️ Quest</button>
+    <button class="abtn btn-rescue" onclick="doAction('rescue')">🆘 Rescue</button>
+    <button class="abtn btn-battle" onclick="doAction('battle')">⚔️ Battle</button>
+    <button class="abtn btn-fly" onclick="doAction('fly')">🌤️ Fly Tricks</button>
+    <button class="abtn btn-game" onclick="openGameChoice()">🎮 Play a Game</button>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- POPUP -->
+
+<div class="popup-overlay" id="popup">
+  <div class="popup">
+    <div class="popup-title" id="popup-title">Title</div>
+    <div id="popup-body"></div>
+    <button class="close-btn" onclick="closePopup()">Close ✕</button>
+  </div>
 </div>
 
 <script>
 let d = {name:'Toothless',type:'Night Fury',emoji:'🐉',nickname:'',color:'Midnight Black',power:'🔥 Plasma Blast'};
-let mgInterval = null, mgTimeLeft = 0, mgScore = 0;
+let stats = {food:70, water:70, happy:70};
 
 function go(id) {
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.getElementById('result').innerHTML='';
 }
 function pick(el,name,type,emoji) {
   document.querySelectorAll('.dragon-card').forEach(c=>c.classList.remove('selected'));
@@ -145,116 +279,257 @@ function pickPower(el,power) {
   document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected'); d.power=power;
 }
-function startPlay() {
-  d.nickname=document.getElementById('nickname').value||d.name;
-  document.getElementById('pemoji').textContent=d.emoji;
-  document.getElementById('pname').textContent=d.nickname+' the '+d.type;
-  document.getElementById('pstats').textContent=d.color+' • '+d.power;
-  go('s3');
-}
-function rand(arr){return arr[Math.floor(Math.random()*arr.length)];}
 function getN(){return d.nickname||d.name;}
 
+function startWorld() {
+  d.nickname = document.getElementById('nickname').value || d.name;
+  document.getElementById('hud-name').textContent = d.nickname;
+  document.getElementById('hud-type').textContent = d.color + ' ' + d.type;
+  document.getElementById('world-dragon').textContent = d.emoji;
+  buildGrass();
+  go('s-world');
+  // Slowly drain stats over time
+  setInterval(()=>{ changeStat('food',-1); changeStat('water',-1); },15000);
+}
+
+function buildGrass() {
+  const g = document.getElementById('grass-area');
+  for(let i=0;i<60;i++){
+    const b=document.createElement('div');
+    b.className='blade';
+    const h=20+Math.random()*30;
+    b.style.cssText=`left:${Math.random()*100}%;height:${h}px;opacity:${0.5+Math.random()*0.5};transform:rotate(${-10+Math.random()*20}deg)`;
+    g.appendChild(b);
+  }
+}
+
+function changeStat(stat, amount) {
+  stats[stat] = Math.max(0, Math.min(100, stats[stat]+amount));
+  document.getElementById('bar-'+stat).style.width = stats[stat]+'%';
+  if(stat==='food'||stat==='water') {
+    const avg = (stats.food+stats.water)/2;
+    stats.happy = Math.max(0,Math.min(100,avg));
+    document.getElementById('bar-happy').style.width=stats.happy+'%';
+  }
+}
+
+function feedDragon() {
+  if(stats.food>=100){
+    showPopup('🐟 Already Full!','Your dragon is already stuffed with fish! Come back later when they\'re hungry again 😄','');
+    return;
+  }
+  changeStat('food',25);
+  moveDragon('20%','38%');
+  showPopup('🐟 Fish Stand!',`You rushed to the fish stand and grabbed a huge bucket of fresh fish! ${getN()} gobbled them up in seconds and let out a happy roar! 🐉🔥`,'<span class="win">+25 Food! Nom nom nom!</span>');
+}
+
+function waterDragon() {
+  if(stats.water>=100){
+    showPopup('💧 Not Thirsty!','Your dragon just had a big drink! They\'re not thirsty yet 💧','');
+    return;
+  }
+  changeStat('water',25);
+  moveDragon('75%','38%');
+  showPopup('💧 Watering Hole!',`You flew over to the sparkling watering hole surrounded by tall reeds and wildflowers. ${getN()} dipped their head in and took a long, refreshing drink! 🌊`,'<span class="win">+25 Water! Splish splash!</span>');
+}
+
+function moveDragon(left, bottom) {
+  const dr = document.getElementById('world-dragon');
+  dr.style.left=left; dr.style.bottom=bottom;
+  setTimeout(()=>{ dr.style.left='42%'; dr.style.bottom='22%'; }, 3000);
+}
+
+const locations = {
+  village: {t:'🏘️ The Village!', txt:'You soar over the village of Berk! Vikings wave at you from below, kids cheer as your dragon swoops overhead, and the blacksmith gives a thumbs up. Everyone loves a dragon rider!'},
+  fish: {t:'🐟 Fish Stand!', txt:'The fish stand is piled HIGH with fresh salmon, herring, and cod! The fisherman tosses your dragon a big juicy fish and it catches it mid-air! The other dragons nearby look jealous.'},
+  water: {t:'💧 Watering Hole!', txt:'The watering hole shimmers in the sunlight, surrounded by reeds and wildflowers. A Gronckle and two Terrible Terrors are already splashing around. Your dragon wades in and takes a big drink!'},
+  arena: {t:'⚔️ The Arena!', txt:'The training arena is massive — wooden targets, obstacle courses, and rings of fire everywhere! Other dragon riders are already practicing. Your dragon spots the targets and crouches, ready to train!'},
+  meadow: {t:'🌸 The Meadow!', txt:'A wide open meadow full of wildflowers and butterflies! Your dragon rolls around in the grass and sneezes out a little puff of fire. A family of sheep scatter and then slowly creep back, curious about your dragon.'},
+};
+
+function visitLocation(loc) {
+  const l = locations[loc];
+  showPopup(l.t, l.txt, '');
+}
+
+function rand(arr){return arr[Math.floor(Math.random()*arr.length)];}
 const quests=[
-  {t:"The Lost Map 🗺️",txt:"A mysterious map has appeared on Berk showing a hidden island full of treasure! Fly through a fierce storm and navigate past giant sea stacks to reach it!"},
-  {t:"The Frozen Mountain 🏔️",txt:"Villagers are trapped on the mountain peak in a blizzard! Fly through icy winds, dodge falling rocks, and guide them safely home."},
-  {t:"The Stolen Egg 🥚",txt:"Thieves have stolen a rare dragon egg! Chase them across three islands, outsmart their traps, and return the egg to safety!"},
-  {t:"The Sea Monster 🌊",txt:"A giant sea creature is blocking the fishing boats! Fly low over the waves and lead it away from the harbor!"},
-  {t:"The Ancient Ruins 🏛️",txt:"Explorers found mysterious ruins on a jungle island! Fly through thick vines, solve a stone puzzle, and uncover the secret inside!"},
+  {t:"🗺️ The Lost Map",txt:"A mysterious map appeared on Berk showing a hidden island full of treasure! Fly through a fierce storm and navigate past giant sea stacks to reach it!"},
+  {t:"🏔️ The Frozen Mountain",txt:"Villagers are trapped on the mountain peak in a blizzard! Fly through icy winds, dodge falling rocks, and guide them safely home."},
+  {t:"🥚 The Stolen Egg",txt:"Thieves stole a rare dragon egg! Chase them across three islands, outsmart their traps, and return the egg to safety!"},
 ];
 const rescues=[
-  {t:"Trapped in a Cave! 🦇",txt:"A young Gronckle is stuck deep in a collapsing cave! Squeeze through the dark tunnels, calm the frightened dragon, and carry it out before the entrance seals!"},
-  {t:"Caught in a Net! 🕸️",txt:"A beautiful Deadly Nadder is tangled in a giant fishing net! Carefully burn through the ropes without hurting it and set it free!"},
-  {t:"Baby Dragon Overboard! 💦",txt:"A tiny Terrible Terror fell off a ship into the freezing ocean! Dive down, scoop it out of the water, and warm it up before it gets too cold!"},
-  {t:"Lost Hatchlings! 🐣",txt:"Three baby dragons wandered away from their nest and are hiding all over the island! Find them all before nightfall!"},
-  {t:"Dragon Under a Spell! 🌀",txt:"A Monstrous Nightmare has been put under a dark spell! Break the enchantment by showing it kindness and trust — only a true dragon rider can do it!"},
+  {t:"🦇 Trapped in a Cave!",txt:"A young Gronckle is stuck deep in a collapsing cave! Squeeze through dark tunnels, calm the frightened dragon, and carry it out before the entrance seals!"},
+  {t:"🕸️ Caught in a Net!",txt:"A beautiful Deadly Nadder is tangled in a giant fishing net! Carefully burn through the ropes without hurting it and set it free!"},
+  {t:"🐣 Lost Hatchlings!",txt:"Three baby dragons wandered away from their nest and are hiding all over the island! Find them all before nightfall!"},
 ];
 const battles=[
-  {t:"The Red Death Returns! 🔴",txt:"A massive Red Death has appeared off the coast! Use your speed, dodge its fire blasts, and find its weak spot to drive it away!"},
-  {t:"Rival Dragon Rider! 🏆",txt:"A rival Viking clan has challenged you to a dragon battle in the arena! Prove you and your dragon are the best on Berk!"},
-  {t:"The Dragon Hunter! 🪤",txt:"A sneaky dragon hunter has set traps all over the island! Outsmart him, dodge his nets, and send him packing!"},
-  {t:"Bewilderbeast Clash! ❄️",txt:"Two giant Bewilderbeasts are fighting nearby! Navigate between their ice blasts and find a way to calm them both down!"},
-  {t:"Night Wing Attack! 🌙",txt:"A pack of wild Night Wings is swooping toward Berk! Lead them away using your dragon's special power before they reach the village!"},
+  {t:"🔴 The Red Death Returns!",txt:"A massive Red Death has appeared off the coast! Use your speed, dodge its fire blasts, and find its weak spot!"},
+  {t:"🏆 Rival Dragon Rider!",txt:"A rival Viking clan has challenged you to a dragon battle in the arena! Prove you and your dragon are the best on Berk!"},
+  {t:"🌙 Night Wing Attack!",txt:"A pack of wild Night Wings is swooping toward Berk! Lead them away using your dragon's special power!"},
 ];
 const flyTricks=[
-  {t:"The Spiral Dive! 🌀",txt:"You launch into the sky and tuck into a tight corkscrew spin — faster and faster — then SNAP your wings open and soar back up! The arena crowd goes wild!"},
-  {t:"The Cloud Surf! ☁️",txt:"You glide across the top of a fluffy cloud, dipping one wing in and out of the mist, then shoot straight up and burst into bright sunshine above!"},
-  {t:"The Backwards Loop! 🔄",txt:"Flying at top speed, you pull back hard and flip upside down, flying backwards for a heart-stopping moment, then complete the loop perfectly!"},
-  {t:"The Fire Trail! 🔥",txt:"You blast your special power in a huge arc while doing a figure-eight through the arena. The crowd has never seen anything like it!"},
-  {t:"The Twin Tornado! 💨",txt:"You and your dragon spiral together in perfect sync, creating a mini tornado of wind and fire! Everyone in the stands cheers!"},
+  {t:"🌀 The Spiral Dive!",txt:"You launch into the sky and tuck into a tight corkscrew spin, then SNAP your wings open and soar back up! The crowd goes wild!"},
+  {t:"☁️ The Cloud Surf!",txt:"You glide across the top of a fluffy cloud, dipping one wing in and out of the mist, then burst into bright sunshine above!"},
+  {t:"🔥 The Fire Trail!",txt:"You blast your special power in a huge arc while doing a figure-eight through the arena. The crowd has never seen anything like it!"},
 ];
 
 function doAction(type) {
-  clearInterval(mgInterval);
   let item;
   if(type==='quest') item=rand(quests);
   else if(type==='rescue') item=rand(rescues);
   else if(type==='battle') item=rand(battles);
   else item=rand(flyTricks);
   const win=Math.random()>0.35;
-  const outcomes={
-    quest:{w:`🎉 You and ${getN()} completed the quest! Berk celebrates you as a hero!`,l:`😬 Tricky this time, but ${getN()} knows you'll try again tomorrow!`},
-    rescue:{w:`🥳 You saved the dragon! It nuzzles you with its nose as a thank you!`,l:`😰 The rescue was hard, but ${getN()} kept you safe!`},
-    battle:{w:`🏆 Victory! You and ${getN()} showed everyone what true dragon riders can do!`,l:`💪 A tough fight! You learned new moves for next time!`},
-    fly:{w:`⭐ Perfect score! The crowd goes wild for ${getN()}'s incredible tricks!`,l:`😄 A fun run! ${getN()} wants to practice that last trick a bit more!`},
+  const outcomeTexts={
+    quest:{w:`🎉 You and ${getN()} completed the quest! Berk celebrates you!`,l:`😬 Tough this time, but ${getN()} knows you'll try again!`},
+    rescue:{w:`🥳 You saved the dragon! It nuzzles you as a thank you!`,l:`😰 Hard rescue, but ${getN()} kept you safe!`},
+    battle:{w:`🏆 Victory! You showed everyone what true dragon riders can do!`,l:`💪 Tough fight! You learned new moves for next time!`},
+    fly:{w:`⭐ Perfect score! The crowd goes wild for ${getN()}'s tricks!`,l:`😄 Fun run! ${getN()} wants to practice more!`},
   };
-  document.getElementById('result').innerHTML=`
-    <div class="result-box">
-      <div class="result-title">${item.t}</div>
-      <div class="result-text">${item.txt}</div>
-      <div class="outcome ${win?'win':'lose'}">${outcomes[type][win?'w':'l']}</div>
-    </div>`;
-  document.getElementById('result').scrollIntoView({behavior:'smooth'});
+  if(win) changeStat('happy',10);
+  showPopup(item.t, item.txt, `<div class="outcome ${win?'win':'lose'}">${outcomeTexts[type][win?'w':'l']}</div>`);
 }
 
-function startMiniGame() {
-  clearInterval(mgInterval);
-  mgScore=0; mgTimeLeft=15;
-  document.getElementById('result').innerHTML=`
-    <div class="minigame-box" id="mgbox">
-      <div class="minigame-title">🎮 Catch the Dragon!</div>
-      <p class="mg-instruction">Tap ${d.emoji} as fast as you can before time runs out!</p>
-      <div class="score-display">Score: <span id="mgscore">0</span></div>
-      <div class="timer-bar-wrap"><div class="timer-bar" id="timerbar" style="width:100%"></div></div>
-      <div style="height:90px;display:flex;align-items:center;justify-content:center;">
-        <span class="target-emoji" id="mgtarget" onclick="tapDragon()">${d.emoji}</span>
-      </div>
-    </div>`;
-  document.getElementById('result').scrollIntoView({behavior:'smooth'});
-  mgInterval=setInterval(()=>{
-    mgTimeLeft-=0.1;
-    const pct=Math.max(0,(mgTimeLeft/15)*100);
-    const bar=document.getElementById('timerbar');
-    if(bar) bar.style.width=pct+'%';
-    if(mgTimeLeft<=0) endMiniGame();
-  },100);
+// ---- GAMES ----
+function openGameChoice() {
+  showPopup('🎮 Play a Game!', '', `
+    <p style="color:#aad4ff;margin-bottom:15px">Which game do you want to play with ${getN()}?</p>
+    <div class="game-choice">
+      <button class="game-choice-btn" onclick="startTTT()">⭕ Tic Tac Toe</button>
+      <button class="game-choice-btn" onclick="startCardGame()">🃏 Card Match</button>
+      <button class="game-choice-btn" onclick="startSports()">⚽ Dragon Soccer</button>
+    </div>`);
 }
 
-function tapDragon() {
-  mgScore++;
-  const sc=document.getElementById('mgscore');
-  if(sc) sc.textContent=mgScore;
-  const t=document.getElementById('mgtarget');
-  if(t){
-    const x=(Math.random()*80-40).toFixed(0);
-    const s=(0.7+Math.random()*0.7).toFixed(2);
-    t.style.transform=`translateX(${x}px) scale(${s})`;
-    setTimeout(()=>{ if(t) t.style.transform=''; },150);
+// TTT
+let tttBoard, tttTurn, tttActive;
+function startTTT() {
+  tttBoard=Array(9).fill(''); tttTurn='X'; tttActive=true;
+  renderTTT();
+}
+function renderTTT() {
+  const cells = tttBoard.map((v,i)=>`<div class="ttt-cell" onclick="tttClick(${i})">${v==='X'?'🔥':v==='O'?d.emoji:''}</div>`).join('');
+  document.getElementById('popup-body').innerHTML=`
+    <p style="color:#aad4ff;margin-bottom:8px">${tttActive?(tttTurn==='X'?'Your turn! (🔥)':getN()+'\'s turn! ('+d.emoji+')'):'Game Over!'}</p>
+    <div class="ttt-board">${cells}</div>
+    <button class="game-choice-btn" style="margin-top:10px" onclick="startTTT()">New Game</button>
+    <button class="game-choice-btn" style="margin-top:10px" onclick="openGameChoice()">← Back</button>`;
+}
+function tttClick(i) {
+  if(!tttActive||tttBoard[i]) return;
+  tttBoard[i]=tttTurn;
+  const w=checkTTT();
+  if(w) { tttActive=false; renderTTT(); showTTTResult(w); return; }
+  if(!tttBoard.includes('')) { tttActive=false; renderTTT(); showTTTResult('draw'); return; }
+  tttTurn=tttTurn==='X'?'O':'X';
+  renderTTT();
+  if(tttTurn==='O') setTimeout(aiTTT,600);
+}
+function aiTTT() {
+  if(!tttActive) return;
+  const empty=tttBoard.map((v,i)=>v===''?i:-1).filter(i=>i>=1);
+  if(!empty.length) return;
+  tttBoard[empty[Math.floor(Math.random()*empty.length)]]='O';
+  const w=checkTTT();
+  if(w){tttActive=false;renderTTT();showTTTResult(w);return;}
+  if(!tttBoard.includes('')){tttActive=false;renderTTT();showTTTResult('draw');return;}
+  tttTurn='X'; renderTTT();
+}
+function checkTTT() {
+  const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  for(const [a,b,c] of wins) if(tttBoard[a]&&tttBoard[a]===tttBoard[b]&&tttBoard[a]===tttBoard[c]) return tttBoard[a];
+  return null;
+}
+function showTTTResult(w) {
+  const msg = w==='draw'?`It's a draw! ${getN()} roars respectfully! 🐉`:
+              w==='X'?`🎉 You win! ${getN()} does a happy flip!`:
+              `${getN()} wins! The dragon roars triumphantly! 🔥`;
+  document.getElementById('popup-body').innerHTML += `<div class="outcome ${w==='X'?'win':w==='draw'?'':'lose'}" style="margin-top:10px">${msg}</div>`;
+}
+
+// CARD MATCH
+let cards, flipped, matched, canFlip;
+const cardSymbols=['🐉','⚡','🔥','❄️','💨','✨'];
+function startCardGame() {
+  const deck=[...cardSymbols,...cardSymbols].sort(()=>Math.random()-0.5);
+  cards=deck.map((s,i)=>({id:i,symbol:s,shown:false,matched:false}));
+  flipped=[]; matched=0; canFlip=true;
+  renderCards();
+}
+function renderCards() {
+  document.getElementById('popup-body').innerHTML=`
+    <p style="color:#aad4ff;margin-bottom:8px">Match all the pairs! ${matched} of ${cardSymbols.length} matched</p>
+    <div class="card-area">${cards.map((c,i)=>`<div class="card${c.shown||c.matched?' flipped':''}" onclick="flipCard(${i})">${c.shown||c.matched?c.symbol:'🐲'}</div>`).join('')}</div>
+    <button class="game-choice-btn" style="margin-top:10px" onclick="startCardGame()">New Game</button>
+    <button class="game-choice-btn" style="margin-top:10px" onclick="openGameChoice()">← Back</button>`;
+}
+function flipCard(i) {
+  if(!canFlip||cards[i].shown||cards[i].matched) return;
+  cards[i].shown=true; flipped.push(i); renderCards();
+  if(flipped.length===2) {
+    canFlip=false;
+    setTimeout(()=>{
+      const [a,b]=flipped;
+      if(cards[a].symbol===cards[b].symbol){ cards[a].matched=cards[b].matched=true; matched++; }
+      cards[a].shown=cards[b].shown=false; flipped=[]; canFlip=true;
+      renderCards();
+      if(matched===cardSymbols.length) document.getElementById('popup-body').innerHTML+=`<div class="outcome win" style="margin-top:10px">🎉 You matched them all! ${getN()} is so proud of you!</div>`;
+    },800);
   }
 }
 
-function endMiniGame() {
-  clearInterval(mgInterval);
-  const msg=mgScore>=20?`🏆 Amazing! ${mgScore} taps! You're a Dragon Master!`:
-            mgScore>=10?`⭐ Great job! ${mgScore} taps! ${getN()} is impressed!`:
-            `🐉 You got ${mgScore} taps! Play again to beat your score!`;
-  const box=document.getElementById('mgbox');
-  if(box) box.innerHTML=`
-    <div class="minigame-title">Time's Up! ⏰</div>
-    <div style="font-size:3em;margin:10px 0">${d.emoji}</div>
-    <div class="outcome win" style="font-size:1.1em;margin-bottom:15px">${msg}</div>
-    <button class="big-btn" onclick="startMiniGame()">Play Again!</button>
-    <button class="back-btn" onclick="document.getElementById('result').innerHTML=''">Back</button>`;
+// SPORTS
+let sportScore, sportGoals, sportActive2;
+function startSports() {
+  sportScore=0; sportGoals=0; sportActive2=true;
+  renderSports();
+}
+function renderSports() {
+  document.getElementById('popup-body').innerHTML=`
+    <div class="sport-area">
+      <p style="color:#ffd700;margin-bottom:8px">⚽ Dragon Soccer! Score 3 goals to win!</p>
+      <p style="color:#aad4ff;font-size:0.85em;margin-bottom:8px">Shots: ${sportScore} | Goals: ${sportGoals}/3</p>
+      <div class="goal"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2em" id="goal-feedback"></div></div>
+      <p style="color:#aad4ff;font-size:0.85em;margin:8px 0">Pick your shot:</p>
+      <div class="aim-row">
+        <button class="aim-btn" onclick="shoot('left')">↖️ Left</button>
+        <button class="aim-btn" onclick="shoot('center')">⬆️ Center</button>
+        <button class="aim-btn" onclick="shoot('right')">↗️ Right</button>
+      </div>
+      <div id="sport-result"></div>
+    </div>
+    <button class="game-choice-btn" style="margin-top:10px" onclick="startSports()">New Game</button>
+    <button class="game-choice-btn" style="margin-top:10px" onclick="openGameChoice()">← Back</button>`;
+}
+function shoot(dir) {
+  if(!sportActive2) return;
+  sportScore++;
+  const goalie=['left','center','right'][Math.floor(Math.random()*3)];
+  const scored = dir!==goalie;
+  const fb=document.getElementById('goal-feedback');
+  if(fb) fb.textContent=scored?'⚽':'🧤';
+  if(scored) sportGoals++;
+  const msg=scored?`GOAL! ${getN()} breathes fire in celebration! 🔥`:`Saved! The goalie blocked it! Try again!`;
+  const res=document.getElementById('sport-result');
+  if(res) res.innerHTML=`<p style="margin-top:8px;font-weight:bold;color:${scored?'#2ecc71':'#e74c3c'}">${msg}</p>`;
+  renderSports();
+  if(sportGoals>=3) {
+    sportActive2=false;
+    document.getElementById('popup-body').innerHTML=`<div class="outcome win" style="font-size:1.2em;margin:15px 0">🏆 You scored 3 goals in ${sportScore} shots! ${getN()} does a victory lap around the arena!</div>
+    <button class="game-choice-btn" onclick="startSports()">Play Again</button>
+    <button class="game-choice-btn" onclick="openGameChoice()">← Back</button>`;
+  }
+}
+
+// POPUP helpers
+function showPopup(title, text, extra) {
+  document.getElementById('popup-title').textContent=title;
+  document.getElementById('popup-body').innerHTML=`<div class="popup-text">${text}</div>${extra||''}`;
+  document.getElementById('popup').classList.add('open');
+}
+function closePopup() {
+  document.getElementById('popup').classList.remove('open');
 }
 </script>
 
