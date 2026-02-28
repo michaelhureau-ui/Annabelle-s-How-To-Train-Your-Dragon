@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐉 Dragon Rider Game</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:Georgia,serif; background:linear-gradient(135deg,#0a0a2e,#1a1a4e,#0d2137); min-height:100vh; color:white; padding:20px; }
+  h1 { text-align:center; font-size:2.2em; color:#ffd700; text-shadow:0 0 20px #ff6600; margin-bottom:5px; }
+  .subtitle { text-align:center; color:#aad4ff; margin-bottom:20px; }
+  .screen { display:none; }
+  .screen.active { display:block; }
+  .section-title { text-align:center; color:#ffd700; font-size:1.3em; margin-bottom:15px; }
+  .dragon-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; max-width:700px; margin:0 auto 20px; }
+  .dragon-card { background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.2); border-radius:15px; padding:15px; text-align:center; cursor:pointer; transition:all 0.3s; }
+  .dragon-card:hover,.dragon-card.selected { border-color:#ffd700; background:rgba(255,215,0,0.2); transform:scale(1.05); }
+  .d-emoji { font-size:2.8em; }
+  .d-name { font-weight:bold; color:#ffd700; margin:5px 0 2px; font-size:0.95em; }
+  .d-type { font-size:0.72em; color:#aad4ff; }
+  .cbox { background:rgba(255,255,255,0.08); border-radius:20px; padding:25px; max-width:480px; margin:0 auto; }
+  .cbox label { display:block; margin:12px 0 5px; color:#ffd700; font-weight:bold; }
+  .cbox input { width:100%; padding:10px; border-radius:10px; border:2px solid rgba(255,215,0,0.4); background:rgba(0,0,0,0.3); color:white; font-size:1em; }
+  .color-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:5px; }
+  .cbtn { width:34px; height:34px; border-radius:50%; border:3px solid transparent; cursor:pointer; transition:transform 0.2s; }
+  .cbtn:hover,.cbtn.selected { border-color:white; transform:scale(1.2); }
+  .power-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:5px; }
+  .pbtn { padding:7px 13px; border-radius:20px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:white; cursor:pointer; font-size:0.82em; transition:all 0.2s; }
+  .pbtn.selected { background:rgba(255,215,0,0.3); border-color:#ffd700; color:#ffd700; }
+  .dragon-display { text-align:center; background:rgba(255,255,255,0.08); border-radius:20px; padding:20px; max-width:600px; margin:0 auto 20px; }
+  .big-emoji { font-size:5em; }
+  .play-name { font-size:1.5em; font-weight:bold; color:#ffd700; margin:8px 0 3px; }
+  .play-stats { color:#aad4ff; font-size:0.9em; }
+  .action-buttons { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; max-width:640px; margin:0 auto 20px; }
+  .abtn { padding:14px 18px; border-radius:15px; border:none; font-size:1em; font-weight:bold; cursor:pointer; transition:all 0.2s; min-width:135px; color:white; }
+  .abtn:hover { transform:scale(1.06); }
+  .btn-quest { background:linear-gradient(135deg,#9b59b6,#6c3483); }
+  .btn-rescue { background:linear-gradient(135deg,#e74c3c,#922b21); }
+  .btn-battle { background:linear-gradient(135deg,#e67e22,#d35400); }
+  .btn-fly { background:linear-gradient(135deg,#27ae60,#1e8449); }
+  .btn-minigame { background:linear-gradient(135deg,#2980b9,#1a5276); }
+  .result-box { background:rgba(255,255,255,0.1); border:2px solid rgba(255,215,0,0.4); border-radius:20px; padding:25px; max-width:600px; margin:0 auto 15px; text-align:center; animation:fadeIn 0.5s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .result-title { font-size:1.3em; color:#ffd700; margin-bottom:10px; }
+  .result-text { line-height:1.7; color:#e0e0e0; }
+  .outcome { margin-top:12px; font-size:1.1em; font-weight:bold; }
+  .win { color:#2ecc71; } .lose { color:#e74c3c; }
+  .minigame-box { background:rgba(255,255,255,0.1); border:2px solid rgba(255,215,0,0.4); border-radius:20px; padding:25px; max-width:600px; margin:0 auto 15px; text-align:center; }
+  .minigame-title { font-size:1.3em; color:#ffd700; margin-bottom:10px; }
+  .target-emoji { font-size:4em; cursor:pointer; display:inline-block; transition:transform 0.1s; user-select:none; }
+  .score-display { font-size:1.2em; color:#ffd700; margin:10px 0; }
+  .timer-bar-wrap { background:rgba(255,255,255,0.2); border-radius:10px; height:15px; margin:10px 0; }
+  .timer-bar { background:linear-gradient(90deg,#ffd700,#ff6600); height:15px; border-radius:10px; transition:width 0.1s linear; }
+  .mg-instruction { color:#aad4ff; margin-bottom:10px; }
+  .big-btn { display:block; margin:15px auto 0; padding:13px 33px; border-radius:15px; border:none; background:linear-gradient(135deg,#ffd700,#ff8c00); color:#1a1a1a; font-size:1.05em; font-weight:bold; cursor:pointer; transition:all 0.2s; }
+  .big-btn:hover { transform:scale(1.05); }
+  .back-btn { display:block; margin:10px auto 0; padding:9px 22px; border-radius:15px; border:2px solid rgba(255,255,255,0.3); background:transparent; color:white; font-size:0.9em; cursor:pointer; }
+</style>
+</head>
+<body>
+<h1>🐉 Dragon Rider</h1>
+<p class="subtitle">How to Train Your Dragon</p>
+
+<div id="s1" class="screen active">
+  <p class="section-title">Choose Your Dragon!</p>
+  <div class="dragon-grid">
+    <div class="dragon-card" onclick="pick(this,'Toothless','Night Fury','🐉')"><div class="d-emoji">🐉</div><div class="d-name">Toothless</div><div class="d-type">Night Fury</div></div>
+    <div class="dragon-card" onclick="pick(this,'Light Fury','Light Fury','🤍')"><div class="d-emoji">🤍</div><div class="d-name">Light Fury</div><div class="d-type">Light Fury</div></div>
+    <div class="dragon-card" onclick="pick(this,'Stormfly','Deadly Nadder','💙')"><div class="d-emoji">💙</div><div class="d-name">Stormfly</div><div class="d-type">Deadly Nadder</div></div>
+    <div class="dragon-card" onclick="pick(this,'Hookfang','Monstrous Nightmare','🔥')"><div class="d-emoji">🔥</div><div class="d-name">Hookfang</div><div class="d-type">Monstrous Nightmare</div></div>
+    <div class="dragon-card" onclick="pick(this,'Meatlug','Gronckle','🪨')"><div class="d-emoji">🪨</div><div class="d-name">Meatlug</div><div class="d-type">Gronckle</div></div>
+    <div class="dragon-card" onclick="pick(this,'Barf and Belch','Hideous Zippleback','💚')"><div class="d-emoji">💚</div><div class="d-name">Barf & Belch</div><div class="d-type">Hideous Zippleback</div></div>
+    <div class="dragon-card" onclick="pick(this,'Cloudjumper','Stormcutter','⚡')"><div class="d-emoji">⚡</div><div class="d-name">Cloudjumper</div><div class="d-type">Stormcutter</div></div>
+    <div class="dragon-card" onclick="pick(this,'Skullcrusher','Rumblehorn','💜')"><div class="d-emoji">💜</div><div class="d-name">Skullcrusher</div><div class="d-type">Rumblehorn</div></div>
+  </div>
+  <button class="big-btn" onclick="go('s2')">Next: Customize! →</button>
+</div>
+
+<div id="s2" class="screen">
+  <p class="section-title">Customize Your Dragon!</p>
+  <div class="cbox">
+    <label>Give your dragon a nickname:</label>
+    <input type="text" id="nickname" placeholder="e.g. Sparkles, Blaze, Shadow...">
+    <label>Choose a color:</label>
+    <div class="color-row">
+      <div class="cbtn selected" style="background:#111" onclick="pickColor(this,'Midnight Black')"></div>
+      <div class="cbtn" style="background:#e74c3c" onclick="pickColor(this,'Fire Red')"></div>
+      <div class="cbtn" style="background:#3498db" onclick="pickColor(this,'Ocean Blue')"></div>
+      <div class="cbtn" style="background:#2ecc71" onclick="pickColor(this,'Forest Green')"></div>
+      <div class="cbtn" style="background:#9b59b6" onclick="pickColor(this,'Royal Purple')"></div>
+      <div class="cbtn" style="background:#ffd700" onclick="pickColor(this,'Golden Yellow')"></div>
+      <div class="cbtn" style="background:#fff" onclick="pickColor(this,'Pearly White')"></div>
+      <div class="cbtn" style="background:#ff69b4" onclick="pickColor(this,'Hot Pink')"></div>
+    </div>
+    <label>Choose a special power:</label>
+    <div class="power-row">
+      <button class="pbtn selected" onclick="pickPower(this,'🔥 Plasma Blast')">🔥 Plasma Blast</button>
+      <button class="pbtn" onclick="pickPower(this,'⚡ Lightning Strike')">⚡ Lightning Strike</button>
+      <button class="pbtn" onclick="pickPower(this,'❄️ Ice Breath')">❄️ Ice Breath</button>
+      <button class="pbtn" onclick="pickPower(this,'💨 Tornado Spin')">💨 Tornado Spin</button>
+      <button class="pbtn" onclick="pickPower(this,'✨ Magic Shield')">✨ Magic Shield</button>
+    </div>
+  </div>
+  <button class="big-btn" onclick="startPlay()">Let's Play! 🐉</button>
+  <button class="back-btn" onclick="go('s1')">← Back</button>
+</div>
+
+<div id="s3" class="screen">
+  <div class="dragon-display">
+    <div class="big-emoji" id="pemoji">🐉</div>
+    <div class="play-name" id="pname">Dragon</div>
+    <div class="play-stats" id="pstats"></div>
+  </div>
+  <div class="action-buttons">
+    <button class="abtn btn-quest" onclick="doAction('quest')">🗺️ Request Quest</button>
+    <button class="abtn btn-rescue" onclick="doAction('rescue')">🆘 Save a Dragon!</button>
+    <button class="abtn btn-battle" onclick="doAction('battle')">⚔️ Battle!</button>
+    <button class="abtn btn-fly" onclick="doAction('fly')">🌤️ Fly Around</button>
+    <button class="abtn btn-minigame" onclick="startMiniGame()">🎮 Play a Game!</button>
+  </div>
+  <div id="result"></div>
+  <button class="back-btn" onclick="go('s2')">← Change Dragon</button>
+</div>
+
+<script>
+let d = {name:'Toothless',type:'Night Fury',emoji:'🐉',nickname:'',color:'Midnight Black',power:'🔥 Plasma Blast'};
+let mgInterval = null, mgTimeLeft = 0, mgScore = 0;
+
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('result').innerHTML='';
+}
+function pick(el,name,type,emoji) {
+  document.querySelectorAll('.dragon-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  d.name=name; d.type=type; d.emoji=emoji;
+}
+function pickColor(el,color) {
+  document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected'); d.color=color;
+}
+function pickPower(el,power) {
+  document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected'); d.power=power;
+}
+function startPlay() {
+  d.nickname=document.getElementById('nickname').value||d.name;
+  document.getElementById('pemoji').textContent=d.emoji;
+  document.getElementById('pname').textContent=d.nickname+' the '+d.type;
+  document.getElementById('pstats').textContent=d.color+' • '+d.power;
+  go('s3');
+}
+function rand(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function getN(){return d.nickname||d.name;}
+
+const quests=[
+  {t:"The Lost Map 🗺️",txt:"A mysterious map has appeared on Berk showing a hidden island full of treasure! Fly through a fierce storm and navigate past giant sea stacks to reach it!"},
+  {t:"The Frozen Mountain 🏔️",txt:"Villagers are trapped on the mountain peak in a blizzard! Fly through icy winds, dodge falling rocks, and guide them safely home."},
+  {t:"The Stolen Egg 🥚",txt:"Thieves have stolen a rare dragon egg! Chase them across three islands, outsmart their traps, and return the egg to safety!"},
+  {t:"The Sea Monster 🌊",txt:"A giant sea creature is blocking the fishing boats! Fly low over the waves and lead it away from the harbor!"},
+  {t:"The Ancient Ruins 🏛️",txt:"Explorers found mysterious ruins on a jungle island! Fly through thick vines, solve a stone puzzle, and uncover the secret inside!"},
+];
+const rescues=[
+  {t:"Trapped in a Cave! 🦇",txt:"A young Gronckle is stuck deep in a collapsing cave! Squeeze through the dark tunnels, calm the frightened dragon, and carry it out before the entrance seals!"},
+  {t:"Caught in a Net! 🕸️",txt:"A beautiful Deadly Nadder is tangled in a giant fishing net! Carefully burn through the ropes without hurting it and set it free!"},
+  {t:"Baby Dragon Overboard! 💦",txt:"A tiny Terrible Terror fell off a ship into the freezing ocean! Dive down, scoop it out of the water, and warm it up before it gets too cold!"},
+  {t:"Lost Hatchlings! 🐣",txt:"Three baby dragons wandered away from their nest and are hiding all over the island! Find them all before nightfall!"},
+  {t:"Dragon Under a Spell! 🌀",txt:"A Monstrous Nightmare has been put under a dark spell! Break the enchantment by showing it kindness and trust — only a true dragon rider can do it!"},
+];
+const battles=[
+  {t:"The Red Death Returns! 🔴",txt:"A massive Red Death has appeared off the coast! Use your speed, dodge its fire blasts, and find its weak spot to drive it away!"},
+  {t:"Rival Dragon Rider! 🏆",txt:"A rival Viking clan has challenged you to a dragon battle in the arena! Prove you and your dragon are the best on Berk!"},
+  {t:"The Dragon Hunter! 🪤",txt:"A sneaky dragon hunter has set traps all over the island! Outsmart him, dodge his nets, and send him packing!"},
+  {t:"Bewilderbeast Clash! ❄️",txt:"Two giant Bewilderbeasts are fighting nearby! Navigate between their ice blasts and find a way to calm them both down!"},
+  {t:"Night Wing Attack! 🌙",txt:"A pack of wild Night Wings is swooping toward Berk! Lead them away using your dragon's special power before they reach the village!"},
+];
+const flyTricks=[
+  {t:"The Spiral Dive! 🌀",txt:"You launch into the sky and tuck into a tight corkscrew spin — faster and faster — then SNAP your wings open and soar back up! The arena crowd goes wild!"},
+  {t:"The Cloud Surf! ☁️",txt:"You glide across the top of a fluffy cloud, dipping one wing in and out of the mist, then shoot straight up and burst into bright sunshine above!"},
+  {t:"The Backwards Loop! 🔄",txt:"Flying at top speed, you pull back hard and flip upside down, flying backwards for a heart-stopping moment, then complete the loop perfectly!"},
+  {t:"The Fire Trail! 🔥",txt:"You blast your special power in a huge arc while doing a figure-eight through the arena. The crowd has never seen anything like it!"},
+  {t:"The Twin Tornado! 💨",txt:"You and your dragon spiral together in perfect sync, creating a mini tornado of wind and fire! Everyone in the stands cheers!"},
+];
+
+function doAction(type) {
+  clearInterval(mgInterval);
+  let item;
+  if(type==='quest') item=rand(quests);
+  else if(type==='rescue') item=rand(rescues);
+  else if(type==='battle') item=rand(battles);
+  else item=rand(flyTricks);
+  const win=Math.random()>0.35;
+  const outcomes={
+    quest:{w:`🎉 You and ${getN()} completed the quest! Berk celebrates you as a hero!`,l:`😬 Tricky this time, but ${getN()} knows you'll try again tomorrow!`},
+    rescue:{w:`🥳 You saved the dragon! It nuzzles you with its nose as a thank you!`,l:`😰 The rescue was hard, but ${getN()} kept you safe!`},
+    battle:{w:`🏆 Victory! You and ${getN()} showed everyone what true dragon riders can do!`,l:`💪 A tough fight! You learned new moves for next time!`},
+    fly:{w:`⭐ Perfect score! The crowd goes wild for ${getN()}'s incredible tricks!`,l:`😄 A fun run! ${getN()} wants to practice that last trick a bit more!`},
+  };
+  document.getElementById('result').innerHTML=`
+    <div class="result-box">
+      <div class="result-title">${item.t}</div>
+      <div class="result-text">${item.txt}</div>
+      <div class="outcome ${win?'win':'lose'}">${outcomes[type][win?'w':'l']}</div>
+    </div>`;
+  document.getElementById('result').scrollIntoView({behavior:'smooth'});
+}
+
+function startMiniGame() {
+  clearInterval(mgInterval);
+  mgScore=0; mgTimeLeft=15;
+  document.getElementById('result').innerHTML=`
+    <div class="minigame-box" id="mgbox">
+      <div class="minigame-title">🎮 Catch the Dragon!</div>
+      <p class="mg-instruction">Tap ${d.emoji} as fast as you can before time runs out!</p>
+      <div class="score-display">Score: <span id="mgscore">0</span></div>
+      <div class="timer-bar-wrap"><div class="timer-bar" id="timerbar" style="width:100%"></div></div>
+      <div style="height:90px;display:flex;align-items:center;justify-content:center;">
+        <span class="target-emoji" id="mgtarget" onclick="tapDragon()">${d.emoji}</span>
+      </div>
+    </div>`;
+  document.getElementById('result').scrollIntoView({behavior:'smooth'});
+  mgInterval=setInterval(()=>{
+    mgTimeLeft-=0.1;
+    const pct=Math.max(0,(mgTimeLeft/15)*100);
+    const bar=document.getElementById('timerbar');
+    if(bar) bar.style.width=pct+'%';
+    if(mgTimeLeft<=0) endMiniGame();
+  },100);
+}
+
+function tapDragon() {
+  mgScore++;
+  const sc=document.getElementById('mgscore');
+  if(sc) sc.textContent=mgScore;
+  const t=document.getElementById('mgtarget');
+  if(t){
+    const x=(Math.random()*80-40).toFixed(0);
+    const s=(0.7+Math.random()*0.7).toFixed(2);
+    t.style.transform=`translateX(${x}px) scale(${s})`;
+    setTimeout(()=>{ if(t) t.style.transform=''; },150);
+  }
+}
+
+function endMiniGame() {
+  clearInterval(mgInterval);
+  const msg=mgScore>=20?`🏆 Amazing! ${mgScore} taps! You're a Dragon Master!`:
+            mgScore>=10?`⭐ Great job! ${mgScore} taps! ${getN()} is impressed!`:
+            `🐉 You got ${mgScore} taps! Play again to beat your score!`;
+  const box=document.getElementById('mgbox');
+  if(box) box.innerHTML=`
+    <div class="minigame-title">Time's Up! ⏰</div>
+    <div style="font-size:3em;margin:10px 0">${d.emoji}</div>
+    <div class="outcome win" style="font-size:1.1em;margin-bottom:15px">${msg}</div>
+    <button class="big-btn" onclick="startMiniGame()">Play Again!</button>
+    <button class="back-btn" onclick="document.getElementById('result').innerHTML=''">Back</button>`;
+}
+</script>
+
+</body>
+</html>
