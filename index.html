@@ -702,15 +702,8 @@ function renderOutdoor(){
   if(Math.abs(drX-WW*0.10)<80&&drY===0){
     labelAt(ctx,'Enter house? → Sleep',WW*0.10,GL-120,'#ffd700');
   }
-}
 
-<!-- PART 2/2
-PASTE THIS OVER the comment that says “the rest of the JS is unchanged…”
-i.e., replace that whole comment with everything below (starting here),
-and keep the closing </script></body></html> that comes at the end of this part.
--->
 
-<script>
 // ===================== HELPERS =====================
 CanvasRenderingContext2D.prototype.roundRect = CanvasRenderingContext2D.prototype.roundRect || function (x,y,w,h,r){
   r=Math.min(r, w/2, h/2);
