@@ -4,18 +4,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🐉 Dragon World</title>
+<title>Dragon World</title>
 <style>
 * { box-sizing:border-box; margin:0; padding:0; }
 body { font-family:Georgia,serif; background:#1a3a1a; min-height:100vh; color:white; }
 .screen { display:none; }
 .screen.active { display:block; }
+.section-title { text-align:center; color:#ffd700; font-size:1.2em; margin-bottom:15px; }
 
-/* CHOOSE SCREEN */
 #s-choose { background:linear-gradient(135deg,#0a0a2e,#1a1a4e,#0d2137); min-height:100vh; padding:20px; }
 h1 { text-align:center; font-size:2em; color:#ffd700; text-shadow:0 0 20px #ff6600; margin-bottom:5px; }
 .subtitle { text-align:center; color:#aad4ff; margin-bottom:20px; }
-.section-title { text-align:center; color:#ffd700; font-size:1.2em; margin-bottom:15px; }
 .dragon-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; max-width:680px; margin:0 auto 20px; }
 .dragon-card { background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.2); border-radius:15px; padding:12px; text-align:center; cursor:pointer; transition:all 0.3s; }
 .dragon-card:hover,.dragon-card.selected { border-color:#ffd700; background:rgba(255,215,0,0.2); transform:scale(1.05); }
@@ -35,54 +34,40 @@ h1 { text-align:center; font-size:2em; color:#ffd700; text-shadow:0 0 20px #ff66
 .big-btn:hover { transform:scale(1.05); }
 .back-btn { display:block; margin:10px auto 0; padding:8px 20px; border-radius:15px; border:2px solid rgba(255,255,255,0.3); background:transparent; color:white; font-size:0.9em; cursor:pointer; }
 
-/* WORLD SCREEN */
 #s-world { min-height:100vh; }
-
-/* BIOME */
-.biome {
-position:relative;
-min-height:100vh;
-background: linear-gradient(180deg, #87CEEB 0%, #87CEEB 35%, #4a7c3f 35%, #4a7c3f 38%, #2d5a1b 38%);
-overflow:hidden;
-}
-/* Clouds */
+.biome { position:relative; min-height:100vh; background:linear-gradient(180deg,#87CEEB 0%,#87CEEB 35%,#4a7c3f 35%,#4a7c3f 38%,#2d5a1b 38%); overflow:hidden; }
 .cloud { position:absolute; background:white; border-radius:50px; opacity:0.85; animation:drift linear infinite; }
 @keyframes drift { from{transform:translateX(-200px)} to{transform:translateX(110vw)} }
-/* Grass */
 .grass-area { position:absolute; top:35%; left:0; right:0; bottom:0; background:linear-gradient(180deg,#4a7c3f,#2d5a1b 60%,#1a3a0a); }
-/* Grass blades */
 .blade { position:absolute; width:6px; border-radius:3px 3px 0 0; background:linear-gradient(#6ab04c,#2d5a1b); bottom:0; }
 
-/* HUD */
 .hud { position:absolute; top:10px; left:10px; right:10px; z-index:10; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; }
 .hud-card { background:rgba(0,0,0,0.6); border:1px solid rgba(255,215,0,0.4); border-radius:12px; padding:8px 12px; min-width:130px; }
 .hud-name { color:#ffd700; font-weight:bold; font-size:0.9em; }
 .stat-row { display:flex; align-items:center; gap:6px; margin-top:4px; }
-.stat-label { font-size:0.72em; color:#aad4ff; width:50px; }
+.stat-label { font-size:0.72em; color:#aad4ff; width:55px; }
 .stat-bar { flex:1; height:10px; background:rgba(255,255,255,0.2); border-radius:5px; overflow:hidden; }
 .stat-fill { height:100%; border-radius:5px; transition:width 0.5s; }
 .fill-food { background:linear-gradient(90deg,#ff6b35,#ffd700); }
 .fill-water { background:linear-gradient(90deg,#4fc3f7,#0288d1); }
 .fill-happy { background:linear-gradient(90deg,#f06292,#e91e63); }
+.fill-coins { background:linear-gradient(90deg,#ffd700,#ff8c00); }
 
-/* LOCATIONS on the biome */
-.location {
-position:absolute;
-cursor:pointer;
-text-align:center;
-transition:transform 0.2s;
-z-index:5;
-}
-.location:hover { transform:scale(1.08); }
+.location { position:absolute; cursor:pointer; text-align:center; transition:transform 0.2s; z-index:5; }
+.location:hover { transform:scale(1.1); }
 .loc-icon { font-size:2.5em; display:block; filter:drop-shadow(0 3px 6px rgba(0,0,0,0.5)); }
 .loc-label { font-size:0.7em; font-weight:bold; color:white; text-shadow:0 1px 4px black; background:rgba(0,0,0,0.5); border-radius:8px; padding:2px 6px; margin-top:2px; display:block; }
 
-/* DRAGON on biome */
-#world-dragon { position:absolute; font-size:4em; z-index:8; transition:all 1s ease; filter:drop-shadow(0 5px 10px rgba(0,0,0,0.6)); cursor:default; animation:bob 2s ease-in-out infinite; }
+#world-dragon { position:absolute; font-size:4em; z-index:8; transition:all 1s ease; filter:drop-shadow(0 5px 10px rgba(0,0,0,0.6)); animation:bob 2s ease-in-out infinite; }
 @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
 
-/* ACTION PANEL */
-.action-panel { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.75); padding:12px; z-index:10; border-top:2px solid rgba(255,215,0,0.3); }
+.floating-coin { position:absolute; font-size:1.8em; cursor:pointer; z-index:6; filter:drop-shadow(0 0 8px #ffd700); user-select:none; animation:coinbob 1.5s ease-in-out infinite; }
+.floating-coin:hover { transform:scale(1.4); }
+@keyframes coinbob { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-8px) scale(1.1)} }
+.coin-flash { position:fixed; top:45%; left:50%; transform:translateX(-50%); font-size:1.5em; color:#ffd700; font-weight:bold; z-index:999; pointer-events:none; animation:flashup 1s ease forwards; }
+@keyframes flashup { 0%{opacity:1;top:45%} 100%{opacity:0;top:30%} }
+
+.action-panel { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.8); padding:12px; z-index:10; border-top:2px solid rgba(255,215,0,0.3); }
 .action-row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
 .abtn { padding:10px 14px; border-radius:12px; border:none; font-size:0.82em; font-weight:bold; cursor:pointer; color:white; transition:all 0.2s; }
 .abtn:hover { transform:scale(1.06); }
@@ -93,40 +78,45 @@ z-index:5;
 .btn-battle { background:linear-gradient(135deg,#d35400,#a04000); }
 .btn-fly { background:linear-gradient(135deg,#27ae60,#1e8449); }
 .btn-game { background:linear-gradient(135deg,#16a085,#1abc9c); }
+.btn-shop { background:linear-gradient(135deg,#f39c12,#d68910); }
 
-/* POPUP */
-.popup-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:100; display:none; align-items:center; justify-content:center; padding:20px; }
+.popup-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.75); z-index:100; display:none; align-items:center; justify-content:center; padding:20px; }
 .popup-overlay.open { display:flex; }
-.popup { background:linear-gradient(135deg,#1a2a1a,#0d1a0d); border:2px solid rgba(255,215,0,0.5); border-radius:20px; padding:25px; max-width:520px; width:100%; max-height:85vh; overflow-y:auto; text-align:center; position:relative; }
+.popup { background:linear-gradient(135deg,#1a2a1a,#0d1a0d); border:2px solid rgba(255,215,0,0.5); border-radius:20px; padding:25px; max-width:520px; width:100%; max-height:85vh; overflow-y:auto; text-align:center; }
 .popup-title { font-size:1.3em; color:#ffd700; margin-bottom:12px; }
-.popup-text { line-height:1.7; color:#e0e0e0; margin-bottom:15px; }
+.popup-text { line-height:1.7; color:#e0e0e0; margin-bottom:12px; }
 .outcome { font-size:1.1em; font-weight:bold; margin-top:10px; }
 .win { color:#2ecc71; } .lose { color:#e74c3c; }
-.close-btn { padding:10px 25px; border-radius:12px; border:none; background:linear-gradient(135deg,#ffd700,#ff8c00); color:#1a1a1a; font-weight:bold; cursor:pointer; margin-top:10px; }
+.close-btn { padding:10px 25px; border-radius:12px; border:none; background:linear-gradient(135deg,#ffd700,#ff8c00); color:#1a1a1a; font-weight:bold; cursor:pointer; margin-top:12px; }
 
-/* MINI GAMES */
 .game-choice { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:10px; }
-.game-choice-btn { padding:12px 18px; border-radius:15px; border:2px solid rgba(255,215,0,0.4); background:rgba(255,215,0,0.1); color:#ffd700; font-size:1em; cursor:pointer; transition:all 0.2s; }
+.game-choice-btn { padding:11px 16px; border-radius:15px; border:2px solid rgba(255,215,0,0.4); background:rgba(255,215,0,0.1); color:#ffd700; font-size:0.95em; cursor:pointer; }
 .game-choice-btn:hover { background:rgba(255,215,0,0.25); transform:scale(1.05); }
 
-/* TIC TAC TOE */
 .ttt-board { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-width:240px; margin:10px auto; }
-.ttt-cell { height:70px; background:rgba(255,255,255,0.1); border:2px solid rgba(255,215,0,0.3); border-radius:10px; font-size:2.2em; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s; }
+.ttt-cell { height:70px; background:rgba(255,255,255,0.1); border:2px solid rgba(255,215,0,0.3); border-radius:10px; font-size:2.2em; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 .ttt-cell:hover { background:rgba(255,215,0,0.15); }
 
-/* CARD GAME */
-.card-area { display:flex; gap:15px; justify-content:center; flex-wrap:wrap; margin:10px 0; }
-.card { width:70px; height:100px; border-radius:10px; border:2px solid #ffd700; background:linear-gradient(135deg,#1a3a6e,#0d2137); font-size:2em; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform 0.2s; }
+.card-area { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:10px 0; }
+.card { width:65px; height:95px; border-radius:10px; border:2px solid #ffd700; background:linear-gradient(135deg,#1a3a6e,#0d2137); font-size:2em; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform 0.2s; }
 .card:hover { transform:scale(1.1) translateY(-5px); }
 .card.flipped { background:linear-gradient(135deg,#2d5a1b,#1a3a0a); }
 
-/* SPORTS */
-.sport-area { margin:10px 0; }
-.goal { width:120px; height:70px; border:4px solid white; border-bottom:none; margin:0 auto 10px; border-radius:5px 5px 0 0; position:relative; background:rgba(255,255,255,0.05); }
-.ball { font-size:2em; cursor:pointer; display:inline-block; transition:all 0.3s; }
 .aim-row { display:flex; gap:10px; justify-content:center; margin:10px 0; }
 .aim-btn { padding:8px 16px; border-radius:10px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:white; cursor:pointer; }
 .aim-btn:hover { background:rgba(255,215,0,0.2); border-color:#ffd700; }
+.goal { width:120px; height:70px; border:4px solid white; border-bottom:none; margin:0 auto 10px; border-radius:5px 5px 0 0; position:relative; background:rgba(255,255,255,0.05); }
+
+.shop-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin:10px 0; }
+.shop-item { background:rgba(255,255,255,0.08); border:2px solid rgba(255,215,0,0.3); border-radius:15px; padding:12px; text-align:center; cursor:pointer; transition:all 0.2s; }
+.shop-item:hover { border-color:#ffd700; background:rgba(255,215,0,0.15); transform:scale(1.04); }
+.shop-item.owned { border-color:#2ecc71; background:rgba(46,204,113,0.12); cursor:default; }
+.shop-item.owned:hover { transform:none; }
+.shop-emoji { font-size:2em; margin-bottom:4px; }
+.shop-name { font-weight:bold; color:#ffd700; font-size:0.83em; }
+.shop-price { color:#aad4ff; font-size:0.76em; margin-top:3px; }
+.owned-tag { color:#2ecc71; font-size:0.75em; font-weight:bold; }
+.coin-display { color:#ffd700; font-size:1.1em; font-weight:bold; margin-bottom:12px; }
 </style>
 
 </head>
@@ -144,11 +134,11 @@ z-index:5;
     <div class="dragon-card" onclick="pick(this,'Stormfly','Deadly Nadder','💙')"><div class="d-emoji">💙</div><div class="d-name">Stormfly</div><div class="d-type">Deadly Nadder</div></div>
     <div class="dragon-card" onclick="pick(this,'Hookfang','Monstrous Nightmare','🔥')"><div class="d-emoji">🔥</div><div class="d-name">Hookfang</div><div class="d-type">Monstrous Nightmare</div></div>
     <div class="dragon-card" onclick="pick(this,'Meatlug','Gronckle','🪨')"><div class="d-emoji">🪨</div><div class="d-name">Meatlug</div><div class="d-type">Gronckle</div></div>
-    <div class="dragon-card" onclick="pick(this,'Barf & Belch','Hideous Zippleback','💚')"><div class="d-emoji">💚</div><div class="d-name">Barf & Belch</div><div class="d-type">Hideous Zippleback</div></div>
+    <div class="dragon-card" onclick="pick(this,'Barf and Belch','Hideous Zippleback','💚')"><div class="d-emoji">💚</div><div class="d-name">Barf &amp; Belch</div><div class="d-type">Hideous Zippleback</div></div>
     <div class="dragon-card" onclick="pick(this,'Cloudjumper','Stormcutter','⚡')"><div class="d-emoji">⚡</div><div class="d-name">Cloudjumper</div><div class="d-type">Stormcutter</div></div>
     <div class="dragon-card" onclick="pick(this,'Skullcrusher','Rumblehorn','💜')"><div class="d-emoji">💜</div><div class="d-name">Skullcrusher</div><div class="d-type">Rumblehorn</div></div>
   </div>
-  <p class="section-title" style="margin-top:10px">Customize!</p>
+  <p class="section-title">Customize!</p>
   <div class="cbox">
     <label>Give your dragon a nickname:</label>
     <input type="text" id="nickname" placeholder="e.g. Sparkles, Blaze, Shadow...">
@@ -165,11 +155,11 @@ z-index:5;
     </div>
     <label>Choose a special power:</label>
     <div class="power-row">
-      <button class="pbtn selected" onclick="pickPower(this,'🔥 Plasma Blast')">🔥 Plasma Blast</button>
-      <button class="pbtn" onclick="pickPower(this,'⚡ Lightning Strike')">⚡ Lightning Strike</button>
-      <button class="pbtn" onclick="pickPower(this,'❄️ Ice Breath')">❄️ Ice Breath</button>
-      <button class="pbtn" onclick="pickPower(this,'💨 Tornado Spin')">💨 Tornado Spin</button>
-      <button class="pbtn" onclick="pickPower(this,'✨ Magic Shield')">✨ Magic Shield</button>
+      <button class="pbtn selected" onclick="pickPower(this,'Plasma Blast')">🔥 Plasma Blast</button>
+      <button class="pbtn" onclick="pickPower(this,'Lightning Strike')">⚡ Lightning Strike</button>
+      <button class="pbtn" onclick="pickPower(this,'Ice Breath')">❄️ Ice Breath</button>
+      <button class="pbtn" onclick="pickPower(this,'Tornado Spin')">💨 Tornado Spin</button>
+      <button class="pbtn" onclick="pickPower(this,'Magic Shield')">✨ Magic Shield</button>
     </div>
   </div>
   <button class="big-btn" onclick="startWorld()">Enter Dragon World! 🌍</button>
@@ -179,30 +169,25 @@ z-index:5;
 
 <div id="s-world" class="screen">
   <div class="biome" id="biome">
+    <div class="cloud" style="width:120px;height:40px;top:5%;animation-duration:30s;animation-delay:0s"></div>
+    <div class="cloud" style="width:80px;height:28px;top:10%;animation-duration:22s;animation-delay:-8s"></div>
+    <div class="cloud" style="width:100px;height:35px;top:14%;animation-duration:26s;animation-delay:-15s"></div>
+    <div class="cloud" style="width:60px;height:22px;top:8%;animation-duration:18s;animation-delay:-5s"></div>
+    <div class="grass-area" id="grass-area"></div>
+    <div style="position:absolute;top:4%;right:8%;font-size:3em;z-index:4">☀️</div>
 
 ```
-<!-- Clouds -->
-<div class="cloud" style="width:120px;height:40px;top:5%;animation-duration:30s;animation-delay:0s"></div>
-<div class="cloud" style="width:80px;height:28px;top:10%;animation-duration:22s;animation-delay:-8s"></div>
-<div class="cloud" style="width:100px;height:35px;top:14%;animation-duration:26s;animation-delay:-15s"></div>
-<div class="cloud" style="width:60px;height:22px;top:8%;animation-duration:18s;animation-delay:-5s"></div>
-
-<!-- Grass area -->
-<div class="grass-area" id="grass-area"></div>
-
-<!-- Sun -->
-<div style="position:absolute;top:4%;right:8%;font-size:3em;z-index:4">☀️</div>
-
 <!-- HUD -->
 <div class="hud">
   <div class="hud-card">
     <div class="hud-name" id="hud-name">Dragon</div>
     <div style="font-size:0.7em;color:#aad4ff" id="hud-type">Night Fury</div>
   </div>
-  <div class="hud-card" style="min-width:160px">
+  <div class="hud-card" style="min-width:170px">
     <div class="stat-row"><span class="stat-label">🍖 Food</span><div class="stat-bar"><div class="stat-fill fill-food" id="bar-food" style="width:70%"></div></div></div>
     <div class="stat-row"><span class="stat-label">💧 Water</span><div class="stat-bar"><div class="stat-fill fill-water" id="bar-water" style="width:70%"></div></div></div>
     <div class="stat-row"><span class="stat-label">😄 Happy</span><div class="stat-bar"><div class="stat-fill fill-happy" id="bar-happy" style="width:70%"></div></div></div>
+    <div class="stat-row"><span class="stat-label">🪙 Coins</span><div class="stat-bar"><div class="stat-fill fill-coins" id="bar-coins" style="width:0%"></div></div><span id="coin-count" style="font-size:0.72em;color:#ffd700;margin-left:5px">0</span></div>
   </div>
 </div>
 
@@ -210,25 +195,23 @@ z-index:5;
 <div id="world-dragon" style="bottom:22%;left:42%">🐉</div>
 
 <!-- Locations -->
-<div class="location" style="bottom:50%;left:5%" onclick="visitLocation('village')">
-  <span class="loc-icon">🏘️</span>
-  <span class="loc-label">Village</span>
+<div class="location" style="bottom:52%;left:5%" onclick="visitLoc('village')">
+  <span class="loc-icon">🏘️</span><span class="loc-label">Village</span>
 </div>
-<div class="location" style="bottom:40%;left:20%" onclick="visitLocation('fish')">
-  <span class="loc-icon">🐟</span>
-  <span class="loc-label">Fish Stand</span>
+<div class="location" style="bottom:40%;left:18%" onclick="feedDragon()">
+  <span class="loc-icon">🐟</span><span class="loc-label">Fish Stand</span>
 </div>
-<div class="location" style="bottom:40%;right:20%" onclick="visitLocation('water')">
-  <span class="loc-icon">💧</span>
-  <span class="loc-label">Watering Hole</span>
+<div class="location" style="bottom:40%;right:18%" onclick="waterDragon()">
+  <span class="loc-icon">💧</span><span class="loc-label">Watering Hole</span>
 </div>
-<div class="location" style="bottom:50%;right:5%" onclick="visitLocation('arena')">
-  <span class="loc-icon">⚔️</span>
-  <span class="loc-label">Arena</span>
+<div class="location" style="bottom:52%;right:5%" onclick="visitLoc('arena')">
+  <span class="loc-icon">⚔️</span><span class="loc-label">Arena</span>
 </div>
-<div class="location" style="bottom:35%;left:45%" onclick="visitLocation('meadow')">
-  <span class="loc-icon">🌸</span>
-  <span class="loc-label">Meadow</span>
+<div class="location" style="bottom:55%;left:35%" onclick="openShop()">
+  <span class="loc-icon">🔨</span><span class="loc-label">Blacksmith</span>
+</div>
+<div class="location" style="bottom:36%;left:47%" onclick="visitLoc('meadow')">
+  <span class="loc-icon">🌸</span><span class="loc-label">Meadow</span>
 </div>
 
 <!-- Action Panel -->
@@ -240,7 +223,8 @@ z-index:5;
     <button class="abtn btn-rescue" onclick="doAction('rescue')">🆘 Rescue</button>
     <button class="abtn btn-battle" onclick="doAction('battle')">⚔️ Battle</button>
     <button class="abtn btn-fly" onclick="doAction('fly')">🌤️ Fly Tricks</button>
-    <button class="abtn btn-game" onclick="openGameChoice()">🎮 Play a Game</button>
+    <button class="abtn btn-game" onclick="openGameMenu()">🎮 Play a Game</button>
+    <button class="abtn btn-shop" onclick="openShop()">🔨 Blacksmith</button>
   </div>
 </div>
 ```
@@ -252,34 +236,48 @@ z-index:5;
 
 <div class="popup-overlay" id="popup">
   <div class="popup">
-    <div class="popup-title" id="popup-title">Title</div>
+    <div class="popup-title" id="popup-title"></div>
     <div id="popup-body"></div>
     <button class="close-btn" onclick="closePopup()">Close ✕</button>
   </div>
 </div>
 
 <script>
-let d = {name:'Toothless',type:'Night Fury',emoji:'🐉',nickname:'',color:'Midnight Black',power:'🔥 Plasma Blast'};
-let stats = {food:70, water:70, happy:70};
+// ---- STATE ----
+var d = {name:'Toothless', type:'Night Fury', emoji:'🐉', nickname:'', color:'Midnight Black', power:'Plasma Blast'};
+var stats = {food:70, water:70, happy:70};
+var coins = 0;
+var MAX_COINS = 100;
+var ownedSaddles = [];
 
+var saddles = [
+  {id:'basic',  emoji:'🟤', name:'Basic Saddle',   price:5,  desc:'A sturdy saddle for new riders!'},
+  {id:'royal',  emoji:'👑', name:'Royal Saddle',   price:15, desc:'Fit for a Viking champion!'},
+  {id:'fire',   emoji:'🔥', name:'Fire Saddle',    price:20, desc:'Heat-resistant and blazing fast!'},
+  {id:'shadow', emoji:'🌑', name:'Shadow Saddle',  price:25, desc:'Blends into the night!'},
+  {id:'ice',    emoji:'❄️', name:'Ice Saddle',     price:30, desc:'Cool and sleek for icy adventures!'},
+  {id:'golden', emoji:'✨', name:'Golden Saddle',  price:40, desc:'The rarest saddle in all of Berk!'}
+];
+
+// ---- SETUP ----
 function go(id) {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
   document.getElementById(id).classList.add('active');
 }
-function pick(el,name,type,emoji) {
-  document.querySelectorAll('.dragon-card').forEach(c=>c.classList.remove('selected'));
+function pick(el, name, type, emoji) {
+  document.querySelectorAll('.dragon-card').forEach(function(c){c.classList.remove('selected');});
   el.classList.add('selected');
-  d.name=name; d.type=type; d.emoji=emoji;
+  d.name = name; d.type = type; d.emoji = emoji;
 }
-function pickColor(el,color) {
-  document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('selected'));
-  el.classList.add('selected'); d.color=color;
+function pickColor(el, color) {
+  document.querySelectorAll('.cbtn').forEach(function(b){b.classList.remove('selected');});
+  el.classList.add('selected'); d.color = color;
 }
-function pickPower(el,power) {
-  document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('selected'));
-  el.classList.add('selected'); d.power=power;
+function pickPower(el, power) {
+  document.querySelectorAll('.pbtn').forEach(function(b){b.classList.remove('selected');});
+  el.classList.add('selected'); d.power = power;
 }
-function getN(){return d.nickname||d.name;}
+function getN() { return d.nickname || d.name; }
 
 function startWorld() {
   d.nickname = document.getElementById('nickname').value || d.name;
@@ -288,244 +286,310 @@ function startWorld() {
   document.getElementById('world-dragon').textContent = d.emoji;
   buildGrass();
   go('s-world');
-  // Slowly drain stats over time
-  setInterval(()=>{ changeStat('food',-1); changeStat('water',-1); },15000);
+  spawnCoins();
+  setInterval(spawnCoins, 10000);
+  setInterval(function(){ changeStat('food',-1); changeStat('water',-1); }, 15000);
 }
 
 function buildGrass() {
-  const g = document.getElementById('grass-area');
-  for(let i=0;i<60;i++){
-    const b=document.createElement('div');
-    b.className='blade';
-    const h=20+Math.random()*30;
-    b.style.cssText=`left:${Math.random()*100}%;height:${h}px;opacity:${0.5+Math.random()*0.5};transform:rotate(${-10+Math.random()*20}deg)`;
+  var g = document.getElementById('grass-area');
+  for(var i=0;i<60;i++){
+    var b = document.createElement('div');
+    b.className = 'blade';
+    var h = 20 + Math.random()*30;
+    b.style.cssText = 'left:'+Math.random()*100+'%;height:'+h+'px;opacity:'+(0.5+Math.random()*0.5)+';transform:rotate('+(Math.random()*20-10)+'deg)';
     g.appendChild(b);
   }
 }
 
+// ---- STATS ----
 function changeStat(stat, amount) {
-  stats[stat] = Math.max(0, Math.min(100, stats[stat]+amount));
-  document.getElementById('bar-'+stat).style.width = stats[stat]+'%';
-  if(stat==='food'||stat==='water') {
-    const avg = (stats.food+stats.water)/2;
-    stats.happy = Math.max(0,Math.min(100,avg));
-    document.getElementById('bar-happy').style.width=stats.happy+'%';
+  stats[stat] = Math.max(0, Math.min(100, stats[stat] + amount));
+  document.getElementById('bar-' + stat).style.width = stats[stat] + '%';
+  if(stat === 'food' || stat === 'water') {
+    stats.happy = Math.max(0, Math.min(100, (stats.food + stats.water) / 2));
+    document.getElementById('bar-happy').style.width = stats.happy + '%';
   }
 }
 
-function feedDragon() {
-  if(stats.food>=100){
-    showPopup('🐟 Already Full!','Your dragon is already stuffed with fish! Come back later when they\'re hungry again 😄','');
-    return;
+// ---- COINS ----
+function spawnCoins() {
+  document.querySelectorAll('.floating-coin').forEach(function(c){c.remove();});
+  var biome = document.getElementById('biome');
+  for(var i=0;i<6;i++){
+    var coin = document.createElement('div');
+    coin.className = 'floating-coin';
+    coin.textContent = '🪙';
+    var left = 3 + Math.random() * 50;
+    var bottom = 36 + Math.random() * 25;
+    coin.style.cssText = 'left:'+left+'%;bottom:'+bottom+'%;animation-delay:'+(Math.random()*1.5)+'s';
+    (function(c){ c.onclick = function(){ collectCoin(c); }; })(coin);
+    biome.appendChild(coin);
   }
-  changeStat('food',25);
-  moveDragon('20%','38%');
-  showPopup('🐟 Fish Stand!',`You rushed to the fish stand and grabbed a huge bucket of fresh fish! ${getN()} gobbled them up in seconds and let out a happy roar! 🐉🔥`,'<span class="win">+25 Food! Nom nom nom!</span>');
+}
+
+function collectCoin(el) {
+  el.remove();
+  if(coins >= MAX_COINS) return;
+  coins++;
+  updateCoins();
+  var flash = document.createElement('div');
+  flash.className = 'coin-flash';
+  flash.textContent = '+1 🪙';
+  document.body.appendChild(flash);
+  setTimeout(function(){ flash.remove(); }, 1000);
+}
+
+function updateCoins() {
+  document.getElementById('bar-coins').style.width = (coins / MAX_COINS * 100) + '%';
+  document.getElementById('coin-count').textContent = coins;
+}
+
+// ---- FEED / WATER ----
+function feedDragon() {
+  if(stats.food >= 100){ showPopup('🐟 Already Full!', getN() + ' is stuffed! Come back when they are hungry again.', ''); return; }
+  changeStat('food', 25);
+  showPopup('🐟 Fish Stand!', 'You grabbed a big bucket of fresh fish! ' + getN() + ' gobbled them up and roared happily!', '<div class="outcome win">+25 Food! Nom nom nom!</div>');
 }
 
 function waterDragon() {
-  if(stats.water>=100){
-    showPopup('💧 Not Thirsty!','Your dragon just had a big drink! They\'re not thirsty yet 💧','');
-    return;
-  }
-  changeStat('water',25);
-  moveDragon('75%','38%');
-  showPopup('💧 Watering Hole!',`You flew over to the sparkling watering hole surrounded by tall reeds and wildflowers. ${getN()} dipped their head in and took a long, refreshing drink! 🌊`,'<span class="win">+25 Water! Splish splash!</span>');
+  if(stats.water >= 100){ showPopup('💧 Not Thirsty!', getN() + ' just had a big drink. They are not thirsty yet!', ''); return; }
+  changeStat('water', 25);
+  showPopup('💧 Watering Hole!', getN() + ' dipped their head into the sparkling watering hole and took a long, refreshing drink!', '<div class="outcome win">+25 Water! Splish splash!</div>');
 }
 
-function moveDragon(left, bottom) {
-  const dr = document.getElementById('world-dragon');
-  dr.style.left=left; dr.style.bottom=bottom;
-  setTimeout(()=>{ dr.style.left='42%'; dr.style.bottom='22%'; }, 3000);
-}
-
-const locations = {
-  village: {t:'🏘️ The Village!', txt:'You soar over the village of Berk! Vikings wave at you from below, kids cheer as your dragon swoops overhead, and the blacksmith gives a thumbs up. Everyone loves a dragon rider!'},
-  fish: {t:'🐟 Fish Stand!', txt:'The fish stand is piled HIGH with fresh salmon, herring, and cod! The fisherman tosses your dragon a big juicy fish and it catches it mid-air! The other dragons nearby look jealous.'},
-  water: {t:'💧 Watering Hole!', txt:'The watering hole shimmers in the sunlight, surrounded by reeds and wildflowers. A Gronckle and two Terrible Terrors are already splashing around. Your dragon wades in and takes a big drink!'},
-  arena: {t:'⚔️ The Arena!', txt:'The training arena is massive — wooden targets, obstacle courses, and rings of fire everywhere! Other dragon riders are already practicing. Your dragon spots the targets and crouches, ready to train!'},
-  meadow: {t:'🌸 The Meadow!', txt:'A wide open meadow full of wildflowers and butterflies! Your dragon rolls around in the grass and sneezes out a little puff of fire. A family of sheep scatter and then slowly creep back, curious about your dragon.'},
+// ---- LOCATIONS ----
+var locData = {
+  village: {t:'🏘️ The Village!', txt:'You soar over the village of Berk! Vikings wave from below, kids cheer as your dragon swoops overhead, and the blacksmith gives a big thumbs up!'},
+  arena:   {t:'⚔️ The Arena!',   txt:'The training arena is huge with wooden targets, obstacle courses, and rings of fire. Your dragon crouches low and lets out a battle roar, ready to train!'},
+  meadow:  {t:'🌸 The Meadow!',  txt:'A wide meadow full of wildflowers and butterflies! Your dragon rolls around in the grass and sneezes out a tiny puff of fire. So cute!'}
 };
-
-function visitLocation(loc) {
-  const l = locations[loc];
+function visitLoc(key) {
+  var l = locData[key];
   showPopup(l.t, l.txt, '');
 }
 
-function rand(arr){return arr[Math.floor(Math.random()*arr.length)];}
-const quests=[
-  {t:"🗺️ The Lost Map",txt:"A mysterious map appeared on Berk showing a hidden island full of treasure! Fly through a fierce storm and navigate past giant sea stacks to reach it!"},
-  {t:"🏔️ The Frozen Mountain",txt:"Villagers are trapped on the mountain peak in a blizzard! Fly through icy winds, dodge falling rocks, and guide them safely home."},
-  {t:"🥚 The Stolen Egg",txt:"Thieves stole a rare dragon egg! Chase them across three islands, outsmart their traps, and return the egg to safety!"},
+// ---- ADVENTURES ----
+var quests = [
+  {t:'🗺️ The Lost Map',      txt:'A mysterious map appeared showing a hidden island full of treasure! Fly through a fierce storm and past giant sea stacks to reach it!'},
+  {t:'🏔️ The Frozen Mountain', txt:'Villagers are trapped on the mountain in a blizzard! Fly through icy winds and dodge falling rocks to guide them safely home.'},
+  {t:'🥚 The Stolen Egg',    txt:'Thieves stole a rare dragon egg! Chase them across three islands and outsmart their traps to return it to safety!'}
 ];
-const rescues=[
-  {t:"🦇 Trapped in a Cave!",txt:"A young Gronckle is stuck deep in a collapsing cave! Squeeze through dark tunnels, calm the frightened dragon, and carry it out before the entrance seals!"},
-  {t:"🕸️ Caught in a Net!",txt:"A beautiful Deadly Nadder is tangled in a giant fishing net! Carefully burn through the ropes without hurting it and set it free!"},
-  {t:"🐣 Lost Hatchlings!",txt:"Three baby dragons wandered away from their nest and are hiding all over the island! Find them all before nightfall!"},
+var rescues = [
+  {t:'🦇 Trapped in a Cave!', txt:'A young Gronckle is stuck in a collapsing cave! Squeeze through dark tunnels, calm the frightened dragon, and carry it out to safety!'},
+  {t:'🕸️ Caught in a Net!',  txt:'A Deadly Nadder is tangled in a giant fishing net near a cliff! Carefully burn through the ropes without hurting it!'},
+  {t:'🐣 Lost Hatchlings!',  txt:'Three baby dragons wandered away from their nest and are hiding all over the island! Find them all before nightfall!'}
 ];
-const battles=[
-  {t:"🔴 The Red Death Returns!",txt:"A massive Red Death has appeared off the coast! Use your speed, dodge its fire blasts, and find its weak spot!"},
-  {t:"🏆 Rival Dragon Rider!",txt:"A rival Viking clan has challenged you to a dragon battle in the arena! Prove you and your dragon are the best on Berk!"},
-  {t:"🌙 Night Wing Attack!",txt:"A pack of wild Night Wings is swooping toward Berk! Lead them away using your dragon's special power!"},
+var battles = [
+  {t:'🔴 The Red Death!',      txt:'A massive Red Death appeared off the coast! Dodge its fire blasts and find its weak spot to drive it back into the sea!'},
+  {t:'🏆 Rival Dragon Rider!', txt:'A rival Viking clan challenged you to a dragon battle in the arena! Prove you and your dragon are the best on Berk!'},
+  {t:'🌙 Night Wing Attack!',  txt:'A pack of wild Night Wings is swooping toward Berk! Lead them away with your dragon\'s special power!'}
 ];
-const flyTricks=[
-  {t:"🌀 The Spiral Dive!",txt:"You launch into the sky and tuck into a tight corkscrew spin, then SNAP your wings open and soar back up! The crowd goes wild!"},
-  {t:"☁️ The Cloud Surf!",txt:"You glide across the top of a fluffy cloud, dipping one wing in and out of the mist, then burst into bright sunshine above!"},
-  {t:"🔥 The Fire Trail!",txt:"You blast your special power in a huge arc while doing a figure-eight through the arena. The crowd has never seen anything like it!"},
+var flyTricks = [
+  {t:'🌀 The Spiral Dive!', txt:'You launch into the sky and pull into a tight corkscrew spin, then SNAP your wings open and soar back up! The crowd goes wild!'},
+  {t:'☁️ The Cloud Surf!',  txt:'You glide across the top of a fluffy cloud, dipping one wing in and out of the mist, then burst into bright sunshine above!'},
+  {t:'🔥 The Fire Trail!',  txt:'You blast your power in a huge arc while doing a figure-eight. The crowd has never seen anything like it!'}
 ];
 
+function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
 function doAction(type) {
-  let item;
-  if(type==='quest') item=rand(quests);
-  else if(type==='rescue') item=rand(rescues);
-  else if(type==='battle') item=rand(battles);
-  else item=rand(flyTricks);
-  const win=Math.random()>0.35;
-  const outcomeTexts={
-    quest:{w:`🎉 You and ${getN()} completed the quest! Berk celebrates you!`,l:`😬 Tough this time, but ${getN()} knows you'll try again!`},
-    rescue:{w:`🥳 You saved the dragon! It nuzzles you as a thank you!`,l:`😰 Hard rescue, but ${getN()} kept you safe!`},
-    battle:{w:`🏆 Victory! You showed everyone what true dragon riders can do!`,l:`💪 Tough fight! You learned new moves for next time!`},
-    fly:{w:`⭐ Perfect score! The crowd goes wild for ${getN()}'s tricks!`,l:`😄 Fun run! ${getN()} wants to practice more!`},
+  var item;
+  if(type==='quest') item = rand(quests);
+  else if(type==='rescue') item = rand(rescues);
+  else if(type==='battle') item = rand(battles);
+  else item = rand(flyTricks);
+  var win = Math.random() > 0.35;
+  var msgs = {
+    quest:  {w:'🎉 You and '+getN()+' completed the quest! Berk celebrates you as a hero!',    l:'😬 Tricky this time, but '+getN()+' knows you will try again!'},
+    rescue: {w:'🥳 You saved the dragon! It nuzzles you with its nose as a thank you!',          l:'😰 Hard rescue, but '+getN()+' kept you safe!'},
+    battle: {w:'🏆 Victory! You showed everyone what true dragon riders can do!',                l:'💪 Tough fight! You learned new moves for next time!'},
+    fly:    {w:'⭐ Perfect score! The crowd goes wild for '+getN()+'s tricks!',                  l:'😄 Fun run! '+getN()+' wants to practice more!'}
   };
-  if(win) changeStat('happy',10);
-  showPopup(item.t, item.txt, `<div class="outcome ${win?'win':'lose'}">${outcomeTexts[type][win?'w':'l']}</div>`);
+  if(win) { changeStat('happy', 10); coins = Math.min(MAX_COINS, coins + 2); updateCoins(); }
+  showPopup(item.t, item.txt, '<div class="outcome '+(win?'win':'lose')+'">'+(win?msgs[type].w:msgs[type].l)+'</div>');
+}
+
+// ---- BLACKSMITH SHOP ----
+function openShop() {
+  var html = '<div class="coin-display">You have ' + coins + ' 🪙 coins</div><div class="shop-grid">';
+  for(var i=0;i<saddles.length;i++){
+    var s = saddles[i];
+    var owned = ownedSaddles.indexOf(s.id) !== -1;
+    html += '<div class="shop-item' + (owned ? ' owned' : '') + '"';
+    if(!owned) html += ' onclick="buySaddle(\'' + s.id + '\',\'' + s.name + '\',' + s.price + ')"';
+    html += '>';
+    html += '<div class="shop-emoji">' + s.emoji + '</div>';
+    html += '<div class="shop-name">' + s.name + '</div>';
+    html += '<div class="shop-price">' + (owned ? '<span class="owned-tag">✅ Owned!</span>' : '🪙 ' + s.price + ' coins') + '</div>';
+    html += '<div style="font-size:0.72em;color:#aad4ff;margin-top:3px">' + s.desc + '</div>';
+    html += '</div>';
+  }
+  html += '</div>';
+  showPopup('🔨 Blacksmith Shop', '', html);
+}
+
+function buySaddle(id, name, price) {
+  if(coins < price) {
+    var flash = document.createElement('div');
+    flash.className = 'coin-flash';
+    flash.style.color = '#e74c3c';
+    flash.textContent = 'Not enough coins!';
+    document.body.appendChild(flash);
+    setTimeout(function(){ flash.remove(); }, 1200);
+    return;
+  }
+  coins -= price;
+  ownedSaddles.push(id);
+  updateCoins();
+  showPopup('🎉 New Saddle!', 'You bought the ' + name + '! ' + getN() + ' looks amazing in it! Collect more coins to get the next one!', '<div class="outcome win">Purchase complete! 🛒</div>');
 }
 
 // ---- GAMES ----
-function openGameChoice() {
-  showPopup('🎮 Play a Game!', '', `
-    <p style="color:#aad4ff;margin-bottom:15px">Which game do you want to play with ${getN()}?</p>
-    <div class="game-choice">
-      <button class="game-choice-btn" onclick="startTTT()">⭕ Tic Tac Toe</button>
-      <button class="game-choice-btn" onclick="startCardGame()">🃏 Card Match</button>
-      <button class="game-choice-btn" onclick="startSports()">⚽ Dragon Soccer</button>
-    </div>`);
+function openGameMenu() {
+  showPopup('🎮 Play a Game!', 'Which game do you want to play with ' + getN() + '?',
+    '<div class="game-choice">' +
+    '<button class="game-choice-btn" onclick="startTTT()">⭕ Tic Tac Toe</button>' +
+    '<button class="game-choice-btn" onclick="startCards()">🃏 Card Match</button>' +
+    '<button class="game-choice-btn" onclick="startSoccer()">⚽ Dragon Soccer</button>' +
+    '</div>');
 }
 
 // TTT
-let tttBoard, tttTurn, tttActive;
+var tttB, tttTurn, tttOn;
 function startTTT() {
-  tttBoard=Array(9).fill(''); tttTurn='X'; tttActive=true;
-  renderTTT();
+  tttB = ['','','','','','','','','']; tttTurn = 'X'; tttOn = true;
+  drawTTT();
 }
-function renderTTT() {
-  const cells = tttBoard.map((v,i)=>`<div class="ttt-cell" onclick="tttClick(${i})">${v==='X'?'🔥':v==='O'?d.emoji:''}</div>`).join('');
-  document.getElementById('popup-body').innerHTML=`
-    <p style="color:#aad4ff;margin-bottom:8px">${tttActive?(tttTurn==='X'?'Your turn! (🔥)':getN()+'\'s turn! ('+d.emoji+')'):'Game Over!'}</p>
-    <div class="ttt-board">${cells}</div>
-    <button class="game-choice-btn" style="margin-top:10px" onclick="startTTT()">New Game</button>
-    <button class="game-choice-btn" style="margin-top:10px" onclick="openGameChoice()">← Back</button>`;
+function drawTTT() {
+  var cells = '';
+  for(var i=0;i<9;i++){
+    var v = tttB[i];
+    cells += '<div class="ttt-cell" onclick="tttClick('+i+')">'+( v==='X'?'🔥' : v==='O'?d.emoji : '')+'</div>';
+  }
+  document.getElementById('popup-body').innerHTML =
+    '<p style="color:#aad4ff;margin-bottom:8px">' + (tttOn ? (tttTurn==='X'?'Your turn 🔥':''+getN()+'\'s turn '+d.emoji) : 'Game Over!') + '</p>' +
+    '<div class="ttt-board">'+cells+'</div>' +
+    '<button class="game-choice-btn" style="margin-top:10px" onclick="startTTT()">New Game</button>' +
+    '<button class="game-choice-btn" style="margin-top:10px" onclick="openGameMenu()">← Back</button>';
 }
 function tttClick(i) {
-  if(!tttActive||tttBoard[i]) return;
-  tttBoard[i]=tttTurn;
-  const w=checkTTT();
-  if(w) { tttActive=false; renderTTT(); showTTTResult(w); return; }
-  if(!tttBoard.includes('')) { tttActive=false; renderTTT(); showTTTResult('draw'); return; }
-  tttTurn=tttTurn==='X'?'O':'X';
-  renderTTT();
-  if(tttTurn==='O') setTimeout(aiTTT,600);
+  if(!tttOn || tttB[i]) return;
+  tttB[i] = tttTurn;
+  var w = checkTTT();
+  if(w){ tttOn=false; drawTTT(); addTTTResult(w); return; }
+  if(tttB.indexOf('') === -1){ tttOn=false; drawTTT(); addTTTResult('draw'); return; }
+  tttTurn = tttTurn==='X'?'O':'X';
+  drawTTT();
+  if(tttTurn==='O') setTimeout(aiTTT, 600);
 }
 function aiTTT() {
-  if(!tttActive) return;
-  const empty=tttBoard.map((v,i)=>v===''?i:-1).filter(i=>i>=1);
+  if(!tttOn) return;
+  var empty = [];
+  for(var i=0;i<9;i++){ if(!tttB[i]) empty.push(i); }
   if(!empty.length) return;
-  tttBoard[empty[Math.floor(Math.random()*empty.length)]]='O';
-  const w=checkTTT();
-  if(w){tttActive=false;renderTTT();showTTTResult(w);return;}
-  if(!tttBoard.includes('')){tttActive=false;renderTTT();showTTTResult('draw');return;}
-  tttTurn='X'; renderTTT();
+  tttB[empty[Math.floor(Math.random()*empty.length)]] = 'O';
+  var w = checkTTT();
+  if(w){ tttOn=false; drawTTT(); addTTTResult(w); return; }
+  if(tttB.indexOf('') === -1){ tttOn=false; drawTTT(); addTTTResult('draw'); return; }
+  tttTurn = 'X'; drawTTT();
 }
 function checkTTT() {
-  const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-  for(const [a,b,c] of wins) if(tttBoard[a]&&tttBoard[a]===tttBoard[b]&&tttBoard[a]===tttBoard[c]) return tttBoard[a];
+  var lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  for(var i=0;i<lines.length;i++){
+    var a=lines[i][0], b=lines[i][1], c=lines[i][2];
+    if(tttB[a] && tttB[a]===tttB[b] && tttB[a]===tttB[c]) return tttB[a];
+  }
   return null;
 }
-function showTTTResult(w) {
-  const msg = w==='draw'?`It's a draw! ${getN()} roars respectfully! 🐉`:
-              w==='X'?`🎉 You win! ${getN()} does a happy flip!`:
-              `${getN()} wins! The dragon roars triumphantly! 🔥`;
-  document.getElementById('popup-body').innerHTML += `<div class="outcome ${w==='X'?'win':w==='draw'?'':'lose'}" style="margin-top:10px">${msg}</div>`;
+function addTTTResult(w) {
+  var msg = w==='draw' ? 'Draw! '+getN()+' roars respectfully!' :
+            w==='X'    ? '🎉 You win! '+getN()+' does a happy flip!' :
+                         getN()+' wins! The dragon roars triumphantly! 🔥';
+  document.getElementById('popup-body').innerHTML += '<div class="outcome '+(w==='X'?'win':w==='draw'?'':'lose')+'" style="margin-top:8px">'+msg+'</div>';
 }
 
 // CARD MATCH
-let cards, flipped, matched, canFlip;
-const cardSymbols=['🐉','⚡','🔥','❄️','💨','✨'];
-function startCardGame() {
-  const deck=[...cardSymbols,...cardSymbols].sort(()=>Math.random()-0.5);
-  cards=deck.map((s,i)=>({id:i,symbol:s,shown:false,matched:false}));
-  flipped=[]; matched=0; canFlip=true;
-  renderCards();
+var cCards, cFlipped, cMatched, cCanFlip;
+var cSymbols = ['🐉','⚡','🔥','❄️','💨','✨'];
+function startCards() {
+  var deck = cSymbols.concat(cSymbols).sort(function(){return Math.random()-0.5;});
+  cCards = deck.map(function(s,i){return {id:i,s:s,shown:false,matched:false};});
+  cFlipped=[]; cMatched=0; cCanFlip=true;
+  drawCards();
 }
-function renderCards() {
-  document.getElementById('popup-body').innerHTML=`
-    <p style="color:#aad4ff;margin-bottom:8px">Match all the pairs! ${matched} of ${cardSymbols.length} matched</p>
-    <div class="card-area">${cards.map((c,i)=>`<div class="card${c.shown||c.matched?' flipped':''}" onclick="flipCard(${i})">${c.shown||c.matched?c.symbol:'🐲'}</div>`).join('')}</div>
-    <button class="game-choice-btn" style="margin-top:10px" onclick="startCardGame()">New Game</button>
-    <button class="game-choice-btn" style="margin-top:10px" onclick="openGameChoice()">← Back</button>`;
+function drawCards() {
+  var html = '<p style="color:#aad4ff;margin-bottom:8px">Match all pairs! '+cMatched+'/'+cSymbols.length+' matched</p><div class="card-area">';
+  for(var i=0;i<cCards.length;i++){
+    var c = cCards[i];
+    html += '<div class="card'+(c.shown||c.matched?' flipped':'')+'" onclick="flipCard('+i+')">'+(c.shown||c.matched?c.s:'🐲')+'</div>';
+  }
+  html += '</div>';
+  html += '<button class="game-choice-btn" style="margin-top:10px" onclick="startCards()">New Game</button>';
+  html += '<button class="game-choice-btn" style="margin-top:10px" onclick="openGameMenu()">← Back</button>';
+  document.getElementById('popup-body').innerHTML = html;
 }
 function flipCard(i) {
-  if(!canFlip||cards[i].shown||cards[i].matched) return;
-  cards[i].shown=true; flipped.push(i); renderCards();
-  if(flipped.length===2) {
-    canFlip=false;
-    setTimeout(()=>{
-      const [a,b]=flipped;
-      if(cards[a].symbol===cards[b].symbol){ cards[a].matched=cards[b].matched=true; matched++; }
-      cards[a].shown=cards[b].shown=false; flipped=[]; canFlip=true;
-      renderCards();
-      if(matched===cardSymbols.length) document.getElementById('popup-body').innerHTML+=`<div class="outcome win" style="margin-top:10px">🎉 You matched them all! ${getN()} is so proud of you!</div>`;
-    },800);
+  if(!cCanFlip || cCards[i].shown || cCards[i].matched) return;
+  cCards[i].shown = true; cFlipped.push(i); drawCards();
+  if(cFlipped.length === 2) {
+    cCanFlip = false;
+    setTimeout(function(){
+      var a=cFlipped[0], b=cFlipped[1];
+      if(cCards[a].s === cCards[b].s){ cCards[a].matched=cCards[b].matched=true; cMatched++; }
+      cCards[a].shown=cCards[b].shown=false; cFlipped=[]; cCanFlip=true;
+      drawCards();
+      if(cMatched===cSymbols.length) document.getElementById('popup-body').innerHTML += '<div class="outcome win" style="margin-top:8px">🎉 You matched them all! '+getN()+' is so proud!</div>';
+    }, 800);
   }
 }
 
-// SPORTS
-let sportScore, sportGoals, sportActive2;
-function startSports() {
-  sportScore=0; sportGoals=0; sportActive2=true;
-  renderSports();
+// SOCCER
+var sScore, sGoals, sOn;
+function startSoccer() {
+  sScore=0; sGoals=0; sOn=true;
+  drawSoccer('');
 }
-function renderSports() {
-  document.getElementById('popup-body').innerHTML=`
-    <div class="sport-area">
-      <p style="color:#ffd700;margin-bottom:8px">⚽ Dragon Soccer! Score 3 goals to win!</p>
-      <p style="color:#aad4ff;font-size:0.85em;margin-bottom:8px">Shots: ${sportScore} | Goals: ${sportGoals}/3</p>
-      <div class="goal"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2em" id="goal-feedback"></div></div>
-      <p style="color:#aad4ff;font-size:0.85em;margin:8px 0">Pick your shot:</p>
-      <div class="aim-row">
-        <button class="aim-btn" onclick="shoot('left')">↖️ Left</button>
-        <button class="aim-btn" onclick="shoot('center')">⬆️ Center</button>
-        <button class="aim-btn" onclick="shoot('right')">↗️ Right</button>
-      </div>
-      <div id="sport-result"></div>
-    </div>
-    <button class="game-choice-btn" style="margin-top:10px" onclick="startSports()">New Game</button>
-    <button class="game-choice-btn" style="margin-top:10px" onclick="openGameChoice()">← Back</button>`;
+function drawSoccer(msg) {
+  document.getElementById('popup-body').innerHTML =
+    '<p style="color:#ffd700;margin-bottom:6px">⚽ Dragon Soccer! Score 3 goals to win!</p>' +
+    '<p style="color:#aad4ff;font-size:0.85em;margin-bottom:8px">Shots: '+sScore+' | Goals: '+sGoals+'/3</p>' +
+    '<div class="goal"><div id="gfb" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2em"></div></div>' +
+    '<p style="color:#aad4ff;font-size:0.85em;margin:8px 0">Pick your shot:</p>' +
+    '<div class="aim-row">' +
+    '<button class="aim-btn" onclick="shoot(\'left\')">↖️ Left</button>' +
+    '<button class="aim-btn" onclick="shoot(\'center\')">⬆️ Center</button>' +
+    '<button class="aim-btn" onclick="shoot(\'right\')">↗️ Right</button>' +
+    '</div>' +
+    (msg ? '<p style="margin-top:8px;font-weight:bold;color:'+( msg.indexOf('GOAL')!==-1?'#2ecc71':'#e74c3c')+'">'+msg+'</p>' : '') +
+    '<button class="game-choice-btn" style="margin-top:10px" onclick="startSoccer()">New Game</button>' +
+    '<button class="game-choice-btn" style="margin-top:10px" onclick="openGameMenu()">← Back</button>';
 }
 function shoot(dir) {
-  if(!sportActive2) return;
-  sportScore++;
-  const goalie=['left','center','right'][Math.floor(Math.random()*3)];
-  const scored = dir!==goalie;
-  const fb=document.getElementById('goal-feedback');
-  if(fb) fb.textContent=scored?'⚽':'🧤';
-  if(scored) sportGoals++;
-  const msg=scored?`GOAL! ${getN()} breathes fire in celebration! 🔥`:`Saved! The goalie blocked it! Try again!`;
-  const res=document.getElementById('sport-result');
-  if(res) res.innerHTML=`<p style="margin-top:8px;font-weight:bold;color:${scored?'#2ecc71':'#e74c3c'}">${msg}</p>`;
-  renderSports();
-  if(sportGoals>=3) {
-    sportActive2=false;
-    document.getElementById('popup-body').innerHTML=`<div class="outcome win" style="font-size:1.2em;margin:15px 0">🏆 You scored 3 goals in ${sportScore} shots! ${getN()} does a victory lap around the arena!</div>
-    <button class="game-choice-btn" onclick="startSports()">Play Again</button>
-    <button class="game-choice-btn" onclick="openGameChoice()">← Back</button>`;
+  if(!sOn) return;
+  sScore++;
+  var dirs = ['left','center','right'];
+  var goalie = dirs[Math.floor(Math.random()*3)];
+  var scored = dir !== goalie;
+  if(scored) sGoals++;
+  var fb = document.getElementById('gfb');
+  if(fb) fb.textContent = scored ? '⚽' : '🧤';
+  var msg = scored ? 'GOAL! ' + getN() + ' breathes fire in celebration! 🔥' : 'Saved! The goalie blocked it! Try again!';
+  if(sGoals >= 3) {
+    sOn = false;
+    document.getElementById('popup-body').innerHTML =
+      '<div class="outcome win" style="font-size:1.1em;margin:12px 0">🏆 You scored 3 goals in ' + sScore + ' shots!<br>' + getN() + ' does a victory lap around the arena!</div>' +
+      '<button class="game-choice-btn" onclick="startSoccer()">Play Again</button>' +
+      '<button class="game-choice-btn" onclick="openGameMenu()">← Back</button>';
+    return;
   }
+  drawSoccer(msg);
 }
 
-// POPUP helpers
+// ---- POPUP ----
 function showPopup(title, text, extra) {
-  document.getElementById('popup-title').textContent=title;
-  document.getElementById('popup-body').innerHTML=`<div class="popup-text">${text}</div>${extra||''}`;
+  document.getElementById('popup-title').textContent = title;
+  document.getElementById('popup-body').innerHTML = (text ? '<div class="popup-text">' + text + '</div>' : '') + (extra || '');
   document.getElementById('popup').classList.add('open');
 }
 function closePopup() {
