@@ -3,764 +3,1376 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dragon World</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Dragon World — Berk</title>
 <style>
-* { box-sizing:border-box; margin:0; padding:0; user-select:none; }
-body { font-family:Georgia,serif; background:#1a3a1a; color:white; overflow:hidden; }
-.screen { display:none; }
-.screen.active { display:block; }
+@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+:root {
+  --gold:#ffd700; --dark-gold:#c8a000; --sky-day:#5ba3dc; --sky-night:#0a0a2e;
+  --ground:#3d6b2a; --ground-dark:#1a3a0a; --stone:#8a7a6a; --wood:#8b5e3c;
+}
+*{box-sizing:border-box;margin:0;padding:0;user-select:none;}
+body{font-family:'Crimson Text',Georgia,serif;overflow:hidden;background:#000;width:100vw;height:100vh;}
 
-/* –– CHOOSE SCREEN –– */
-#s-choose { background:linear-gradient(135deg,#0a0a2e,#1a1a4e,#0d2137); min-height:100vh; padding:20px; overflow-y:auto; }
-h1 { text-align:center; font-size:2em; color:#ffd700; text-shadow:0 0 20px #ff6600; margin-bottom:5px; }
-.subtitle { text-align:center; color:#aad4ff; margin-bottom:20px; }
-.section-title { text-align:center; color:#ffd700; font-size:1.2em; margin-bottom:15px; }
-.dragon-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; max-width:680px; margin:0 auto 20px; }
-.dragon-card { background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.2); border-radius:15px; padding:12px; text-align:center; cursor:pointer; transition:all 0.3s; }
-.dragon-card:hover,.dragon-card.selected { border-color:#ffd700; background:rgba(255,215,0,0.2); transform:scale(1.05); }
-.d-emoji { font-size:2.5em; }
-.d-name { font-weight:bold; color:#ffd700; margin:4px 0 2px; font-size:0.9em; }
-.d-type { font-size:0.7em; color:#aad4ff; }
-.cbox { background:rgba(255,255,255,0.08); border-radius:20px; padding:20px; max-width:460px; margin:0 auto; }
-.cbox label { display:block; margin:10px 0 4px; color:#ffd700; font-weight:bold; }
-.cbox input { width:100%; padding:9px; border-radius:10px; border:2px solid rgba(255,215,0,0.4); background:rgba(0,0,0,0.3); color:white; font-size:1em; }
-.color-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:5px; }
-.cbtn { width:32px; height:32px; border-radius:50%; border:3px solid transparent; cursor:pointer; transition:transform 0.2s; }
-.cbtn.selected { border-color:white; transform:scale(1.2); }
-.power-row { display:flex; gap:7px; flex-wrap:wrap; margin-top:5px; }
-.pbtn { padding:6px 12px; border-radius:20px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:white; cursor:pointer; font-size:0.8em; }
-.pbtn.selected { background:rgba(255,215,0,0.3); border-color:#ffd700; color:#ffd700; }
-.big-btn { display:block; margin:15px auto 0; padding:13px 30px; border-radius:15px; border:none; background:linear-gradient(135deg,#ffd700,#ff8c00); color:#1a1a1a; font-size:1.05em; font-weight:bold; cursor:pointer; }
-.big-btn:hover { transform:scale(1.05); }
+/* ===== SCREENS ===== */
+.screen{display:none;width:100vw;height:100vh;}
+.screen.active{display:block;}
 
-/* –– WORLD SCREEN –– */
-#s-world { width:100vw; height:100vh; position:relative; overflow:hidden; }
+/* ===== TITLE / CHOOSE SCREEN ===== */
+#s-title{
+background:radial-gradient(ellipse at 50% 80%, #1a3a0a 0%, #0a1a05 60%, #000 100%);
+display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+padding:16px 12px 100px; overflow-y:auto;
+}
+#s-title h1{
+font-family:‘Cinzel’,serif; font-size:clamp(1.4em,5vw,2.4em); color:var(–gold);
+text-shadow:0 0 30px #ff8c00, 0 0 60px #ff4500; margin-bottom:4px; text-align:center;
+}
+.subtitle{color:#aad4ff;font-size:1em;margin-bottom:18px;text-align:center;}
 
-/* SKY */
-#sky { position:absolute; top:0; left:0; right:0; height:55%; background:linear-gradient(180deg,#3a9bd5 0%,#87CEEB 70%,#b8e0f7 100%); transition:background 0.5s; }
+.step-header{font-family:‘Cinzel’,serif;color:var(–gold);font-size:1em;margin:14px 0 8px;text-align:center;letter-spacing:1px;}
 
-/* GROUND */
-#ground { position:absolute; bottom:0; left:0; right:0; height:48%; background:linear-gradient(180deg,#4a7c3f 0%,#2d5a1b 40%,#1a3a0a 100%); }
+/* Dragon choose grid */
+.dragon-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;max-width:640px;width:100%;margin-bottom:4px;}
+.dragon-card{
+background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);
+border-radius:14px;padding:10px 6px;text-align:center;cursor:pointer;transition:all 0.25s;
+}
+.dragon-card:hover,.dragon-card.sel{border-color:var(–gold);background:rgba(255,215,0,0.12);transform:scale(1.04);}
+.dc-canvas{display:block;margin:0 auto 4px;}
+.dc-name{font-family:‘Cinzel’,serif;font-weight:700;color:var(–gold);font-size:0.78em;}
+.dc-type{font-size:0.68em;color:#aad4ff;}
 
-/* HORIZON LINE */
-#horizon { position:absolute; top:52%; left:0; right:0; height:8px; background:linear-gradient(90deg,#3a6b2a,#5a8f40,#3a6b2a); }
+/* Viking creator */
+.viking-creator{
+background:rgba(255,255,255,0.05);border:1px solid rgba(255,215,0,0.2);
+border-radius:16px;padding:14px;max-width:500px;width:100%;margin:0 auto;
+}
+.viking-preview{display:flex;justify-content:center;margin-bottom:10px;}
+.vc-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.vc-label{color:var(–gold);font-family:‘Cinzel’,serif;font-size:0.78em;width:60px;flex-shrink:0;}
+.vc-options{display:flex;gap:6px;flex-wrap:wrap;}
+.vc-opt{
+width:28px;height:28px;border-radius:50%;border:2px solid transparent;
+cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;font-size:0.85em;
+}
+.vc-opt:hover,.vc-opt.sel{border-color:white;transform:scale(1.2);}
+.vc-text{
+background:rgba(0,0,0,0.4);border:1px solid rgba(255,215,0,0.3);border-radius:8px;
+padding:5px 9px;color:white;font-size:0.9em;width:140px;
+}
 
-/* SCROLLING GROUND LAYER */
-#scroll-layer { position:absolute; bottom:0; left:0; width:300%; height:50%; }
+.start-btn{
+display:block;margin:14px auto 0;padding:13px 35px;border-radius:15px;border:none;
+background:linear-gradient(135deg,var(–gold),#ff8c00);color:#1a0a00;
+font-family:‘Cinzel’,serif;font-size:1em;font-weight:700;cursor:pointer;
+box-shadow:0 4px 20px rgba(255,165,0,0.5);transition:all 0.2s;
+}
+.start-btn:hover{transform:scale(1.05);box-shadow:0 6px 30px rgba(255,165,0,0.7);}
 
-/* CLOUDS */
-.cloud { position:absolute; background:white; border-radius:40px; opacity:0.9; }
+/* ===== WORLD SCREEN ===== */
+#s-world{position:relative;overflow:hidden;}
+#world-canvas{position:absolute;top:0;left:0;width:100%;height:100%;}
 
-/* LOCATIONS as scenery */
-.scenery { position:absolute; text-align:center; }
-.scenery-icon { font-size:3em; display:block; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
-.scenery-label { font-size:0.65em; font-weight:bold; color:white; text-shadow:0 1px 4px black; background:rgba(0,0,0,0.5); border-radius:8px; padding:2px 6px; display:block; margin-top:2px; cursor:pointer; }
-.scenery-label:hover { background:rgba(255,215,0,0.4); }
-
-/* DRAGON */
-#dragon-wrap { position:absolute; transition:bottom 0.3s ease; z-index:20; }
-#dragon-sprite { font-size:4em; display:block; line-height:1; transition:transform 0.1s; }
-#dragon-shadow { width:60px; height:12px; background:rgba(0,0,0,0.25); border-radius:50%; margin:0 auto; transition:all 0.3s; }
-
-/* MODE INDICATOR */
-#mode-badge { position:absolute; top:10px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.6); border:2px solid rgba(255,215,0,0.5); border-radius:20px; padding:6px 18px; font-size:1em; font-weight:bold; color:#ffd700; z-index:30; }
+/* Mode badge */
+#mode-badge{
+position:absolute;top:8px;left:50%;transform:translateX(-50%);
+background:rgba(0,0,0,0.7);border:1px solid rgba(255,215,0,0.5);
+border-radius:20px;padding:5px 16px;font-family:‘Cinzel’,serif;
+font-size:0.85em;color:var(–gold);z-index:30;pointer-events:none;
+}
 
 /* HUD */
-#hud { position:absolute; top:10px; left:10px; right:10px; z-index:30; display:flex; justify-content:space-between; align-items:flex-start; gap:8px; pointer-events:none; }
-.hud-card { background:rgba(0,0,0,0.65); border:1px solid rgba(255,215,0,0.4); border-radius:12px; padding:7px 11px; pointer-events:all; }
-.hud-name { color:#ffd700; font-weight:bold; font-size:0.85em; }
-.stat-row { display:flex; align-items:center; gap:5px; margin-top:3px; }
-.stat-label { font-size:0.68em; color:#aad4ff; width:52px; }
-.stat-bar { width:70px; height:9px; background:rgba(255,255,255,0.2); border-radius:5px; overflow:hidden; }
-.stat-fill { height:100%; border-radius:5px; transition:width 0.5s; }
-.fill-food  { background:linear-gradient(90deg,#ff6b35,#ffd700); }
-.fill-water { background:linear-gradient(90deg,#4fc3f7,#0288d1); }
-.fill-happy { background:linear-gradient(90deg,#f06292,#e91e63); }
-.fill-coins { background:linear-gradient(90deg,#ffd700,#ff8c00); }
+#hud{position:absolute;top:8px;left:8px;right:8px;z-index:30;display:flex;justify-content:space-between;pointer-events:none;}
+.hud-box{background:rgba(0,0,0,0.7);border:1px solid rgba(255,215,0,0.3);border-radius:10px;padding:7px 10px;pointer-events:all;}
+.hud-name{font-family:‘Cinzel’,serif;color:var(–gold);font-size:0.78em;margin-bottom:3px;}
+.srow{display:flex;align-items:center;gap:5px;margin-top:2px;}
+.slabel{font-size:0.65em;color:#aad4ff;width:48px;}
+.sbar{width:65px;height:8px;background:rgba(255,255,255,0.15);border-radius:4px;overflow:hidden;}
+.sfill{height:100%;border-radius:4px;transition:width 0.5s;}
+.f-food{background:linear-gradient(90deg,#ff6b35,#ffd700);}
+.f-water{background:linear-gradient(90deg,#4fc3f7,#0288d1);}
+.f-happy{background:linear-gradient(90deg,#f06292,#e91e63);}
+.f-coins{background:linear-gradient(90deg,#ffd700,#ff8c00);}
+#coin-num{font-size:0.65em;color:var(–gold);margin-left:3px;}
 
-/* FLOATING COINS */
-.floating-coin { position:absolute; font-size:1.6em; cursor:pointer; z-index:15; animation:coinbob 1.5s ease-in-out infinite; filter:drop-shadow(0 0 6px #ffd700); }
-.floating-coin:hover { transform:scale(1.3); }
-@keyframes coinbob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-.coin-flash { position:fixed; top:40%; left:50%; transform:translateX(-50%); font-size:1.4em; color:#ffd700; font-weight:bold; z-index:999; pointer-events:none; animation:flashup 1s ease forwards; }
-@keyframes flashup { 0%{opacity:1;top:40%} 100%{opacity:0;top:25%} }
+/* Controls */
+#controls{position:absolute;bottom:0;left:0;right:0;z-index:30;display:flex;justify-content:space-between;align-items:flex-end;padding:10px 12px 14px;pointer-events:none;}
+#dpad{display:grid;grid-template-columns:repeat(3,42px);grid-template-rows:repeat(3,42px);gap:3px;pointer-events:all;}
+.dp{background:rgba(0,0,0,0.75);border:1.5px solid rgba(255,255,255,0.25);border-radius:9px;font-size:1.1em;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;-webkit-tap-highlight-color:transparent;}
+.dp:active,.dp.pr{background:rgba(255,215,0,0.35);border-color:var(–gold);}
+#mode-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-end;pointer-events:all;}
+.mbtn{padding:9px 16px;border-radius:11px;border:2px solid rgba(255,255,255,0.25);font-family:‘Cinzel’,serif;font-size:0.78em;font-weight:700;cursor:pointer;color:white;min-width:82px;transition:all 0.2s;}
+.mbtn.am{border-color:var(–gold);transform:scale(1.06);}
+#mb-walk{background:linear-gradient(135deg,#27ae60,#1e8449);}
+#mb-run{background:linear-gradient(135deg,#e67e22,#d35400);}
+#mb-fly{background:linear-gradient(135deg,#2980b9,#1a5276);}
 
-/* BOTTOM CONTROLS */
-#controls { position:absolute; bottom:0; left:0; right:0; z-index:30; display:flex; justify-content:space-between; align-items:flex-end; padding:12px 16px 16px; pointer-events:none; }
+#action-bar{position:absolute;bottom:140px;left:50%;transform:translateX(-50%);z-index:30;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:95vw;}
+.abtn{padding:8px 11px;border-radius:10px;border:none;font-family:‘Cinzel’,serif;font-size:0.68em;font-weight:700;cursor:pointer;color:white;white-space:nowrap;}
+.ab-feed{background:linear-gradient(135deg,#e67e22,#d35400);}
+.ab-water{background:linear-gradient(135deg,#2980b9,#1a5276);}
+.ab-arena{background:linear-gradient(135deg,#8e44ad,#6c3483);}
+.ab-battle{background:linear-gradient(135deg,#c0392b,#922b21);}
+.ab-shop{background:linear-gradient(135deg,#d4ac0d,#a07800);}
+.ab-game{background:linear-gradient(135deg,#16a085,#1abc9c);}
+.ab-sleep{background:linear-gradient(135deg,#2c3e50,#1a252f);}
 
-/* D-PAD */
-#dpad { display:grid; grid-template-columns:repeat(3,44px); grid-template-rows:repeat(3,44px); gap:4px; pointer-events:all; }
-.dpad-btn { background:rgba(0,0,0,0.7); border:2px solid rgba(255,255,255,0.3); border-radius:10px; font-size:1.2em; display:flex; align-items:center; justify-content:center; cursor:pointer; color:white; transition:background 0.1s; touch-action:none; -webkit-tap-highlight-color:transparent; }
-.dpad-btn:active, .dpad-btn.pressed { background:rgba(255,215,0,0.4); border-color:#ffd700; }
-.dpad-center { background:rgba(255,255,255,0.05); border-color:transparent; cursor:default; }
+/* Coin flash */
+.cflash{position:fixed;top:42%;left:50%;transform:translateX(-50%);font-family:‘Cinzel’,serif;font-size:1.3em;color:var(–gold);font-weight:700;z-index:999;pointer-events:none;animation:cup 1s ease forwards;}
+@keyframes cup{0%{opacity:1;top:42%}100%{opacity:0;top:26%}}
 
-/* MODE BUTTONS */
-#mode-btns { display:flex; flex-direction:column; gap:8px; align-items:flex-end; pointer-events:all; }
-.mode-btn { padding:10px 18px; border-radius:12px; border:2px solid rgba(255,255,255,0.3); font-size:0.9em; font-weight:bold; cursor:pointer; color:white; transition:all 0.2s; min-width:90px; }
-.mode-btn.active-mode { border-color:#ffd700; transform:scale(1.08); }
-#btn-walk { background:linear-gradient(135deg,#27ae60,#1e8449); }
-#btn-run  { background:linear-gradient(135deg,#e67e22,#d35400); }
-#btn-fly  { background:linear-gradient(135deg,#2980b9,#1a5276); }
+/* ===== POPUP ===== */
+.pov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.82);z-index:200;display:none;align-items:center;justify-content:center;padding:14px;}
+.pov.open{display:flex;}
+.pop{
+background:linear-gradient(135deg,#1a1205,#0d0a00);
+border:2px solid rgba(255,215,0,0.4);border-radius:18px;
+padding:20px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;text-align:center;
+box-shadow:0 0 40px rgba(255,165,0,0.2);
+}
+.pop-title{font-family:‘Cinzel’,serif;font-size:1.1em;color:var(–gold);margin-bottom:10px;}
+.pop-text{line-height:1.7;color:#e0d0b0;font-size:0.95em;margin-bottom:8px;}
+.outcome{font-weight:700;margin-top:8px;font-size:1em;}
+.win{color:#2ecc71;}.lose{color:#e74c3c;}
+.cbtn{padding:9px 20px;border-radius:11px;border:none;background:linear-gradient(135deg,var(–gold),#ff8c00);color:#1a0a00;font-family:‘Cinzel’,serif;font-weight:700;cursor:pointer;margin-top:10px;}
+.gcbtn{padding:9px 13px;border-radius:12px;border:1.5px solid rgba(255,215,0,0.35);background:rgba(255,215,0,0.08);color:var(–gold);font-family:‘Cinzel’,serif;font-size:0.82em;cursor:pointer;margin:3px;}
+.gcbtn:hover{background:rgba(255,215,0,0.2);}
+.ttt-board{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:210px;margin:8px auto;}
+.tttc{height:62px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,215,0,0.25);border-radius:9px;font-size:1.9em;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.tttc:hover{background:rgba(255,215,0,0.12);}
+.card-area{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:7px 0;}
+.card{width:56px;height:80px;border-radius:9px;border:1.5px solid var(–gold);background:linear-gradient(135deg,#1a3a6e,#0d2137);font-size:1.6em;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.2s;}
+.card:hover{transform:scale(1.1) translateY(-4px);}
+.card.flip{background:linear-gradient(135deg,#2d5a1b,#1a3a0a);}
+.aim-row{display:flex;gap:8px;justify-content:center;margin:8px 0;}
+.aim-btn{padding:7px 13px;border-radius:9px;border:1.5px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.08);color:white;cursor:pointer;font-size:0.88em;}
+.aim-btn:hover{border-color:var(–gold);background:rgba(255,215,0,0.15);}
+.goal-box{width:100px;height:60px;border:3.5px solid white;border-bottom:none;margin:0 auto 7px;border-radius:4px 4px 0 0;position:relative;background:rgba(255,255,255,0.04);}
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:8px 0;}
+.si{background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,215,0,0.25);border-radius:12px;padding:10px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.si:hover{border-color:var(–gold);background:rgba(255,215,0,0.12);}
+.si.own{border-color:#2ecc71;background:rgba(46,204,113,0.1);cursor:default;}
+.si.own:hover{transform:none;}
+.si-e{font-size:1.7em;margin-bottom:3px;}
+.si-n{font-family:‘Cinzel’,serif;color:var(–gold);font-size:0.76em;font-weight:700;}
+.si-p{color:#aad4ff;font-size:0.7em;margin-top:2px;}
+.own-tag{color:#2ecc71;font-size:0.7em;font-weight:700;}
+.cdsp{font-family:‘Cinzel’,serif;color:var(–gold);font-size:0.95em;margin-bottom:10px;}
 
-/* ACTION BUTTONS ROW */
-#action-bar { position:absolute; bottom:0; left:50%; transform:translateX(-50%); z-index:30; display:flex; gap:7px; padding-bottom:14px; pointer-events:all; }
-.abtn { padding:9px 12px; border-radius:11px; border:none; font-size:0.75em; font-weight:bold; cursor:pointer; color:white; white-space:nowrap; }
-.btn-feed   { background:linear-gradient(135deg,#e67e22,#d35400); }
-.btn-water  { background:linear-gradient(135deg,#2980b9,#1a5276); }
-.btn-quest  { background:linear-gradient(135deg,#8e44ad,#6c3483); }
-.btn-rescue { background:linear-gradient(135deg,#c0392b,#922b21); }
-.btn-battle { background:linear-gradient(135deg,#d35400,#a04000); }
-.btn-game   { background:linear-gradient(135deg,#16a085,#1abc9c); }
-.btn-shop   { background:linear-gradient(135deg,#f39c12,#d68910); }
-
-/* POPUP */
-.popup-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.78); z-index:100; display:none; align-items:center; justify-content:center; padding:16px; }
-.popup-overlay.open { display:flex; }
-.popup { background:linear-gradient(135deg,#1a2a1a,#0d1a0d); border:2px solid rgba(255,215,0,0.5); border-radius:20px; padding:22px; max-width:500px; width:100%; max-height:88vh; overflow-y:auto; text-align:center; }
-.popup-title { font-size:1.2em; color:#ffd700; margin-bottom:10px; }
-.popup-text { line-height:1.7; color:#e0e0e0; margin-bottom:10px; }
-.outcome { font-size:1em; font-weight:bold; margin-top:8px; }
-.win { color:#2ecc71; } .lose { color:#e74c3c; }
-.close-btn { padding:9px 22px; border-radius:12px; border:none; background:linear-gradient(135deg,#ffd700,#ff8c00); color:#1a1a1a; font-weight:bold; cursor:pointer; margin-top:10px; }
-.game-choice { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:10px; }
-.gcbtn { padding:10px 15px; border-radius:14px; border:2px solid rgba(255,215,0,0.4); background:rgba(255,215,0,0.1); color:#ffd700; font-size:0.9em; cursor:pointer; }
-.gcbtn:hover { background:rgba(255,215,0,0.25); }
-.ttt-board { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; max-width:220px; margin:8px auto; }
-.ttt-cell { height:65px; background:rgba(255,255,255,0.1); border:2px solid rgba(255,215,0,0.3); border-radius:10px; font-size:2em; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-.ttt-cell:hover { background:rgba(255,215,0,0.15); }
-.card-area { display:flex; gap:9px; justify-content:center; flex-wrap:wrap; margin:8px 0; }
-.card { width:60px; height:88px; border-radius:10px; border:2px solid #ffd700; background:linear-gradient(135deg,#1a3a6e,#0d2137); font-size:1.8em; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform 0.2s; }
-.card:hover { transform:scale(1.1) translateY(-4px); }
-.card.flipped { background:linear-gradient(135deg,#2d5a1b,#1a3a0a); }
-.aim-row { display:flex; gap:8px; justify-content:center; margin:8px 0; }
-.aim-btn { padding:7px 14px; border-radius:10px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:white; cursor:pointer; font-size:0.9em; }
-.aim-btn:hover { background:rgba(255,215,0,0.2); border-color:#ffd700; }
-.goal-box { width:110px; height:65px; border:4px solid white; border-bottom:none; margin:0 auto 8px; border-radius:5px 5px 0 0; position:relative; background:rgba(255,255,255,0.05); }
-.shop-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(125px,1fr)); gap:9px; margin:8px 0; }
-.shop-item { background:rgba(255,255,255,0.08); border:2px solid rgba(255,215,0,0.3); border-radius:14px; padding:11px; text-align:center; cursor:pointer; transition:all 0.2s; }
-.shop-item:hover { border-color:#ffd700; background:rgba(255,215,0,0.15); transform:scale(1.04); }
-.shop-item.owned { border-color:#2ecc71; background:rgba(46,204,113,0.12); cursor:default; }
-.shop-item.owned:hover { transform:none; }
-.s-emoji { font-size:1.9em; margin-bottom:3px; }
-.s-name { font-weight:bold; color:#ffd700; font-size:0.82em; }
-.s-price { color:#aad4ff; font-size:0.74em; margin-top:2px; }
-.owned-tag { color:#2ecc71; font-size:0.74em; font-weight:bold; }
-.coin-disp { color:#ffd700; font-size:1em; font-weight:bold; margin-bottom:10px; }
+/* Arena / Battle UI */
+.arena-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0;}
+.arena-btn{padding:10px 14px;border-radius:12px;border:1.5px solid rgba(255,215,0,0.3);background:rgba(255,215,0,0.08);color:var(–gold);font-family:‘Cinzel’,serif;font-size:0.82em;cursor:pointer;transition:all 0.2s;}
+.arena-btn:hover{background:rgba(255,215,0,0.2);transform:scale(1.04);}
+.hp-row{display:flex;gap:10px;justify-content:center;margin:8px 0;}
+.hp-box{flex:1;max-width:140px;}
+.hp-label{font-family:‘Cinzel’,serif;font-size:0.72em;color:var(–gold);margin-bottom:3px;}
+.hp-bar{height:14px;background:rgba(255,255,255,0.15);border-radius:7px;overflow:hidden;}
+.hp-fill{height:100%;border-radius:7px;background:linear-gradient(90deg,#e74c3c,#ff6b35);transition:width 0.4s;}
+.enemy-face{font-size:3em;margin:8px 0;}
 </style>
 
 </head>
 <body>
 
-<!-- CHOOSE SCREEN -->
+<!-- ===== TITLE / CHOOSE SCREEN ===== -->
 
-<div id="s-choose" class="screen active">
+<div id="s-title" class="screen active">
   <h1>🐉 Dragon World</h1>
-  <p class="subtitle">How to Train Your Dragon</p>
-  <p class="section-title">Choose Your Dragon!</p>
-  <div class="dragon-grid">
-    <div class="dragon-card" onclick="pick(this,'Toothless','Night Fury','🐉')"><div class="d-emoji">🐉</div><div class="d-name">Toothless</div><div class="d-type">Night Fury</div></div>
-    <div class="dragon-card" onclick="pick(this,'Light Fury','Light Fury','🤍')"><div class="d-emoji">🤍</div><div class="d-name">Light Fury</div><div class="d-type">Light Fury</div></div>
-    <div class="dragon-card" onclick="pick(this,'Stormfly','Deadly Nadder','💙')"><div class="d-emoji">💙</div><div class="d-name">Stormfly</div><div class="d-type">Deadly Nadder</div></div>
-    <div class="dragon-card" onclick="pick(this,'Hookfang','Monstrous Nightmare','🔥')"><div class="d-emoji">🔥</div><div class="d-name">Hookfang</div><div class="d-type">Monstrous Nightmare</div></div>
-    <div class="dragon-card" onclick="pick(this,'Meatlug','Gronckle','🪨')"><div class="d-emoji">🪨</div><div class="d-name">Meatlug</div><div class="d-type">Gronckle</div></div>
-    <div class="dragon-card" onclick="pick(this,'Barf and Belch','Hideous Zippleback','💚')"><div class="d-emoji">💚</div><div class="d-name">Barf &amp; Belch</div><div class="d-type">Hideous Zippleback</div></div>
-    <div class="dragon-card" onclick="pick(this,'Cloudjumper','Stormcutter','⚡')"><div class="d-emoji">⚡</div><div class="d-name">Cloudjumper</div><div class="d-type">Stormcutter</div></div>
-    <div class="dragon-card" onclick="pick(this,'Skullcrusher','Rumblehorn','💜')"><div class="d-emoji">💜</div><div class="d-name">Skullcrusher</div><div class="d-type">Rumblehorn</div></div>
+  <p class="subtitle">Isle of Berk — How to Train Your Dragon</p>
+
+  <!-- Step 1: Choose Dragon -->
+
+  <p class="step-header">⚔️ Choose Your Dragon</p>
+  <div class="dragon-grid" id="dragon-grid">
+    <!-- Cards filled by JS -->
   </div>
-  <p class="section-title">Customize!</p>
-  <div class="cbox">
-    <label>Nickname:</label>
-    <input type="text" id="nickname" placeholder="e.g. Sparkles, Blaze, Shadow...">
-    <label>Color:</label>
-    <div class="color-row">
-      <div class="cbtn selected" style="background:#111" onclick="pickColor(this,'Midnight Black')"></div>
-      <div class="cbtn" style="background:#e74c3c" onclick="pickColor(this,'Fire Red')"></div>
-      <div class="cbtn" style="background:#3498db" onclick="pickColor(this,'Ocean Blue')"></div>
-      <div class="cbtn" style="background:#2ecc71" onclick="pickColor(this,'Forest Green')"></div>
-      <div class="cbtn" style="background:#9b59b6" onclick="pickColor(this,'Royal Purple')"></div>
-      <div class="cbtn" style="background:#ffd700" onclick="pickColor(this,'Golden Yellow')"></div>
-      <div class="cbtn" style="background:#fff" onclick="pickColor(this,'Pearly White')"></div>
-      <div class="cbtn" style="background:#ff69b4" onclick="pickColor(this,'Hot Pink')"></div>
+
+  <!-- Step 2: Create Viking -->
+
+  <p class="step-header">🪖 Create Your Viking</p>
+  <div class="viking-creator">
+    <div class="viking-preview"><canvas id="viking-canvas" width="80" height="100"></canvas></div>
+    <div class="vc-row">
+      <span class="vc-label">Name:</span>
+      <input class="vc-text" id="viking-name" type="text" placeholder="e.g. Astrid...">
     </div>
-    <label>Special Power:</label>
-    <div class="power-row">
-      <button class="pbtn selected" onclick="pickPower(this,'Plasma Blast')">🔥 Plasma Blast</button>
-      <button class="pbtn" onclick="pickPower(this,'Lightning Strike')">⚡ Lightning Strike</button>
-      <button class="pbtn" onclick="pickPower(this,'Ice Breath')">❄️ Ice Breath</button>
-      <button class="pbtn" onclick="pickPower(this,'Tornado Spin')">💨 Tornado Spin</button>
-      <button class="pbtn" onclick="pickPower(this,'Magic Shield')">✨ Magic Shield</button>
+    <div class="vc-row">
+      <span class="vc-label">Skin:</span>
+      <div class="vc-options" id="skin-opts">
+        <div class="vc-opt sel" style="background:#f5c5a3" onclick="setViking('skin','#f5c5a3',this)"></div>
+        <div class="vc-opt" style="background:#c68642" onclick="setViking('skin','#c68642',this)"></div>
+        <div class="vc-opt" style="background:#8d5524" onclick="setViking('skin','#8d5524',this)"></div>
+        <div class="vc-opt" style="background:#fde8c8" onclick="setViking('skin','#fde8c8',this)"></div>
+      </div>
+    </div>
+    <div class="vc-row">
+      <span class="vc-label">Hair:</span>
+      <div class="vc-options" id="hair-opts">
+        <div class="vc-opt sel" style="background:#3d2b1f" onclick="setViking('hair','#3d2b1f',this)"></div>
+        <div class="vc-opt" style="background:#c8a045" onclick="setViking('hair','#c8a045',this)"></div>
+        <div class="vc-opt" style="background:#8b0000" onclick="setViking('hair','#8b0000',this)"></div>
+        <div class="vc-opt" style="background:#aaa" onclick="setViking('hair','#aaa',this)"></div>
+        <div class="vc-opt" style="background:#1a1a1a" onclick="setViking('hair','#1a1a1a',this)"></div>
+      </div>
+    </div>
+    <div class="vc-row">
+      <span class="vc-label">Tunic:</span>
+      <div class="vc-options" id="tunic-opts">
+        <div class="vc-opt sel" style="background:#4a6741" onclick="setViking('tunic','#4a6741',this)"></div>
+        <div class="vc-opt" style="background:#7a4530" onclick="setViking('tunic','#7a4530',this)"></div>
+        <div class="vc-opt" style="background:#2a4a7a" onclick="setViking('tunic','#2a4a7a',this)"></div>
+        <div class="vc-opt" style="background:#5a3a6a" onclick="setViking('tunic','#5a3a6a',this)"></div>
+        <div class="vc-opt" style="background:#2a2a2a" onclick="setViking('tunic','#2a2a2a',this)"></div>
+      </div>
+    </div>
+    <div class="vc-row">
+      <span class="vc-label">Helmet:</span>
+      <div class="vc-options" id="helm-opts">
+        <div class="vc-opt sel" style="background:#888;font-size:1.1em" onclick="setViking('helm','iron',this)">🪖</div>
+        <div class="vc-opt" style="background:#c8a000;font-size:1.1em" onclick="setViking('helm','gold',this)">👑</div>
+        <div class="vc-opt" style="background:#555;font-size:1.1em" onclick="setViking('helm','horn',this)">🐂</div>
+        <div class="vc-opt" style="background:transparent;border:1.5px solid #555;font-size:0.9em" onclick="setViking('helm','none',this)">✗</div>
+      </div>
+    </div>
+    <div class="vc-row">
+      <span class="vc-label">Dragon:</span>
+      <input class="vc-text" id="dragon-name" type="text" placeholder="Nickname...">
     </div>
   </div>
-  <button class="big-btn" onclick="startWorld()">Enter Dragon World! 🌍</button>
+
+<button class="start-btn" onclick="startWorld()">Enter Berk! 🐉</button>
+
 </div>
 
-<!-- WORLD SCREEN -->
+<!-- ===== WORLD SCREEN ===== -->
 
 <div id="s-world" class="screen">
-  <!-- Sky + Ground -->
-  <div id="sky"></div>
-  <div id="horizon"></div>
-  <div id="ground"></div>
-
-  <!-- Clouds -->
-
-  <div id="cloud1" class="cloud" style="width:110px;height:38px;top:8%;left:10%;"></div>
-  <div id="cloud2" class="cloud" style="width:80px;height:28px;top:14%;left:55%;"></div>
-  <div id="cloud3" class="cloud" style="width:130px;height:42px;top:6%;left:75%;"></div>
-
-  <!-- Scenery objects -->
-
-  <div class="scenery" id="scen-village" style="bottom:47%;left:8%">
-    <span class="scenery-icon">🏘️</span>
-    <span class="scenery-label" onclick="visitLoc('village')">Village</span>
-  </div>
-  <div class="scenery" id="scen-fish" style="bottom:46%;left:28%">
-    <span class="scenery-icon">🐟</span>
-    <span class="scenery-label" onclick="feedDragon()">Fish Stand</span>
-  </div>
-  <div class="scenery" id="scen-smith" style="bottom:47%;left:50%">
-    <span class="scenery-icon">🔨</span>
-    <span class="scenery-label" onclick="openShop()">Blacksmith</span>
-  </div>
-  <div class="scenery" id="scen-water" style="bottom:46%;left:68%">
-    <span class="scenery-icon">💧</span>
-    <span class="scenery-label" onclick="waterDragon()">Watering Hole</span>
-  </div>
-  <div class="scenery" id="scen-arena" style="bottom:47%;right:6%">
-    <span class="scenery-icon">⚔️</span>
-    <span class="scenery-label" onclick="visitLoc('arena')">Arena</span>
-  </div>
-
-  <!-- Sun -->
-
-  <div style="position:absolute;top:5%;right:8%;font-size:2.5em;z-index:5">☀️</div>
-
-  <!-- Dragon -->
-
-  <div id="dragon-wrap">
-    <span id="dragon-sprite">🐉</span>
-    <div id="dragon-shadow"></div>
-  </div>
-
-  <!-- Mode badge -->
+  <canvas id="world-canvas"></canvas>
 
   <div id="mode-badge">🚶 Walking</div>
 
-  <!-- HUD -->
-
   <div id="hud">
-    <div class="hud-card">
-      <div class="hud-name" id="hud-name">Dragon</div>
-      <div style="font-size:0.68em;color:#aad4ff" id="hud-type"></div>
+    <div class="hud-box">
+      <div class="hud-name" id="hud-name">Viking</div>
+      <div style="font-size:0.65em;color:#aad4ff" id="hud-dragon-name"></div>
     </div>
-    <div class="hud-card">
-      <div class="stat-row"><span class="stat-label">🍖 Food</span><div class="stat-bar"><div class="stat-fill fill-food" id="bar-food" style="width:70%"></div></div></div>
-      <div class="stat-row"><span class="stat-label">💧 Water</span><div class="stat-bar"><div class="stat-fill fill-water" id="bar-water" style="width:70%"></div></div></div>
-      <div class="stat-row"><span class="stat-label">😄 Happy</span><div class="stat-bar"><div class="stat-fill fill-happy" id="bar-happy" style="width:70%"></div></div></div>
-      <div class="stat-row"><span class="stat-label">🪙 Coins</span><div class="stat-bar"><div class="stat-fill fill-coins" id="bar-coins" style="width:0%"></div></div><span id="coin-count" style="font-size:0.68em;color:#ffd700;margin-left:4px">0</span></div>
+    <div class="hud-box">
+      <div class="srow"><span class="slabel">🍖 Food</span><div class="sbar"><div class="sfill f-food" id="b-food" style="width:70%"></div></div></div>
+      <div class="srow"><span class="slabel">💧 Water</span><div class="sbar"><div class="sfill f-water" id="b-water" style="width:70%"></div></div></div>
+      <div class="srow"><span class="slabel">😄 Happy</span><div class="sbar"><div class="sfill f-happy" id="b-happy" style="width:70%"></div></div></div>
+      <div class="srow"><span class="slabel">🪙 Coins</span><div class="sbar"><div class="sfill f-coins" id="b-coins" style="width:0%"></div></div><span id="coin-num">0</span></div>
     </div>
   </div>
-
-  <!-- Controls: d-pad + mode buttons -->
-
-  <div id="controls">
-    <!-- D-PAD left -->
-    <div id="dpad">
-      <div></div>
-      <div class="dpad-btn" id="btn-up"    onpointerdown="dpad('up',true)"    onpointerup="dpad('up',false)"    onpointerleave="dpad('up',false)">▲</div>
-      <div></div>
-      <div class="dpad-btn" id="btn-left"  onpointerdown="dpad('left',true)"  onpointerup="dpad('left',false)"  onpointerleave="dpad('left',false)">◄</div>
-      <div class="dpad-center"></div>
-      <div class="dpad-btn" id="btn-right" onpointerdown="dpad('right',true)" onpointerup="dpad('right',false)" onpointerleave="dpad('right',false)">►</div>
-      <div></div>
-      <div class="dpad-btn" id="btn-down"  onpointerdown="dpad('down',true)"  onpointerup="dpad('down',false)"  onpointerleave="dpad('down',false)">▼</div>
-      <div></div>
-    </div>
-
-```
-<!-- Mode buttons right -->
-<div id="mode-btns">
-  <button class="mode-btn active-mode" id="btn-walk" onclick="setMode('walk')">🚶 Walk</button>
-  <button class="mode-btn" id="btn-run"  onclick="setMode('run')">💨 Run</button>
-  <button class="mode-btn" id="btn-fly"  onclick="setMode('fly')">🦅 Fly</button>
-</div>
-```
-
-  </div>
-
-  <!-- Action bar -->
 
   <div id="action-bar">
-    <button class="abtn btn-quest"  onclick="doAction('quest')">🗺️ Quest</button>
-    <button class="abtn btn-rescue" onclick="doAction('rescue')">🆘 Rescue</button>
-    <button class="abtn btn-battle" onclick="doAction('battle')">⚔️ Battle</button>
-    <button class="abtn btn-game"   onclick="openGameMenu()">🎮 Games</button>
-    <button class="abtn btn-shop"   onclick="openShop()">🛒 Shop</button>
+    <button class="abtn ab-feed"   onclick="feedDragon()">🐟 Feed</button>
+    <button class="abtn ab-water"  onclick="waterDragon()">💧 Water</button>
+    <button class="abtn ab-arena"  onclick="openArena()">🏋️ Train</button>
+    <button class="abtn ab-battle" onclick="openBattle()">⚔️ Battle</button>
+    <button class="abtn ab-shop"   onclick="openShop()">🔨 Shop</button>
+    <button class="abtn ab-game"   onclick="openGameMenu()">🎮 Games</button>
+    <button class="abtn ab-sleep"  onclick="trySleep()">🌙 Sleep</button>
+  </div>
+
+  <div id="controls">
+    <div id="dpad">
+      <div></div>
+      <div class="dp" onpointerdown="dk('up',1)" onpointerup="dk('up',0)" onpointerleave="dk('up',0)">▲</div>
+      <div></div>
+      <div class="dp" onpointerdown="dk('left',1)" onpointerup="dk('left',0)" onpointerleave="dk('left',0)">◄</div>
+      <div style="background:rgba(0,0,0,0.3);border-radius:9px;"></div>
+      <div class="dp" onpointerdown="dk('right',1)" onpointerup="dk('right',0)" onpointerleave="dk('right',0)">►</div>
+      <div></div>
+      <div class="dp" onpointerdown="dk('down',1)" onpointerup="dk('down',0)" onpointerleave="dk('down',0)">▼</div>
+      <div></div>
+    </div>
+    <div id="mode-btns">
+      <button class="mbtn am" id="mb-walk" onclick="setMode('walk')">🚶 Walk</button>
+      <button class="mbtn" id="mb-run" onclick="setMode('run')">💨 Run</button>
+      <button class="mbtn" id="mb-fly" onclick="setMode('fly')">🦅 Fly</button>
+    </div>
   </div>
 </div>
 
 <!-- POPUP -->
 
-<div class="popup-overlay" id="popup">
-  <div class="popup">
-    <div class="popup-title" id="popup-title"></div>
-    <div id="popup-body"></div>
-    <button class="close-btn" onclick="closePopup()">Close ✕</button>
+<div class="pov" id="popup">
+  <div class="pop">
+    <div class="pop-title" id="ptitle"></div>
+    <div id="pbody"></div>
+    <button class="cbtn" onclick="closePopup()">Close ✕</button>
   </div>
 </div>
 
 <script>
-// ========== STATE ==========
-var d = {name:'Toothless', type:'Night Fury', emoji:'🐉', nickname:'', color:'Midnight Black', power:'Plasma Blast'};
-var stats = {food:70, water:70, happy:70};
-var coins = 0;
-var MAX_COINS = 100;
-var ownedSaddles = [];
-
-var saddles = [
-  {id:'basic',  emoji:'🟤', name:'Basic Saddle',  price:5,  desc:'A sturdy saddle for new riders!'},
-  {id:'royal',  emoji:'👑', name:'Royal Saddle',  price:15, desc:'Fit for a Viking champion!'},
-  {id:'fire',   emoji:'🔥', name:'Fire Saddle',   price:20, desc:'Heat-resistant and blazing fast!'},
-  {id:'shadow', emoji:'🌑', name:'Shadow Saddle', price:25, desc:'Blends into the night!'},
-  {id:'ice',    emoji:'❄️', name:'Ice Saddle',    price:30, desc:'Cool and sleek!'},
-  {id:'golden', emoji:'✨', name:'Golden Saddle', price:40, desc:'The rarest saddle in Berk!'}
+// ============================================================
+// DRAGON DEFINITIONS with SVG-style canvas drawing
+// ============================================================
+var DRAGONS = [
+  {id:'toothless', name:'Toothless', type:'Night Fury', color:'#1a1a2e', accent:'#4a4a8a', eye:'#22d3ee', fire:'#4af', desc:'The most powerful dragon', bodyShape:'sleek'},
+  {id:'lightfury', name:'Light Fury', type:'Light Fury', color:'#e8e8f0', accent:'#b0b8d0', eye:'#a0d8ef', fire:'#aef', desc:'Pure and elegant', bodyShape:'sleek'},
+  {id:'stormfly', name:'Stormfly', type:'Deadly Nadder', color:'#3a7bd5', accent:'#ffd700', eye:'#ff6b35', fire:'#fa0', desc:'Quick and loyal', bodyShape:'nadder'},
+  {id:'hookfang', name:'Hookfang', type:'Monstrous Nightmare', color:'#cc2200', accent:'#ff6600', eye:'#ffd700', fire:'#f60', desc:'Bold and fierce', bodyShape:'nightmare'},
+  {id:'meatlug', name:'Meatlug', type:'Gronckle', color:'#7a6a5a', accent:'#5a4a3a', eye:'#ffd700', fire:'#f80', desc:'Strong and sweet', bodyShape:'gronckle'},
+  {id:'cloudjumper', name:'Cloudjumper', type:'Stormcutter', color:'#8a5a2a', accent:'#d4a050', eye:'#ff6b35', fire:'#fa3', desc:'Four-winged and wise', bodyShape:'stormcutter'},
 ];
 
-// ========== MOVEMENT ==========
-var drX = 150;   // dragon x position (px from left)
-var drY = 0;     // dragon y offset from ground (0 = on ground)
-var velY = 0;    // vertical velocity (for flying)
-var facing = 1;  // 1 = right, -1 = left
-var mode = 'walk'; // walk | run | fly
-var SPEED = {walk:2, run:5, fly:4};
-var keys = {up:false, down:false, left:false, right:false};
-var groundY = 0; // calculated in init
+// Draw a dragon on a canvas ctx
+function drawDragon(ctx, dragon, x, y, scale, facingRight, flyMode, frame) {
+  ctx.save();
+  ctx.translate(x, y);
+  if(!facingRight) ctx.scale(-1, 1);
+  ctx.scale(scale, scale);
 
-var drWrap = null;
-var drSprite = null;
-var drShadow = null;
-var animFrame = 0;
-var gameLoop = null;
+  var c = dragon.color;
+  var a = dragon.accent;
+  var e = dragon.eye;
 
-function setMode(m) {
-  mode = m;
-  document.querySelectorAll('.mode-btn').forEach(function(b){ b.classList.remove('active-mode'); });
-  document.getElementById('btn-'+m).classList.add('active-mode');
+  // Slight bob animation
+  var bob = flyMode ? Math.sin(frame * 0.06) * 4 : 0;
 
-  var badge = document.getElementById('mode-badge');
-  if(m==='walk') { badge.textContent='🚶 Walking'; badge.style.borderColor='rgba(39,174,96,0.7)'; }
-  if(m==='run')  { badge.textContent='💨 Running!'; badge.style.borderColor='rgba(230,126,34,0.7)'; }
-  if(m==='fly')  { badge.textContent='🦅 Flying!'; badge.style.borderColor='rgba(41,128,185,0.7)'; }
-
-  // Sky changes when flying
-  var sky = document.getElementById('sky');
-  if(m==='fly') sky.style.background='linear-gradient(180deg,#1a4a7a 0%,#3a9bd5 60%,#87CEEB 100%)';
-  else sky.style.background='linear-gradient(180deg,#3a9bd5 0%,#87CEEB 70%,#b8e0f7 100%)';
-
-  // If switching away from fly, bring dragon back to ground
-  if(m!=='fly') { velY=0; }
-}
-
-function dpad(dir, pressed) {
-  keys[dir] = pressed;
-  var el = document.getElementById('btn-'+dir);
-  if(el) { if(pressed) el.classList.add('pressed'); else el.classList.remove('pressed'); }
-}
-
-function tick() {
-  var w = window.innerWidth;
-  var h = window.innerHeight;
-  groundY = h * 0.50; // y position of ground surface
-
-  var speed = SPEED[mode];
-  var moved = false;
-
-  if(keys.left)  { drX -= speed; facing = -1; moved = true; }
-  if(keys.right) { drX += speed; facing = 1;  moved = true; }
-
-  if(mode === 'fly') {
-    if(keys.up)   { velY -= 0.5; }
-    if(keys.down) { velY += 0.5; }
-    velY *= 0.92; // damping
-    drY -= velY;
-    // clamp: can't fly below ground or too high
-    var maxHeight = h * 0.55;
-    if(drY < 0) { drY = 0; velY = 0; }
-    if(drY > maxHeight) { drY = maxHeight; velY = 0; }
+  if(dragon.bodyShape === 'gronckle') {
+    drawGronckle(ctx, c, a, e, bob, frame, flyMode);
+  } else if(dragon.bodyShape === 'nadder') {
+    drawNadder(ctx, c, a, e, bob, frame, flyMode);
+  } else if(dragon.bodyShape === 'nightmare') {
+    drawNightmare(ctx, c, a, e, bob, frame, flyMode);
   } else {
-    // on ground: up/down don't apply, bounce Y to 0
-    drY = 0;
+    drawSleekDragon(ctx, c, a, e, bob, frame, flyMode);
   }
+  ctx.restore();
+}
 
-  // Clamp X
-  if(drX < 10) drX = 10;
-  if(drX > w - 80) drX = w - 80;
-
-  // Position dragon
-  var bottomPx = (h * 0.48) + drY; // distance from top
-  var topPx = h - bottomPx - 70;    // convert to top offset
-  drWrap.style.left = drX + 'px';
-  drWrap.style.top  = topPx + 'px';
-
-  // Flip sprite
-  drSprite.style.transform = 'scaleX(' + facing + ')';
-
-  // Bounce animation while moving
-  animFrame++;
-  if(moved && mode !== 'fly') {
-    var bounce = Math.sin(animFrame * 0.4) * 4;
-    drSprite.style.marginBottom = bounce + 'px';
-  } else {
-    drSprite.style.marginBottom = '0px';
+function drawSleekDragon(ctx, c, a, e, bob, frame, fly) {
+  var wFlap = fly ? Math.sin(frame*0.15)*18 : Math.sin(frame*0.04)*5;
+  // Wings
+  ctx.fillStyle = a;
+  ctx.globalAlpha = 0.85;
+  // Left wing
+  ctx.beginPath();
+  ctx.moveTo(-5, -8+bob);
+  ctx.bezierCurveTo(-30, -30+wFlap+bob, -60, -20+wFlap+bob, -55, 10+bob);
+  ctx.bezierCurveTo(-40, 5+bob, -20, 0+bob, -5, 5+bob);
+  ctx.fill();
+  // Right wing
+  ctx.beginPath();
+  ctx.moveTo(5, -8+bob);
+  ctx.bezierCurveTo(30, -30+wFlap+bob, 60, -20+wFlap+bob, 55, 10+bob);
+  ctx.bezierCurveTo(40, 5+bob, 20, 0+bob, 5, 5+bob);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  // Body
+  ctx.fillStyle = c;
+  ctx.beginPath();
+  ctx.ellipse(0, 5+bob, 18, 12, 0, 0, Math.PI*2);
+  ctx.fill();
+  // Tail
+  ctx.beginPath();
+  ctx.moveTo(-14, 8+bob);
+  ctx.bezierCurveTo(-30, 14+bob, -42, 8+bob, -38, 2+bob);
+  ctx.bezierCurveTo(-34, -4+bob, -20, 2+bob, -14, 5+bob);
+  ctx.fill();
+  // Tail fin (Night Fury split tail)
+  ctx.fillStyle = a;
+  ctx.beginPath();
+  ctx.moveTo(-38, 2+bob);
+  ctx.bezierCurveTo(-50, -8+bob, -52, -15+bob, -46, -14+bob);
+  ctx.bezierCurveTo(-42, -12+bob, -40, -5+bob, -38, 2+bob);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-38, 2+bob);
+  ctx.bezierCurveTo(-50, 10+bob, -52, 18+bob, -46, 18+bob);
+  ctx.bezierCurveTo(-42, 16+bob, -40, 8+bob, -38, 2+bob);
+  ctx.fill();
+  // Head
+  ctx.fillStyle = c;
+  ctx.beginPath();
+  ctx.ellipse(16, -4+bob, 12, 9, -0.2, 0, Math.PI*2);
+  ctx.fill();
+  // Snout
+  ctx.beginPath();
+  ctx.ellipse(25, 0+bob, 7, 5, 0.3, 0, Math.PI*2);
+  ctx.fill();
+  // Eye
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.ellipse(20, -5+bob, 4.5, 5, -0.2, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = e;
+  ctx.beginPath();
+  ctx.ellipse(20, -5+bob, 3, 4, -0.2, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.ellipse(21, -5.5+bob, 1.5, 2.5, -0.2, 0, Math.PI*2);
+  ctx.fill();
+  // Nostril
+  ctx.fillStyle = a;
+  ctx.beginPath();
+  ctx.ellipse(27, 1+bob, 1.5, 1, 0, 0, Math.PI*2);
+  ctx.fill();
+  // Legs
+  ctx.fillStyle = c;
+  ctx.beginPath(); ctx.ellipse(-2, 16+bob, 4, 6, 0.2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(8, 17+bob, 4, 6, -0.2, 0, Math.PI*2); ctx.fill();
+  // Claws
+  ctx.fillStyle = '#aaa';
+  for(var i=-1;i<=1;i++){
+    ctx.beginPath(); ctx.ellipse(-2+i*2.5, 22+bob, 1, 2.5, i*0.2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(8+i*2.5, 23+bob, 1, 2.5, i*0.2, 0, Math.PI*2); ctx.fill();
   }
-
-  // Shadow: shrinks as dragon flies higher
-  var shadowScale = Math.max(0.1, 1 - drY / 300);
-  var shadowOpacity = Math.max(0.05, 0.25 * shadowScale);
-  drShadow.style.transform = 'scaleX(' + shadowScale + ')';
-  drShadow.style.opacity = shadowOpacity;
-
-  // Flying bob
-  if(mode === 'fly' && !keys.up && !keys.down) {
-    var flyBob = Math.sin(animFrame * 0.06) * 5;
-    drSprite.style.marginTop = flyBob + 'px';
-  } else {
-    drSprite.style.marginTop = '0px';
-  }
-
-  // Coin proximity check
-  checkCoinProximity();
-
-  gameLoop = requestAnimationFrame(tick);
-}
-
-function checkCoinProximity() {
-  var coins_el = document.querySelectorAll('.floating-coin');
-  for(var i=0;i<coins_el.length;i++){
-    var c = coins_el[i];
-    var cr = c.getBoundingClientRect();
-    var cx = cr.left + cr.width/2;
-    var cy = cr.top + cr.height/2;
-    var dr = drWrap.getBoundingClientRect();
-    var dx = cx - (dr.left + dr.width/2);
-    var dy = cy - (dr.top + dr.height/2);
-    var dist = Math.sqrt(dx*dx + dy*dy);
-    if(dist < 55) collectCoin(c);
-  }
-}
-
-// ========== SETUP ==========
-function go(id) {
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
-  document.getElementById(id).classList.add('active');
-}
-function pick(el, name, type, emoji) {
-  document.querySelectorAll('.dragon-card').forEach(function(c){c.classList.remove('selected');});
-  el.classList.add('selected');
-  d.name=name; d.type=type; d.emoji=emoji;
-}
-function pickColor(el, color) {
-  document.querySelectorAll('.cbtn').forEach(function(b){b.classList.remove('selected');});
-  el.classList.add('selected'); d.color=color;
-}
-function pickPower(el, power) {
-  document.querySelectorAll('.pbtn').forEach(function(b){b.classList.remove('selected');});
-  el.classList.add('selected'); d.power=power;
-}
-function getN() { return d.nickname || d.name; }
-
-function startWorld() {
-  d.nickname = document.getElementById('nickname').value || d.name;
-  document.getElementById('hud-name').textContent = d.nickname;
-  document.getElementById('hud-type').textContent = d.color + ' ' + d.type;
-
-  drWrap = document.getElementById('dragon-wrap');
-  drSprite = document.getElementById('dragon-sprite');
-  drShadow = document.getElementById('dragon-shadow');
-  drSprite.textContent = d.emoji;
-
-  // Start in middle-left
-  drX = window.innerWidth * 0.2;
-  drY = 0;
-
-  go('s-world');
-  spawnCoins();
-  setInterval(spawnCoins, 12000);
-  setInterval(function(){ changeStat('food',-1); changeStat('water',-1); }, 15000);
-
-  // Start game loop
-  if(gameLoop) cancelAnimationFrame(gameLoop);
-  tick();
-}
-
-// ========== STATS ==========
-function changeStat(stat, amount) {
-  stats[stat] = Math.max(0, Math.min(100, stats[stat] + amount));
-  document.getElementById('bar-'+stat).style.width = stats[stat]+'%';
-  if(stat==='food'||stat==='water'){
-    stats.happy = Math.max(0,Math.min(100,(stats.food+stats.water)/2));
-    document.getElementById('bar-happy').style.width = stats.happy+'%';
+  // Spine spikes
+  ctx.fillStyle = a;
+  for(var s=0;s<4;s++){
+    ctx.beginPath();
+    var sx = -6+s*7, sy = -10+bob;
+    ctx.moveTo(sx, sy); ctx.lineTo(sx-3, sy-8-s*1.5); ctx.lineTo(sx+3, sy); ctx.fill();
   }
 }
 
-// ========== COINS ==========
-function spawnCoins() {
-  document.querySelectorAll('.floating-coin').forEach(function(c){c.remove();});
-  var sky = document.getElementById('s-world');
-  for(var i=0;i<8;i++){
-    var coin = document.createElement('div');
-    coin.className='floating-coin';
-    coin.textContent='🪙';
-    var left = 5 + Math.random()*88;
-    var top  = 15 + Math.random()*55;
-    coin.style.cssText='left:'+left+'%;top:'+top+'%;animation-delay:'+(Math.random()*2)+'s;position:absolute;z-index:15;';
-    sky.appendChild(coin);
+function drawNadder(ctx, c, a, e, bob, frame, fly) {
+  var wFlap = fly ? Math.sin(frame*0.15)*20 : Math.sin(frame*0.04)*6;
+  // Wings
+  ctx.fillStyle = a; ctx.globalAlpha = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(0, 0+bob);
+  ctx.bezierCurveTo(-20, -35+wFlap+bob, -55, -25+wFlap+bob, -50, 12+bob);
+  ctx.bezierCurveTo(-30, 5+bob, -15, 3+bob, 0, 6+bob);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(0, 0+bob);
+  ctx.bezierCurveTo(20, -35+wFlap+bob, 55, -25+wFlap+bob, 50, 12+bob);
+  ctx.bezierCurveTo(30, 5+bob, 15, 3+bob, 0, 6+bob);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  // Body
+  ctx.fillStyle = c;
+  ctx.beginPath(); ctx.ellipse(0, 8+bob, 14, 10, 0, 0, Math.PI*2); ctx.fill();
+  // Long neck
+  ctx.beginPath(); ctx.moveTo(5, 0+bob); ctx.lineTo(14, -18+bob); ctx.lineTo(20, -16+bob); ctx.lineTo(8, 4+bob); ctx.fill();
+  // Head (smaller, rounder for Nadder)
+  ctx.beginPath(); ctx.ellipse(17, -22+bob, 9, 7, -0.3, 0, Math.PI*2); ctx.fill();
+  // Beak
+  ctx.fillStyle = a;
+  ctx.beginPath(); ctx.moveTo(24, -22+bob); ctx.lineTo(35, -20+bob); ctx.lineTo(24, -17+bob); ctx.fill();
+  // Eye
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(14, -24+bob, 3.5, 4, -0.3, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = e; ctx.beginPath(); ctx.ellipse(14, -24+bob, 2.5, 3, -0.3, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(14.5, -24.5+bob, 1.2, 2, -0.3, 0, Math.PI*2); ctx.fill();
+  // Tail
+  ctx.fillStyle = c;
+  ctx.beginPath(); ctx.moveTo(-12, 10+bob); ctx.bezierCurveTo(-28, 12+bob, -38, 5+bob, -35, -2+bob); ctx.bezierCurveTo(-30, -6+bob, -18, 2+bob, -12, 6+bob); ctx.fill();
+  // Tail spikes
+  ctx.fillStyle = a;
+  for(var i=0;i<3;i++){
+    ctx.beginPath(); ctx.moveTo(-28+i*5, -2+bob); ctx.lineTo(-30+i*5, -12-i*3+bob); ctx.lineTo(-24+i*5, -2+bob); ctx.fill();
+  }
+  // Back spikes
+  ctx.fillStyle = a;
+  for(var s=0;s<5;s++){
+    ctx.beginPath(); ctx.moveTo(-8+s*5, -3+bob); ctx.lineTo(-9+s*5, -11-s+bob); ctx.lineTo(-5+s*5, -3+bob); ctx.fill();
+  }
+  // Legs
+  ctx.fillStyle = c;
+  ctx.beginPath(); ctx.ellipse(-4, 18+bob, 3, 5, 0.2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(6, 18+bob, 3, 5, -0.2, 0, Math.PI*2); ctx.fill();
+}
+
+function drawNightmare(ctx, c, a, e, bob, frame, fly) {
+  var wFlap = fly ? Math.sin(frame*0.14)*22 : Math.sin(frame*0.04)*5;
+  // Long wings (Nightmare style)
+  ctx.fillStyle = a; ctx.globalAlpha = 0.85;
+  ctx.beginPath();
+  ctx.moveTo(0, 0+bob);
+  ctx.bezierCurveTo(-15, -28+wFlap+bob, -65, -18+wFlap+bob, -60, 15+bob);
+  ctx.bezierCurveTo(-40, 8+bob, -20, 5+bob, 0, 8+bob);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(0, 0+bob);
+  ctx.bezierCurveTo(15, -28+wFlap+bob, 65, -18+wFlap+bob, 60, 15+bob);
+  ctx.bezierCurveTo(40, 8+bob, 20, 5+bob, 0, 8+bob);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  // Larger body
+  ctx.fillStyle = c;
+  ctx.beginPath(); ctx.ellipse(0, 10+bob, 20, 13, 0, 0, Math.PI*2); ctx.fill();
+  // Head
+  ctx.beginPath(); ctx.ellipse(18, -2+bob, 14, 10, -0.15, 0, Math.PI*2); ctx.fill();
+  // Horns
+  ctx.fillStyle = a;
+  ctx.beginPath(); ctx.moveTo(22, -10+bob); ctx.lineTo(18, -22+bob); ctx.lineTo(26, -10+bob); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(16, -11+bob); ctx.lineTo(10, -22+bob); ctx.lineTo(18, -11+bob); ctx.fill();
+  // Snout
+  ctx.fillStyle = c;
+  ctx.beginPath(); ctx.ellipse(29, 2+bob, 8, 5.5, 0.25, 0, Math.PI*2); ctx.fill();
+  // Eye
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(22, -3+bob, 5, 6, -0.1, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = e; ctx.beginPath(); ctx.ellipse(22, -3+bob, 3.5, 5, -0.1, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(23, -3.5+bob, 1.5, 3, -0.1, 0, Math.PI*2); ctx.fill();
+  // Tail
+  ctx.fillStyle = c;
+  ctx.beginPath(); ctx.moveTo(-16, 14+bob); ctx.bezierCurveTo(-35, 16+bob, -48, 6+bob, -44, -2+bob); ctx.bezierCurveTo(-38, -8+bob, -24, 4+bob, -16, 10+bob); ctx.fill();
+  ctx.fillStyle = a;
+  ctx.beginPath(); ctx.moveTo(-44, -2+bob); ctx.bezierCurveTo(-55, -14+bob, -58, -22+bob, -52, -18+bob); ctx.bezierCurveTo(-48, -14+bob, -46, -8+bob, -44, -2+bob); ctx.fill();
+  // Legs
+  ctx.fillStyle = c;
+  ctx.beginPath(); ctx.ellipse(-4, 22+bob, 5, 7, 0.2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(8, 23+bob, 5, 7, -0.2, 0, Math.PI*2); ctx.fill();
+  // Spines
+  ctx.fillStyle = a;
+  for(var s=0;s<5;s++){
+    ctx.beginPath(); ctx.moveTo(-10+s*7, -4+bob); ctx.lineTo(-12+s*7, -14-s*1.5+bob); ctx.lineTo(-6+s*7, -4+bob); ctx.fill();
   }
 }
 
-function collectCoin(el) {
-  el.remove();
-  if(coins >= MAX_COINS) return;
-  coins++;
-  updateCoins();
-  var flash = document.createElement('div');
-  flash.className='coin-flash';
-  flash.textContent='+1 🪙';
-  document.body.appendChild(flash);
-  setTimeout(function(){ flash.remove(); },1000);
+function drawGronckle(ctx, c, a, e, bob, frame, fly) {
+  var wFlap = fly ? Math.sin(frame*0.12)*14 : Math.sin(frame*0.04)*3;
+  // Small stubby wings
+  ctx.fillStyle = a; ctx.globalAlpha=0.8;
+  ctx.beginPath(); ctx.moveTo(-5, 0+bob); ctx.bezierCurveTo(-20, -20+wFlap+bob, -40, -10+wFlap+bob, -35, 10+bob); ctx.bezierCurveTo(-22, 5+bob, -12, 3+bob, -5, 5+bob); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(5, 0+bob); ctx.bezierCurveTo(20, -20+wFlap+bob, 40, -10+wFlap+bob, 35, 10+bob); ctx.bezierCurveTo(22, 5+bob, 12, 3+bob, 5, 5+bob); ctx.fill();
+  ctx.globalAlpha=1;
+  // Fat round body
+  ctx.fillStyle = c;
+  ctx.beginPath(); ctx.ellipse(0, 10+bob, 22, 16, 0, 0, Math.PI*2); ctx.fill();
+  // Rocky bumps
+  ctx.fillStyle = a;
+  for(var i=0;i<6;i++){
+    var bx=[-14,-5,4,12,-10,8][i], by=[-2,2,-4,0,10,8][i];
+    ctx.beginPath(); ctx.ellipse(bx, by+bob, 4, 3, i*0.5, 0, Math.PI*2); ctx.fill();
+  }
+  // Round head
+  ctx.fillStyle = c;
+  ctx.beginPath(); ctx.ellipse(18, 2+bob, 13, 11, -0.1, 0, Math.PI*2); ctx.fill();
+  // Eye
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(15, -1+bob, 4, 5, -0.1, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = e; ctx.beginPath(); ctx.ellipse(15, -1+bob, 3, 4, -0.1, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(15.5, -1.5+bob, 1.3, 2.2, -0.1, 0, Math.PI*2); ctx.fill();
+  // Snout / jaw
+  ctx.fillStyle = c;
+  ctx.beginPath(); ctx.ellipse(28, 4+bob, 8, 6, 0.2, 0, Math.PI*2); ctx.fill();
+  // Stubby legs
+  ctx.beginPath(); ctx.ellipse(-6, 25+bob, 6, 5, 0.1, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(6, 26+bob, 6, 5, -0.1, 0, Math.PI*2); ctx.fill();
+  // Tail (short)
+  ctx.beginPath(); ctx.moveTo(-20, 14+bob); ctx.bezierCurveTo(-32, 12+bob, -38, 6+bob, -34, 2+bob); ctx.bezierCurveTo(-28, 0+bob, -22, 8+bob, -20, 12+bob); ctx.fill();
 }
 
-function updateCoins() {
-  document.getElementById('bar-coins').style.width=(coins/MAX_COINS*100)+'%';
-  document.getElementById('coin-count').textContent=coins;
+// Draw Viking character on canvas
+function drawVikingOn(ctx, vc, x, y, scale) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+  // Legs
+  ctx.fillStyle='#5a5050';
+  ctx.fillRect(-6, 20, 5, 18);
+  ctx.fillRect(2, 20, 5, 18);
+  // Boots
+  ctx.fillStyle='#3a2a1a';
+  ctx.fillRect(-7, 34, 7, 5);
+  ctx.fillRect(1, 34, 7, 5);
+  // Tunic / body
+  ctx.fillStyle = vc.tunic;
+  ctx.beginPath(); ctx.roundRect(-12, 0, 25, 24, 4); ctx.fill();
+  // Belt
+  ctx.fillStyle='#3a2a1a';
+  ctx.fillRect(-12, 18, 25, 4);
+  // Arms
+  ctx.fillStyle = vc.tunic;
+  ctx.fillRect(-18, 2, 8, 16);
+  ctx.fillRect(11, 2, 8, 16);
+  // Hands
+  ctx.fillStyle = vc.skin;
+  ctx.beginPath(); ctx.ellipse(-14, 19, 4, 4, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(15, 19, 4, 4, 0, 0, Math.PI*2); ctx.fill();
+  // Neck
+  ctx.fillStyle = vc.skin;
+  ctx.fillRect(-4, -8, 9, 10);
+  // Head
+  ctx.beginPath(); ctx.ellipse(0, -18, 13, 13, 0, 0, Math.PI*2); ctx.fill();
+  // Hair
+  ctx.fillStyle = vc.hair;
+  ctx.beginPath(); ctx.ellipse(0, -24, 13, 8, 0, Math.PI, Math.PI*2); ctx.fill();
+  if(vc.helm === 'none') {
+    // Side hair
+    ctx.beginPath(); ctx.ellipse(-11, -18, 4, 8, -0.3, 0, Math.PI*2); ctx.fill();
+  }
+  // Eyes
+  ctx.fillStyle='#fff';
+  ctx.beginPath(); ctx.ellipse(-5, -18, 3, 3.5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(5, -18, 3, 3.5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle='#3a2010';
+  ctx.beginPath(); ctx.ellipse(-5, -18, 1.8, 2.2, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(5, -18, 1.8, 2.2, 0, 0, Math.PI*2); ctx.fill();
+  // Nose
+  ctx.fillStyle = vc.skin;
+  ctx.beginPath(); ctx.ellipse(0, -15, 2, 2.5, 0, 0, Math.PI*2); ctx.fill();
+  // Helmet
+  if(vc.helm === 'iron') {
+    ctx.fillStyle='#888';
+    ctx.beginPath(); ctx.ellipse(0, -26, 14, 10, 0, Math.PI, Math.PI*2); ctx.fill();
+    ctx.fillRect(-14, -26, 28, 4);
+    ctx.fillStyle='#666';
+    ctx.fillRect(-2, -28, 4, 14);
+  } else if(vc.helm === 'gold') {
+    ctx.fillStyle='#c8a000';
+    ctx.beginPath(); ctx.ellipse(0, -26, 14, 10, 0, Math.PI, Math.PI*2); ctx.fill();
+    ctx.fillRect(-14, -26, 28, 4);
+    for(var p=0;p<5;p++){ ctx.beginPath(); ctx.moveTo(-10+p*5,-26); ctx.lineTo(-8+p*5,-34); ctx.lineTo(-6+p*5,-26); ctx.fill(); }
+  } else if(vc.helm === 'horn') {
+    ctx.fillStyle='#666';
+    ctx.beginPath(); ctx.ellipse(0, -26, 14, 10, 0, Math.PI, Math.PI*2); ctx.fill();
+    ctx.fillRect(-14, -26, 28, 4);
+    ctx.fillStyle='#ddd';
+    ctx.beginPath(); ctx.moveTo(-14,-26); ctx.bezierCurveTo(-22,-30,-26,-38,-20,-36); ctx.bezierCurveTo(-16,-34,-14,-28,-14,-26); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(14,-26); ctx.bezierCurveTo(22,-30,26,-38,20,-36); ctx.bezierCurveTo(16,-34,14,-28,14,-26); ctx.fill();
+  }
+  ctx.restore();
 }
 
-// ========== FEED / WATER ==========
-function feedDragon() {
-  if(stats.food>=100){ showPopup('🐟 Already Full!',getN()+' is stuffed! Come back when they are hungry again.',''); return; }
-  changeStat('food',25);
-  showPopup('🐟 Fish Stand!','You grabbed a big bucket of fresh fish! '+getN()+' gobbled them up and roared happily!','<div class="outcome win">+25 Food!</div>');
-}
-function waterDragon() {
-  if(stats.water>=100){ showPopup('💧 Not Thirsty!',getN()+' just had a big drink!',''); return; }
-  changeStat('water',25);
-  showPopup('💧 Watering Hole!',getN()+' took a long refreshing drink from the sparkling watering hole!','<div class="outcome win">+25 Water!</div>');
-}
+// ============================================================
+// GAME STATE
+// ============================================================
+var viking = {skin:'#f5c5a3', hair:'#3d2b1f', tunic:'#4a6741', helm:'iron', name:'Viking'};
+var dragonData = DRAGONS[0];
+var dragonNickname = 'Toothless';
+var stats = {food:70,water:70,happy:70};
+var coins = 0; var MAX_COINS=100; var ownedSaddles=[];
+var mode='walk'; var keys={up:0,down:0,left:0,right:0};
+var drX=200, drY=0, velY=0, facing=1, animFrame=0;
+var isNight=false, sleepFade=0, dayTime=0;
+var worldCanvas, wctx;
+var worldW, worldH, groundLevel;
+// House state
+var nearHouse=false, insideHouse=false;
+var houseX=120, houseY=0;
 
-// ========== LOCATIONS ==========
-var locData = {
-  village:{t:'🏘️ The Village!', txt:'You soar over Berk! Vikings wave from below and kids cheer as your dragon swoops overhead!'},
-  arena:  {t:'⚔️ The Arena!',   txt:'The training arena has wooden targets, obstacle courses and rings of fire everywhere! Your dragon crouches and roars, ready to train!'}
+var saddles=[
+  {id:'basic',emoji:'🟤',name:'Basic Saddle',price:5,desc:'A sturdy saddle!'},
+  {id:'royal',emoji:'👑',name:'Royal Saddle',price:15,desc:'Fit for a champion!'},
+  {id:'fire',emoji:'🔥',name:'Fire Saddle',price:20,desc:'Heat-resistant!'},
+  {id:'shadow',emoji:'🌑',name:'Shadow Saddle',price:25,desc:'Blends into night!'},
+  {id:'ice',emoji:'❄️',name:'Ice Saddle',price:30,desc:'Cool and sleek!'},
+  {id:'golden',emoji:'✨',name:'Golden Saddle',price:40,desc:'Rarest in Berk!'}
+];
+
+// Floating coins positions
+var floatCoins=[];
+
+// ============================================================
+// TITLE SCREEN - Build Dragon Cards
+// ============================================================
+window.onload = function() {
+  var grid = document.getElementById('dragon-grid');
+  DRAGONS.forEach(function(dr, idx) {
+    var div = document.createElement('div');
+    div.className='dragon-card'+(idx===0?' sel':'');
+    div.onclick = function(){ selectDragon(dr, div); };
+    var cv = document.createElement('canvas');
+    cv.className='dc-canvas'; cv.width=90; cv.height=70;
+    var cx = cv.getContext('2d');
+    drawDragon(cx, dr, 30, 55, 0.7, true, false, 0);
+    div.appendChild(cv);
+    var n=document.createElement('div'); n.className='dc-name'; n.textContent=dr.name; div.appendChild(n);
+    var t=document.createElement('div'); t.className='dc-type'; t.textContent=dr.type; div.appendChild(t);
+    grid.appendChild(div);
+  });
+  drawVikingPreview();
 };
-function visitLoc(key) {
-  var l=locData[key];
-  showPopup(l.t,l.txt,'');
+
+function selectDragon(dr, el) {
+  dragonData = dr;
+  document.querySelectorAll('.dragon-card').forEach(function(c){c.classList.remove('sel');});
+  el.classList.add('sel');
 }
 
-// ========== ADVENTURES ==========
-var quests = [
-  {t:'🗺️ The Lost Map',       txt:'A mysterious map appeared showing a hidden island full of treasure! Fly through a fierce storm to reach it!'},
-  {t:'🏔️ The Frozen Mountain',txt:'Villagers are trapped on the mountain in a blizzard! Dodge falling rocks to guide them home.'},
-  {t:'🥚 The Stolen Egg',     txt:'Thieves stole a rare dragon egg! Chase them across three islands and outsmart their traps!'}
-];
-var rescues = [
-  {t:'🦇 Trapped in a Cave!', txt:'A young Gronckle is stuck in a collapsing cave! Carry it out before the entrance seals!'},
-  {t:'🕸️ Caught in a Net!',  txt:'A Deadly Nadder is tangled in a giant fishing net! Carefully burn through the ropes!'},
-  {t:'🐣 Lost Hatchlings!',   txt:'Three baby dragons wandered away! Find them all before nightfall!'}
-];
-var battles = [
-  {t:'🔴 The Red Death!',     txt:'A massive Red Death appeared off the coast! Dodge its fire blasts and find its weak spot!'},
-  {t:'🏆 Rival Rider!',       txt:'A rival Viking clan challenged you to a dragon battle in the arena! Prove you are the best!'},
-  {t:'🌙 Night Wing Attack!', txt:'A pack of Night Wings is swooping toward Berk! Lead them away!'}
-];
-var flyTricks = [
-  {t:'🌀 The Spiral Dive!',   txt:'You pull into a tight corkscrew spin then SNAP your wings open! The crowd goes wild!'},
-  {t:'☁️ The Cloud Surf!',    txt:'You glide across a fluffy cloud, dipping one wing in and out of the mist!'},
-  {t:'🔥 The Fire Trail!',    txt:'You blast your power in a huge arc while doing a figure-eight! Incredible!'}
-];
-function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-function doAction(type) {
-  var item;
-  if(type==='quest') item=rand(quests);
-  else if(type==='rescue') item=rand(rescues);
-  else item=rand(battles);
-  var win=Math.random()>0.35;
-  var msgs={
-    quest: {w:'🎉 You and '+getN()+' completed the quest! Berk celebrates!', l:'😬 Tricky this time! '+getN()+' will try again!'},
-    rescue:{w:'🥳 You saved the dragon! It nuzzles you in thanks!',           l:'😰 Hard rescue but '+getN()+' kept you safe!'},
-    battle:{w:'🏆 Victory! You showed everyone what dragon riders can do!',   l:'💪 Tough fight! You learned new moves!'}
-  };
-  if(win){ changeStat('happy',10); coins=Math.min(MAX_COINS,coins+2); updateCoins(); }
-  showPopup(item.t,item.txt,'<div class="outcome '+(win?'win':'lose')+'">'+(win?msgs[type].w:msgs[type].l)+'</div>');
-}
-
-// ========== SHOP ==========
-function openShop() {
-  var html='<div class="coin-disp">You have '+coins+' 🪙 coins</div><div class="shop-grid">';
-  for(var i=0;i<saddles.length;i++){
-    var s=saddles[i];
-    var owned=ownedSaddles.indexOf(s.id)!==-1;
-    html+='<div class="shop-item'+(owned?' owned':'')+'"'+(owned?'':' onclick="buySaddle(\''+s.id+'\',\''+s.name+'\','+s.price+')"')+'>';
-    html+='<div class="s-emoji">'+s.emoji+'</div>';
-    html+='<div class="s-name">'+s.name+'</div>';
-    html+='<div class="s-price">'+(owned?'<span class="owned-tag">✅ Owned!</span>':'🪙 '+s.price+' coins')+'</div>';
-    html+='<div style="font-size:0.7em;color:#aad4ff;margin-top:2px">'+s.desc+'</div>';
-    html+='</div>';
+function setViking(prop, val, el) {
+  viking[prop]=val;
+  var grp=prop+'-opts';
+  if(document.getElementById(grp)){
+    document.querySelectorAll('#'+grp+' .vc-opt').forEach(function(o){o.classList.remove('sel');});
+    el.classList.add('sel');
   }
+  drawVikingPreview();
+}
+
+function drawVikingPreview() {
+  var cv=document.getElementById('viking-canvas');
+  var cx=cv.getContext('2d');
+  cx.clearRect(0,0,80,100);
+  drawVikingOn(cx, viking, 40, 75, 1);
+}
+
+// ============================================================
+// WORLD INIT
+// ============================================================
+function startWorld() {
+  viking.name = document.getElementById('viking-name').value || 'Viking';
+  dragonNickname = document.getElementById('dragon-name').value || dragonData.name;
+  document.getElementById('hud-name').textContent = viking.name;
+  document.getElementById('hud-dragon-name').textContent = dragonNickname + ' the ' + dragonData.type;
+
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById('s-world').classList.add('active');
+
+  worldCanvas=document.getElementById('world-canvas');
+  wctx=worldCanvas.getContext('2d');
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  drX = worldW*0.35;
+  spawnCoins();
+  setInterval(spawnCoins, 14000);
+  setInterval(function(){changeStat('food',-1);changeStat('water',-1);},15000);
+  setInterval(function(){dayTime+=1; if(dayTime>=120){dayTime=0; toggleDayNight();}},1000);
+
+  requestAnimationFrame(gameLoop);
+}
+
+function resizeCanvas() {
+  worldW=worldCanvas.width=window.innerWidth;
+  worldH=worldCanvas.height=window.innerHeight;
+  groundLevel = worldH*0.58;
+}
+
+// ============================================================
+// MAIN GAME LOOP
+// ============================================================
+function gameLoop() {
+  requestAnimationFrame(gameLoop);
+  animFrame++;
+  update();
+  render();
+}
+
+function update() {
+  var speed={walk:2.5,run:6,fly:4}[mode];
+  if(keys.left){drX-=speed; facing=-1;}
+  if(keys.right){drX+=speed; facing=1;}
+  drX=Math.max(40,Math.min(worldW-60,drX));
+
+  if(mode==='fly'){
+    if(keys.up) velY-=0.6;
+    if(keys.down) velY+=0.6;
+    velY*=0.9; drY-=velY;
+    if(drY<0){drY=0;velY=0;}
+    if(drY>worldH*0.45){drY=worldH*0.45;velY=0;}
+  } else {drY=0; velY=0;}
+
+  // Sleep fade
+  if(sleepFade>0) sleepFade=Math.max(0,sleepFade-0.01);
+
+  // Coin collection
+  for(var i=floatCoins.length-1;i>=0;i--){
+    var fc=floatCoins[i];
+    var dx=fc.x-drX, dy=fc.y-(groundLevel-drY-30);
+    if(Math.sqrt(dx*dx+dy*dy)<50){
+      floatCoins.splice(i,1);
+      coins=Math.min(MAX_COINS,coins+1);
+      updateCoins();
+      showFlash('+1 🪙');
+    }
+  }
+
+  // Near house check (house at left side)
+  nearHouse = (drX < houseX+80 && drX > houseX-80 && drY === 0);
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+  var ctx=wctx;
+  ctx.clearRect(0,0,worldW,worldH);
+
+  if(!insideHouse) renderOutdoor(ctx);
+  else renderIndoor(ctx);
+
+  // Sleep overlay
+  if(sleepFade>0){
+    ctx.fillStyle='rgba(5,5,20,'+sleepFade+')';
+    ctx.fillRect(0,0,worldW,worldH);
+    if(sleepFade>0.6){
+      ctx.fillStyle='rgba(255,215,0,'+(sleepFade-0.5)*2+')';
+      ctx.font='bold 28px Cinzel,Georgia';
+      ctx.textAlign='center';
+      ctx.fillText('💤 Sleeping... 💤',worldW/2,worldH/2);
+    }
+  }
+}
+
+function renderOutdoor(ctx) {
+  var gl=groundLevel;
+
+  // Sky gradient (day/night)
+  var skyGrad=ctx.createLinearGradient(0,0,0,gl);
+  if(isNight){
+    skyGrad.addColorStop(0,'#030318');
+    skyGrad.addColorStop(1,'#0a1a3a');
+  } else {
+    skyGrad.addColorStop(0,'#2a7ec8');
+    skyGrad.addColorStop(1,'#87CEEB');
+  }
+  ctx.fillStyle=skyGrad;
+  ctx.fillRect(0,0,worldW,gl);
+
+  // Stars / sun
+  if(isNight){
+    ctx.fillStyle='rgba(255,255,200,0.8)';
+    for(var s=0;s<60;s++){
+      var sx=((s*197+83)%worldW), sy=((s*113+47)%(gl-40));
+      var ss=Math.sin(animFrame*0.03+s)*0.5+1;
+      ctx.beginPath(); ctx.arc(sx,sy,ss,0,Math.PI*2); ctx.fill();
+    }
+    // Moon
+    ctx.fillStyle='#fffbe6';
+    ctx.beginPath(); ctx.arc(worldW-100,60,28,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(5,5,30,0.5)';
+    ctx.beginPath(); ctx.arc(worldW-110,55,24,0,Math.PI*2); ctx.fill();
+  } else {
+    // Sun
+    ctx.fillStyle='#ffe44a';
+    ctx.beginPath(); ctx.arc(worldW-90,55,30,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,228,74,0.3)';
+    ctx.beginPath(); ctx.arc(worldW-90,55,46,0,Math.PI*2); ctx.fill();
+    // Clouds
+    drawCloud(ctx,120,60,1.0);
+    drawCloud(ctx,350,40,0.8);
+    drawCloud(ctx,worldW*0.6,80,1.1);
+  }
+
+  // Distant mountains
+  ctx.fillStyle=isNight?'#0a1a10':'#2a5a3a';
+  ctx.beginPath(); ctx.moveTo(0,gl);
+  var mpts=[[0,gl],[60,gl-90],[140,gl-60],[250,gl-120],[380,gl-80],[480,gl-140],[580,gl-90],[700,gl-110],[worldW,gl-70],[worldW,gl]];
+  for(var p=0;p<mpts.length;p++) ctx.lineTo(mpts[p][0],mpts[p][1]);
+  ctx.fill();
+
+  // Ground
+  var gGrad=ctx.createLinearGradient(0,gl,0,worldH);
+  gGrad.addColorStop(0,isNight?'#1a2a12':'#3d6b2a');
+  gGrad.addColorStop(0.3,isNight?'#0d1a08':'#2a5a1a');
+  gGrad.addColorStop(1,'#0a1005');
+  ctx.fillStyle=gGrad;
+  ctx.fillRect(0,gl,worldW,worldH-gl);
+
+  // Grass tufts
+  ctx.fillStyle=isNight?'#1a3010':'#4a7c2a';
+  for(var g=0;g<worldW;g+=18){
+    var gh=6+Math.sin(g*0.3)*4;
+    ctx.beginPath(); ctx.moveTo(g,gl); ctx.lineTo(g+4,gl-gh); ctx.lineTo(g+9,gl); ctx.fill();
+  }
+
+  // === LOCATIONS ===
+  // Fish Stand (left area)
+  drawFishStand(ctx, worldW*0.18, gl);
+  // Watering Hole
+  drawWateringHole(ctx, worldW*0.65, gl);
+  // Arena (right)
+  drawArenaBuilding(ctx, worldW*0.82, gl);
+  // Houses / Village (far left)
+  drawHouse(ctx, houseX, gl, true);
+  drawHouse(ctx, houseX+130, gl, false);
+  // Blacksmith
+  drawBlacksmith(ctx, worldW*0.45, gl);
+
+  // Floating coins
+  for(var ci=0;ci<floatCoins.length;ci++){
+    var fc=floatCoins[ci];
+    var cy2=fc.y+Math.sin(animFrame*0.07+ci)*8;
+    ctx.fillStyle='#ffd700';
+    ctx.font='20px serif';
+    ctx.textAlign='center';
+    ctx.fillText('🪙',fc.x,cy2);
+  }
+
+  // Dragon (before viking so viking is on top when walking)
+  var drScreenY = groundLevel - drY - 30;
+  var drScale = mode==='fly' ? 1.2 : 1.0;
+  drawDragon(wctx, dragonData, drX+60, drScreenY+10, drScale, facing===1, mode==='fly', animFrame);
+
+  // Viking character
+  var vikingBob = (keys.left||keys.right)&&mode!=='fly' ? Math.sin(animFrame*0.3)*4 : 0;
+  if(mode!=='fly') drawVikingOn(wctx, viking, drX, groundLevel-2+vikingBob, 0.9);
+
+  // "Enter house" prompt
+  if(nearHouse && mode!=='fly'){
+    ctx.fillStyle='rgba(255,215,0,0.9)';
+    ctx.font='14px Cinzel,Georgia';
+    ctx.textAlign='center';
+    ctx.fillText('▼ Tap Sleep to enter house', drX, groundLevel-80);
+  }
+
+  // Location labels
+  drawLabel(ctx,'🐟 Fish Stand', worldW*0.18, gl-115);
+  drawLabel(ctx,'💧 Watering Hole', worldW*0.65, gl-85);
+  drawLabel(ctx,'⚔️ Arena', worldW*0.82, gl-150);
+  drawLabel(ctx,'🏘️ Village', houseX+65, gl-165);
+  drawLabel(ctx,'🔨 Blacksmith', worldW*0.45, gl-110);
+}
+
+function drawLabel(ctx,text,x,y){
+  ctx.fillStyle='rgba(0,0,0,0.55)';
+  ctx.font='11px Cinzel,Georgia';
+  ctx.textAlign='center';
+  var w=ctx.measureText(text).width;
+  ctx.beginPath(); ctx.roundRect(x-w/2-6,y-13,w+12,18,6); ctx.fill();
+  ctx.fillStyle='#ffd700';
+  ctx.fillText(text,x,y);
+}
+
+function drawCloud(ctx,x,y,scale){
+  ctx.fillStyle='rgba(255,255,255,0.88)';
+  ctx.save(); ctx.scale(scale,scale);
+  ctx.beginPath(); ctx.ellipse(x/scale,y/scale,45,22,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse((x-28)/scale,(y+5)/scale,28,18,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse((x+25)/scale,(y+8)/scale,25,16,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+function drawHouse(ctx,x,gl,isMain){
+  var w=isMain?100:80, h=isMain?90:75;
+  // Foundation
+  ctx.fillStyle='#5a4a3a';
+  ctx.fillRect(x-w/2-5,gl-10,w+10,12);
+  // Walls (stone)
+  ctx.fillStyle='#8a7a6a';
+  ctx.fillRect(x-w/2,gl-h,w,h);
+  // Wood planks texture
+  ctx.strokeStyle='#6a5a4a'; ctx.lineWidth=1.5;
+  for(var p=0;p<h;p+=14){
+    ctx.beginPath(); ctx.moveTo(x-w/2,gl-h+p); ctx.lineTo(x+w/2,gl-h+p); ctx.stroke();
+  }
+  // Roof (dark wood triangle)
+  ctx.fillStyle='#5a3a1a';
+  ctx.beginPath(); ctx.moveTo(x-w/2-12,gl-h); ctx.lineTo(x,gl-h-50*(isMain?1:0.8)); ctx.lineTo(x+w/2+12,gl-h); ctx.fill();
+  ctx.fillStyle='#3a2010';
+  ctx.beginPath(); ctx.moveTo(x-w/2-8,gl-h-5); ctx.lineTo(x,gl-h-48*(isMain?1:0.8)); ctx.lineTo(x+w/2+8,gl-h-5); ctx.fill();
+  // Door
+  ctx.fillStyle='#3a2010';
+  ctx.beginPath(); ctx.roundRect(x-14,gl-50,28,50,4); ctx.fill();
+  ctx.fillStyle='#c8a000';
+  ctx.beginPath(); ctx.arc(x+8,gl-25,3,0,Math.PI*2); ctx.fill();
+  // Windows
+  ctx.fillStyle='rgba(255,240,180,0.6)';
+  ctx.beginPath(); ctx.roundRect(x-w/2+10,gl-h+20,22,20,3); ctx.fill();
+  if(isMain){
+    ctx.beginPath(); ctx.roundRect(x+w/2-32,gl-h+20,22,20,3); ctx.fill();
+  }
+  // Smoke from chimney
+  ctx.fillStyle='#4a3a1a';
+  ctx.fillRect(x+w/2-22,gl-h-30,14,35);
+  ctx.fillStyle='rgba(200,200,200,0.4)';
+  for(var s2=0;s2<3;s2++){
+    var puffY=animFrame*0.3+s2*20;
+    var puffX=Math.sin(puffY*0.1)*6;
+    ctx.beginPath(); ctx.arc(x+w/2-15+puffX,(gl-h-40-(puffY%60))*1,6+s2*3,0,Math.PI*2); ctx.fill();
+  }
+}
+
+function drawFishStand(ctx,x,gl){
+  // Wooden stand
+  ctx.fillStyle='#8b5e3c';
+  ctx.fillRect(x-50,gl-80,100,10);
+  ctx.fillRect(x-45,gl-70,8,70); ctx.fillRect(x+37,gl-70,8,70);
+  // Canvas top
+  ctx.fillStyle='#c8341a';
+  ctx.beginPath(); ctx.moveTo(x-60,gl-80); ctx.lineTo(x,gl-100); ctx.lineTo(x+60,gl-80); ctx.fill();
+  // Fish
+  ctx.font='20px serif'; ctx.textAlign='center';
+  ctx.fillText('🐟',x-20,gl-60);
+  ctx.fillText('🐟',x+10,gl-55);
+  ctx.fillText('🐠',x-5,gl-75);
+}
+
+function drawWateringHole(ctx,x,gl){
+  // Water pool
+  var wGrad=ctx.createRadialGradient(x,gl-10,5,x,gl-10,65);
+  wGrad.addColorStop(0,'#4fc3f7'); wGrad.addColorStop(1,'#0277bd');
+  ctx.fillStyle=wGrad;
+  ctx.beginPath(); ctx.ellipse(x,gl-8,65,20,0,0,Math.PI*2); ctx.fill();
+  // Shimmer
+  ctx.fillStyle='rgba(255,255,255,0.4)';
+  for(var w2=0;w2<4;w2++){
+    var wx=x-40+w2*22+Math.sin(animFrame*0.07+w2)*5;
+    ctx.beginPath(); ctx.ellipse(wx,gl-12,8,3,0,0,Math.PI*2); ctx.fill();
+  }
+  // Reeds
+  ctx.fillStyle='#5a8a2a';
+  for(var r=0;r<5;r++){
+    var rx=x-50+r*24;
+    ctx.fillRect(rx,gl-45,4,40);
+    ctx.fillStyle='#8a5a1a';
+    ctx.beginPath(); ctx.ellipse(rx+2,gl-48,4,8,0.2,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#5a8a2a';
+  }
+}
+
+function drawArenaBuilding(ctx,x,gl){
+  // Outer ring
+  ctx.strokeStyle='#8a7a6a'; ctx.lineWidth=12;
+  ctx.beginPath(); ctx.ellipse(x,gl-20,90,35,0,Math.PI,Math.PI*2); ctx.stroke();
+  // Fence posts
+  ctx.fillStyle='#6a5a3a'; ctx.lineWidth=2;
+  for(var f=0;f<12;f++){
+    var angle=Math.PI+f*(Math.PI/11);
+    var fx=x+Math.cos(angle)*85, fy=gl-20+Math.sin(angle)*32;
+    ctx.fillRect(fx-3,fy-20,6,20);
+  }
+  // Arena floor (sand)
+  ctx.fillStyle='#c8a050';
+  ctx.beginPath(); ctx.ellipse(x,gl-5,75,25,0,Math.PI,Math.PI*2); ctx.fill();
+  // Target dummy
+  ctx.fillStyle='#8b5e3c';
+  ctx.fillRect(x-3,gl-55,6,40);
+  ctx.fillStyle='#cc4444';
+  ctx.beginPath(); ctx.arc(x,gl-58,12,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#ffd700'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(x,gl-58,8,0,Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x,gl-58,4,0,Math.PI*2); ctx.stroke();
+}
+
+function drawBlacksmith(ctx,x,gl){
+  // Building
+  ctx.fillStyle='#6a5a4a';
+  ctx.fillRect(x-40,gl-80,80,80);
+  // Roof
+  ctx.fillStyle='#3a2010';
+  ctx.beginPath(); ctx.moveTo(x-50,gl-80); ctx.lineTo(x,gl-115); ctx.lineTo(x+50,gl-80); ctx.fill();
+  // Door
+  ctx.fillStyle='#2a1a0a';
+  ctx.beginPath(); ctx.roundRect(x-14,gl-50,28,50,3); ctx.fill();
+  // Anvil sign
+  ctx.fillStyle='#ffd700';
+  ctx.font='22px serif'; ctx.textAlign='center';
+  ctx.fillText('⚒️',x,gl-90);
+  // Forge glow
+  ctx.fillStyle='rgba(255,120,0,0.25)';
+  var fg=ctx.createRadialGradient(x,gl-30,2,x,gl-30,35);
+  fg.addColorStop(0,'rgba(255,120,0,0.5)'); fg.addColorStop(1,'transparent');
+  ctx.fillStyle=fg;
+  ctx.beginPath(); ctx.arc(x,gl-30,35,0,Math.PI*2); ctx.fill();
+}
+
+function renderIndoor(ctx) {
+  // Inside house
+  var w=worldW, h=worldH;
+  // Floor
+  ctx.fillStyle='#6a4a2a';
+  ctx.fillRect(0,h*0.65,w,h*0.35);
+  // Floor planks
+  ctx.strokeStyle='#4a3010'; ctx.lineWidth=2;
+  for(var p=0;p<w;p+=60){ ctx.beginPath(); ctx.moveTo(p,h*0.65); ctx.lineTo(p,h); ctx.stroke(); }
+  // Walls
+  ctx.fillStyle='#8a6a4a';
+  ctx.fillRect(0,0,w,h*0.65);
+  // Ceiling beams
+  ctx.fillStyle='#5a3a1a'; ctx.lineWidth=18;
+  for(var b=0;b<4;b++){ ctx.fillRect(0,b*(h*0.15),w,14); }
+  // Fireplace
+  drawFireplace(ctx, w*0.15, h*0.65);
+  // BED
+  drawBed(ctx, w*0.6, h*0.65);
+  // Window with outside view
+  ctx.fillStyle='rgba(135,206,235,0.6)';
+  ctx.beginPath(); ctx.roundRect(w*0.35,h*0.15,120,90,6); ctx.fill();
+  ctx.strokeStyle='#8b5e3c'; ctx.lineWidth=6;
+  ctx.strokeRect(w*0.35,h*0.15,120,90);
+  ctx.strokeStyle='#8b5e3c'; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.moveTo(w*0.35+60,h*0.15); ctx.lineTo(w*0.35+60,h*0.15+90); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(w*0.35,h*0.15+45); ctx.lineTo(w*0.35+120,h*0.15+45); ctx.stroke();
+  // Shelf
+  ctx.fillStyle='#8b5e3c'; ctx.fillRect(w*0.25,h*0.35,150,12);
+  ctx.font='22px serif'; ctx.textAlign='left';
+  ctx.fillText('⚔️🛡️🏺',w*0.27,h*0.35-4);
+  // Viking + Dragon inside
+  drawVikingOn(ctx, viking, w*0.45, h*0.65, 0.85);
+  drawDragon(ctx, dragonData, w*0.52+60, h*0.65-20, 0.6, true, false, animFrame);
+  // Exit prompt
+  ctx.fillStyle='rgba(255,215,0,0.9)'; ctx.font='13px Cinzel,Georgia'; ctx.textAlign='center';
+  ctx.fillText('Tap Sleep button to exit', w/2, h*0.12);
+  // Night overlay inside
+  if(isNight){ ctx.fillStyle='rgba(0,0,40,0.35)'; ctx.fillRect(0,0,w,h); }
+}
+
+function drawFireplace(ctx,x,y){
+  ctx.fillStyle='#5a4a3a';
+  ctx.fillRect(x-40,y-80,80,80);
+  var fGrad=ctx.createRadialGradient(x,y-20,2,x,y-20,38);
+  fGrad.addColorStop(0,'#ff8c00'); fGrad.addColorStop(0.5,'#ff4500'); fGrad.addColorStop(1,'rgba(255,0,0,0)');
+  ctx.fillStyle=fGrad;
+  ctx.beginPath(); ctx.ellipse(x,y-15,32,28,0,0,Math.PI*2); ctx.fill();
+  ctx.font='28px serif'; ctx.textAlign='center';
+  ctx.fillText('🔥',x,y-10);
+}
+
+function drawBed(ctx,x,y){
+  // Bed frame
+  ctx.fillStyle='#6a3a1a';
+  ctx.fillRect(x-70,y-40,160,40);
+  // Pillow
+  ctx.fillStyle='#e8d8c0';
+  ctx.beginPath(); ctx.roundRect(x-60,y-60,60,22,8); ctx.fill();
+  // Blanket
+  ctx.fillStyle='#3a6a8a';
+  ctx.beginPath(); ctx.roundRect(x-60,y-42,140,20,4); ctx.fill();
+  // Blanket pattern
+  ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=1.5;
+  for(var q=0;q<4;q++){ ctx.beginPath(); ctx.moveTo(x-50+q*30,y-42); ctx.lineTo(x-50+q*30,y-22); ctx.stroke(); }
+  // Headboard
+  ctx.fillStyle='#5a2a0a';
+  ctx.beginPath(); ctx.roundRect(x-70,y-80,25,45,5); ctx.fill();
+  ctx.font='20px serif'; ctx.textAlign='center';
+  ctx.fillText('🛏️',x+10,y-50);
+}
+
+// ============================================================
+// GAMEPLAY FUNCTIONS
+// ============================================================
+function changeStat(s,a){
+  stats[s]=Math.max(0,Math.min(100,stats[s]+a));
+  document.getElementById('b-'+s).style.width=stats[s]+'%';
+  if(s==='food'||s==='water'){stats.happy=Math.max(0,Math.min(100,(stats.food+stats.water)/2));document.getElementById('b-happy').style.width=stats.happy+'%';}
+}
+function updateCoins(){ document.getElementById('b-coins').style.width=(coins/MAX_COINS*100)+'%'; document.getElementById('coin-num').textContent=coins; }
+function showFlash(txt){ var f=document.createElement('div'); f.className='cflash'; f.textContent=txt; document.body.appendChild(f); setTimeout(function(){f.remove();},1000); }
+
+function spawnCoins(){
+  floatCoins=[];
+  for(var i=0;i<8;i++){
+    floatCoins.push({x:80+Math.random()*(worldW-160), y:groundLevel-30-Math.random()*200});
+  }
+}
+
+function feedDragon(){ if(stats.food>=100){showPopup('🐟 Already Full!',dragonNickname+' is stuffed!','');return;} changeStat('food',25); showPopup('🐟 Fish Stand!','You grabbed a huge bucket of fresh fish! '+dragonNickname+' gobbled them up in seconds and let out a happy roar!','<div class="outcome win">+25 Food! 🐟</div>'); }
+function waterDragon(){ if(stats.water>=100){showPopup('💧 Not Thirsty!',dragonNickname+' just had a drink!','');return;} changeStat('water',25); showPopup('💧 Watering Hole!',dragonNickname+' took a long refreshing drink from the sparkling watering hole surrounded by reeds!','<div class="outcome win">+25 Water! 💧</div>'); }
+
+function toggleDayNight(){
+  isNight=!isNight;
+  document.getElementById('s-world').style.transition='background 2s';
+  showFlash(isNight?'🌙 Night falls...':'☀️ Morning!');
+}
+
+function trySleep(){
+  if(insideHouse){
+    insideHouse=false;
+    return;
+  }
+  if(!isNight && !nearHouse){
+    showPopup('🌙 Not Yet!','It is still daytime! Bring your dragon to the village house first, then sleep when night falls.','');
+    return;
+  }
+  // Enter house or sleep
+  insideHouse=true;
+  if(isNight){
+    // Sleep sequence
+    sleepFade=1;
+    setTimeout(function(){
+      isNight=false; dayTime=0;
+      changeStat('food',15); changeStat('water',15); changeStat('happy',20);
+      coins=Math.min(MAX_COINS,coins+3);
+      updateCoins();
+      setTimeout(function(){
+        insideHouse=false;
+        sleepFade=0;
+        showPopup('☀️ Good Morning!','You slept soundly! '+viking.name+' and '+dragonNickname+' wake up refreshed and ready for adventure!','<div class="outcome win">+15 Food, +15 Water, +20 Happy, +3 🪙 Coins!</div>');
+      },2000);
+    },3000);
+  }
+}
+
+// ============================================================
+// ARENA TRAINING
+// ============================================================
+var trainingMoves = [
+  {name:'🔥 Blast Training',      desc:'Fire at the target dummy!',  result:'BULLSEYE! The target explodes! Your dragon\'s accuracy increases!'},
+  {name:'💨 Speed Dash',          desc:'Race across the arena at full speed!', result:'Incredible! Your dragon is a blur! Speed +5!'},
+  {name:'🌀 Aerial Spiral',       desc:'Fly in a tight corkscrew through the rings!', result:'Perfect form! The crowd cheers! Agility +5!'},
+  {name:'🛡️ Dodge Training',     desc:'Dodge incoming boulder throws!', result:'Flawless dodging! Reflexes sharpened!'},
+  {name:'🦅 Height Challenge',    desc:'Fly as high as possible then dive back!', result:'Breathtaking! Record altitude achieved!'},
+  {name:'🎯 Precision Strike',    desc:'Hit all 5 tiny targets in sequence!', result:'All 5 targets hit! Precision master!'},
+];
+
+function openArena(){
+  var btns = trainingMoves.map(function(m){
+    return '<button class="arena-btn" onclick="doTraining(\''+m.name.replace(/'/g,'')+'\',\''+m.result.replace(/'/g,'')+'\')">' + m.name + '<br><span style="font-size:0.75em;color:#aad4ff">'+m.desc+'</span></button>';
+  }).join('');
+  showPopup('🏋️ Training Arena', 'Choose a training exercise for '+dragonNickname+'!',
+    '<div class="arena-btns">'+btns+'</div>');
+}
+
+function doTraining(name, result){
+  changeStat('happy',8); coins=Math.min(MAX_COINS,coins+1); updateCoins();
+  showPopup(name, result, '<div class="outcome win">Training complete! +Happy, +1 🪙</div>');
+}
+
+// ============================================================
+// BATTLE
+// ============================================================
+var enemies = [
+  {name:'Red Death',    emoji:'🔴', hp:100, atks:['Lava Breath','Tail Smash','Wing Gust','Boulder Throw'], weak:'belly'},
+  {name:'Bewilderbeast',emoji:'❄️', hp:100, atks:['Ice Blast','Tidal Wave','Roar','Stomp'], weak:'eyes'},
+  {name:'Dragon Hunter',emoji:'🏴‍☠️',hp:100, atks:['Net Throw','Crossbow','Smoke Bomb','Trap'], weak:'equipment'},
+  {name:'Green Death',  emoji:'🟢', hp:100, atks:['Acid Spray','Tail Whip','Belly Flop','Charge'], weak:'horns'},
+];
+var battleState = null;
+
+function openBattle(){
+  var html='<p style="color:#e0d0b0;margin-bottom:10px">Choose your enemy:</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">';
+  enemies.forEach(function(e,i){
+    html+='<button class="arena-btn" onclick="startBattle('+i+')" style="min-width:100px;">'+e.emoji+'<br><span style="font-family:Cinzel;font-size:0.8em">'+e.name+'</span></button>';
+  });
+  html+='</div>';
+  showPopup('⚔️ Choose Your Enemy','',html);
+}
+
+function startBattle(idx){
+  var enemy = JSON.parse(JSON.stringify(enemies[idx]));
+  battleState = {enemy:enemy, playerHP:100, turn:0};
+  renderBattle();
+}
+
+function renderBattle(){
+  if(!battleState) return;
+  var b=battleState;
+  var eatk = b.enemy.atks[Math.floor(Math.random()*b.enemy.atks.length)];
+  var html =
+    '<div class="hp-row">' +
+    '<div class="hp-box"><div class="hp-label">'+viking.name+' & '+dragonNickname+'</div><div class="hp-bar"><div class="hp-fill" style="width:'+b.playerHP+'%;background:linear-gradient(90deg,#27ae60,#2ecc71)"></div></div><div style="font-size:0.75em;color:#aad4ff">'+b.playerHP+'/100</div></div>' +
+    '<div class="hp-box"><div class="hp-label">'+b.enemy.name+'</div><div class="hp-bar"><div class="hp-fill" style="width:'+b.enemy.hp+'%"></div></div><div style="font-size:0.75em;color:#aad4ff">'+b.enemy.hp+'/100</div></div>' +
+    '</div>' +
+    '<div class="enemy-face">'+b.enemy.emoji+'</div>' +
+    '<p style="color:#aad4ff;font-size:0.8em;margin-bottom:8px">'+b.enemy.name+' prepares to use: <strong style="color:#e74c3c">'+eatk+'</strong></p>' +
+    '<p style="color:#ffd700;font-family:Cinzel;font-size:0.82em;margin-bottom:6px">Choose your attack:</p>' +
+    '<div class="arena-btns" style="gap:6px;">' +
+    '<button class="arena-btn" onclick="battleAttack(\'blast\',\''+eatk+'\')">🔥 Fire Blast<br><span style="font-size:0.72em;color:#aad4ff">Big damage</span></button>' +
+    '<button class="arena-btn" onclick="battleAttack(\'dodge\',\''+eatk+'\')">💨 Dodge+Strike<br><span style="font-size:0.72em;color:#aad4ff">Risky, high reward</span></button>' +
+    '<button class="arena-btn" onclick="battleAttack(\'weak\',\''+eatk+'\')">🎯 Hit Weak Spot<br><span style="font-size:0.72em;color:#aad4ff">Aim for '+b.enemy.weak+'</span></button>' +
+    '<button class="arena-btn" onclick="battleAttack(\'shield\',\''+eatk+'\')">🛡️ Defend<br><span style="font-size:0.72em;color:#aad4ff">Reduce damage</span></button>' +
+    '</div>';
+  document.getElementById('pbody').innerHTML=html;
+  document.getElementById('ptitle').textContent='⚔️ Battle: '+b.enemy.name+'!';
+  document.querySelector('.cbtn').textContent='Flee ✕';
+  document.querySelector('.cbtn').onclick=function(){battleState=null;closePopup();};
+}
+
+function battleAttack(type, enemyAtk){
+  var b=battleState;
+  var playerDmg, enemyDmg, msg;
+  if(type==='blast'){   playerDmg=Math.floor(18+Math.random()*14); enemyDmg=Math.floor(8+Math.random()*12); msg='🔥 '+dragonNickname+' fires a huge blast for '+playerDmg+' damage!'; }
+  else if(type==='dodge'){ var hit=Math.random()>0.35; playerDmg=hit?Math.floor(28+Math.random()*22):0; enemyDmg=hit?2:Math.floor(15+Math.random()*10); msg=hit?'💨 Perfect dodge! Counter strike for '+playerDmg+' damage!':'💨 Missed the dodge! Took '+enemyDmg+' damage!'; }
+  else if(type==='weak'){ var crit=Math.random()>0.4; playerDmg=crit?Math.floor(30+Math.random()*20):Math.floor(10+Math.random()*8); enemyDmg=crit?0:Math.floor(8+Math.random()*8); msg=crit?'🎯 CRITICAL HIT on the '+b.enemy.weak+'! '+playerDmg+' massive damage!':'🎯 Missed the weak spot... '+playerDmg+' damage and took '+enemyDmg+'.'; }
+  else{ playerDmg=Math.floor(6+Math.random()*8); enemyDmg=Math.floor(3+Math.random()*6); msg='🛡️ Defended well! Only '+enemyDmg+' damage taken, and dealt '+playerDmg+'.'; }
+
+  b.enemy.hp=Math.max(0,b.enemy.hp-playerDmg);
+  b.playerHP=Math.max(0,b.playerHP-enemyDmg);
+  b.turn++;
+
+  if(b.enemy.hp<=0){
+    battleState=null;
+    var reward=Math.floor(8+Math.random()*7);
+    coins=Math.min(MAX_COINS,coins+reward); updateCoins(); changeStat('happy',15);
+    showPopup('🏆 VICTORY!','You defeated the '+b.enemy.name+'! '+dragonNickname+' roars triumphantly and the crowd goes WILD!','<div class="outcome win">+'+reward+' 🪙 Coins! +15 Happy!</div>');
+    return;
+  }
+  if(b.playerHP<=0){
+    battleState=null;
+    showPopup('💔 Defeated...','The '+b.enemy.name+' was too powerful this time. But '+dragonNickname+' fought bravely! Train harder and try again!','<div class="outcome lose">Retreat to Berk...</div>');
+    return;
+  }
+  // Continue
+  var html2='<div style="background:rgba(255,255,255,0.06);border-radius:10px;padding:10px;margin-bottom:10px;color:#e0d0b0;font-size:0.88em;line-height:1.6">'+msg+'<br><em style="color:#e74c3c">'+b.enemy.name+' used '+enemyAtk+'!</em></div>';
+  document.getElementById('pbody').innerHTML=html2;
+  document.getElementById('ptitle').textContent='Round '+(b.turn+1)+'...';
+  setTimeout(renderBattle,1200);
+}
+
+// ============================================================
+// SHOP
+// ============================================================
+function openShop(){
+  var html='<div class="cdsp">You have '+coins+' 🪙 coins</div><div class="shop-grid">';
+  saddles.forEach(function(s){
+    var own=ownedSaddles.indexOf(s.id)!==-1;
+    html+='<div class="si'+(own?' own':'')+'"'+(own?'':' onclick="buySaddle(\''+s.id+'\',\''+s.name+'\','+s.price+')"')+'>'+
+      '<div class="si-e">'+s.emoji+'</div>'+
+      '<div class="si-n">'+s.name+'</div>'+
+      '<div class="si-p">'+(own?'<span class="own-tag">✅ Owned!</span>':'🪙 '+s.price+' coins')+'</div>'+
+      '<div style="font-size:0.68em;color:#aad4ff;margin-top:2px">'+s.desc+'</div>'+
+      '</div>';
+  });
   html+='</div>';
   showPopup('🔨 Blacksmith Shop','',html);
 }
 function buySaddle(id,name,price){
-  if(coins<price){
-    var f=document.createElement('div'); f.className='coin-flash'; f.style.color='#e74c3c'; f.textContent='Not enough coins!';
-    document.body.appendChild(f); setTimeout(function(){f.remove();},1200); return;
-  }
+  if(coins<price){ showFlash('Need more coins!'); return; }
   coins-=price; ownedSaddles.push(id); updateCoins();
-  showPopup('🎉 New Saddle!','You bought the '+name+'! '+getN()+' looks amazing in it!','<div class="outcome win">Purchase complete! 🛒</div>');
+  showPopup('🎉 New Saddle!','You bought the '+name+'! '+dragonNickname+' looks absolutely magnificent in it!','<div class="outcome win">Purchase complete! 🛒</div>');
 }
 
-// ========== GAMES ==========
-function openGameMenu(){
-  showPopup('🎮 Play a Game!','Which game do you want to play?',
-    '<div class="game-choice">'+
-    '<button class="gcbtn" onclick="startTTT()">⭕ Tic Tac Toe</button>'+
-    '<button class="gcbtn" onclick="startCards()">🃏 Card Match</button>'+
-    '<button class="gcbtn" onclick="startSoccer()">⚽ Dragon Soccer</button>'+
-    '</div>');
-}
+// ============================================================
+// GAMES
+// ============================================================
+function openGameMenu(){ showPopup('🎮 Games','Which game do you want to play with '+dragonNickname+'?','<div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap;"><button class="gcbtn" onclick="startTTT()">⭕ Tic Tac Toe</button><button class="gcbtn" onclick="startCards()">🃏 Card Match</button><button class="gcbtn" onclick="startSoccer()">⚽ Dragon Soccer</button></div>'); }
 
-// TTT
-var tttB,tttTurn,tttOn;
-function startTTT(){tttB=Array(9).fill('');tttTurn='X';tttOn=true;drawTTT();}
+var tB,tT,tO;
+function startTTT(){ tB=Array(9).fill(''); tT='X'; tO=true; drawTTT(); }
 function drawTTT(){
-  var cells='';
-  for(var i=0;i<9;i++) cells+='<div class="ttt-cell" onclick="tttClick('+i+')">'+(tttB[i]==='X'?'🔥':tttB[i]==='O'?d.emoji:'')+'</div>';
-  document.getElementById('popup-body').innerHTML=
-    '<p style="color:#aad4ff;margin-bottom:6px">'+(tttOn?(tttTurn==='X'?'Your turn 🔥':getN()+'\'s turn'):'Game Over!')+'</p>'+
-    '<div class="ttt-board">'+cells+'</div>'+
-    '<button class="gcbtn" style="margin-top:9px" onclick="startTTT()">New Game</button>'+
-    '<button class="gcbtn" style="margin-top:9px" onclick="openGameMenu()">Back</button>';
+  var c=''; for(var i=0;i<9;i++) c+='<div class="tttc" onclick="tc('+i+')">'+(tB[i]==='X'?'🔥':tB[i]==='O'?dragonData.emoji:'')+'</div>';
+  document.getElementById('pbody').innerHTML='<p style="color:#aad4ff;margin-bottom:6px">'+(tO?(tT==='X'?'Your turn 🔥':dragonNickname+'\'s turn'):'Game Over!')+'</p><div class="ttt-board">'+c+'</div><button class="gcbtn" style="margin-top:8px" onclick="startTTT()">New</button><button class="gcbtn" style="margin-top:8px" onclick="openGameMenu()">Back</button>';
 }
-function tttClick(i){
-  if(!tttOn||tttB[i]) return;
-  tttB[i]=tttTurn;
-  var w=checkTTT();
-  if(w){tttOn=false;drawTTT();addTTTR(w);return;}
-  if(tttB.indexOf('')===-1){tttOn=false;drawTTT();addTTTR('draw');return;}
-  tttTurn=tttTurn==='X'?'O':'X'; drawTTT();
-  if(tttTurn==='O') setTimeout(aiTTT,600);
-}
-function aiTTT(){
-  if(!tttOn) return;
-  var empty=[];for(var i=0;i<9;i++){if(!tttB[i])empty.push(i);}
-  if(!empty.length) return;
-  tttB[empty[Math.floor(Math.random()*empty.length)]]='O';
-  var w=checkTTT();
-  if(w){tttOn=false;drawTTT();addTTTR(w);return;}
-  if(tttB.indexOf('')===-1){tttOn=false;drawTTT();addTTTR('draw');return;}
-  tttTurn='X';drawTTT();
-}
-function checkTTT(){
-  var L=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-  for(var i=0;i<L.length;i++){var a=L[i][0],b=L[i][1],c=L[i][2];if(tttB[a]&&tttB[a]===tttB[b]&&tttB[a]===tttB[c])return tttB[a];}
-  return null;
-}
-function addTTTR(w){
-  var msg=w==='draw'?'Draw! '+getN()+' roars respectfully!':w==='X'?'🎉 You win! '+getN()+' flips happily!':getN()+' wins! 🔥';
-  document.getElementById('popup-body').innerHTML+='<div class="outcome '+(w==='X'?'win':w==='draw'?'':'lose')+'" style="margin-top:7px">'+msg+'</div>';
+function tc(i){ if(!tO||tB[i]) return; tB[i]=tT; var w=cTTT(); if(w){tO=false;drawTTT();addTR(w);return;} if(tB.indexOf('')===-1){tO=false;drawTTT();addTR('draw');return;} tT=tT==='X'?'O':'X'; drawTTT(); if(tT==='O') setTimeout(aiT,600); }
+function aiT(){ if(!tO) return; var e=[]; for(var i=0;i<9;i++){if(!tB[i])e.push(i);} if(!e.length) return; tB[e[Math.floor(Math.random()*e.length)]]='O'; var w=cTTT(); if(w){tO=false;drawTTT();addTR(w);return;} if(tB.indexOf('')===-1){tO=false;drawTTT();addTR('draw');return;} tT='X';drawTTT(); }
+function cTTT(){ var L=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; for(var i=0;i<L.length;i++){var a=L[i][0],b=L[i][1],c3=L[i][2];if(tB[a]&&tB[a]===tB[b]&&tB[a]===tB[c3])return tB[a];} return null; }
+function addTR(w){ var m=w==='draw'?'Draw! '+dragonNickname+' roars respectfully!':w==='X'?'🎉 You win!':dragonNickname+' wins! 🔥'; document.getElementById('pbody').innerHTML+='<div class="outcome '+(w==='X'?'win':w==='draw'?'':'lose')+'" style="margin-top:7px">'+m+'</div>'; }
+
+var cC2,cF2,cM2,cCF2,cSym=['🐉','⚡','🔥','❄️','💨','✨'];
+function startCards(){ var d2=cSym.concat(cSym).sort(function(){return Math.random()-0.5;}); cC2=d2.map(function(s,i){return{id:i,s:s,shown:false,matched:false};}); cF2=[];cM2=0;cCF2=true;drawCards2(); }
+function drawCards2(){ var h='<p style="color:#aad4ff;margin-bottom:6px">Match all pairs! '+cM2+'/'+cSym.length+'</p><div class="card-area">'; for(var i=0;i<cC2.length;i++){var c4=cC2[i];h+='<div class="card'+(c4.shown||c4.matched?' flip':'')+'" onclick="fc2('+i+')">'+(c4.shown||c4.matched?c4.s:'🐲')+'</div>';} h+='</div><button class="gcbtn" style="margin-top:8px" onclick="startCards()">New</button><button class="gcbtn" style="margin-top:8px" onclick="openGameMenu()">Back</button>'; document.getElementById('pbody').innerHTML=h; }
+function fc2(i){ if(!cCF2||cC2[i].shown||cC2[i].matched) return; cC2[i].shown=true;cF2.push(i);drawCards2(); if(cF2.length===2){cCF2=false;setTimeout(function(){var a=cF2[0],b2=cF2[1];if(cC2[a].s===cC2[b2].s){cC2[a].matched=cC2[b2].matched=true;cM2++;}cC2[a].shown=cC2[b2].shown=false;cF2=[];cCF2=true;drawCards2();if(cM2===cSym.length)document.getElementById('pbody').innerHTML+='<div class="outcome win">🎉 All matched! '+dragonNickname+' is so proud!</div>';},800);} }
+
+var sS2,sG2,sO2;
+function startSoccer(){ sS2=0;sG2=0;sO2=true;drawSoc(''); }
+function drawSoc(msg){ document.getElementById('pbody').innerHTML='<p style="color:#ffd700;margin-bottom:5px">⚽ Dragon Soccer! Score 3 to win!</p><p style="color:#aad4ff;font-size:0.82em;margin-bottom:7px">Shots: '+sS2+' | Goals: '+sG2+'/3</p><div class="goal-box"><div id="gfb" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.7em"></div></div><div class="aim-row"><button class="aim-btn" onclick="sh(\'left\')">↖️ Left</button><button class="aim-btn" onclick="sh(\'center\')">⬆️ Center</button><button class="aim-btn" onclick="sh(\'right\')">↗️ Right</button></div>'+(msg?'<p style="margin-top:7px;font-weight:700;color:'+(msg.indexOf('GOAL')!==-1?'#2ecc71':'#e74c3c')+'">'+msg+'</p>':'')+'<button class="gcbtn" style="margin-top:8px" onclick="startSoccer()">New</button><button class="gcbtn" style="margin-top:8px" onclick="openGameMenu()">Back</button>'; }
+function sh(dir){ if(!sO2) return; sS2++; var g=['left','center','right'][Math.floor(Math.random()*3)]; var s=dir!==g; if(s)sG2++; var fb=document.getElementById('gfb'); if(fb)fb.textContent=s?'⚽':'🧤'; if(sG2>=3){sO2=false;document.getElementById('pbody').innerHTML='<div class="outcome win" style="font-size:1em;margin:10px 0">🏆 3 goals in '+sS2+' shots!<br>'+dragonNickname+' does a victory lap!</div><button class="gcbtn" onclick="startSoccer()">Again</button><button class="gcbtn" onclick="openGameMenu()">Back</button>';return;} drawSoc(s?'GOAL! 🔥':'Saved! Try again!'); }
+
+// ============================================================
+// POPUP / CONTROLS
+// ============================================================
+function showPopup(title,text,extra){ document.getElementById('ptitle').textContent=title; document.getElementById('pbody').innerHTML=(text?'<div class="pop-text">'+text+'</div>':'')+(extra||''); document.querySelector('.cbtn').textContent='Close ✕'; document.querySelector('.cbtn').onclick=closePopup; document.getElementById('popup').classList.add('open'); }
+function closePopup(){ document.getElementById('popup').classList.remove('open'); battleState=null; }
+
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('.mbtn').forEach(function(b){b.classList.remove('am');});
+  document.getElementById('mb-'+m).classList.add('am');
+  var badge=document.getElementById('mode-badge');
+  if(m==='walk'){badge.textContent='🚶 Walking';}
+  else if(m==='run'){badge.textContent='💨 Running!';}
+  else {badge.textContent='🦅 Flying!'; drY=0;}
 }
 
-// CARDS
-var cC,cF,cM,cCF;
-var cSym=['🐉','⚡','🔥','❄️','💨','✨'];
-function startCards(){
-  var deck=cSym.concat(cSym).sort(function(){return Math.random()-0.5;});
-  cC=deck.map(function(s,i){return{id:i,s:s,shown:false,matched:false};});
-  cF=[];cM=0;cCF=true;drawCards();
-}
-function drawCards(){
-  var html='<p style="color:#aad4ff;margin-bottom:7px">Match all pairs! '+cM+'/'+cSym.length+' matched</p><div class="card-area">';
-  for(var i=0;i<cC.length;i++){var c=cC[i];html+='<div class="card'+(c.shown||c.matched?' flipped':'')+'" onclick="flipCard('+i+')">'+(c.shown||c.matched?c.s:'🐲')+'</div>';}
-  html+='</div><button class="gcbtn" style="margin-top:9px" onclick="startCards()">New Game</button><button class="gcbtn" style="margin-top:9px" onclick="openGameMenu()">Back</button>';
-  document.getElementById('popup-body').innerHTML=html;
-}
-function flipCard(i){
-  if(!cCF||cC[i].shown||cC[i].matched) return;
-  cC[i].shown=true;cF.push(i);drawCards();
-  if(cF.length===2){
-    cCF=false;
-    setTimeout(function(){
-      var a=cF[0],b=cF[1];
-      if(cC[a].s===cC[b].s){cC[a].matched=cC[b].matched=true;cM++;}
-      cC[a].shown=cC[b].shown=false;cF=[];cCF=true;drawCards();
-      if(cM===cSym.length) document.getElementById('popup-body').innerHTML+='<div class="outcome win" style="margin-top:7px">🎉 You matched them all! '+getN()+' is so proud!</div>';
-    },800);
-  }
+function dk(dir,on){
+  keys[dir]=on;
+  var el=document.getElementById('btn-'+dir);
+  // d-pad buttons don't have separate IDs in this version, skip visual
 }
 
-// SOCCER
-var sScore,sGoals,sOn;
-function startSoccer(){sScore=0;sGoals=0;sOn=true;drawSoccer('');}
-function drawSoccer(msg){
-  document.getElementById('popup-body').innerHTML=
-    '<p style="color:#ffd700;margin-bottom:5px">⚽ Dragon Soccer! Score 3 goals to win!</p>'+
-    '<p style="color:#aad4ff;font-size:0.82em;margin-bottom:7px">Shots: '+sScore+' | Goals: '+sGoals+'/3</p>'+
-    '<div class="goal-box"><div id="gfb" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.8em"></div></div>'+
-    '<div class="aim-row">'+
-    '<button class="aim-btn" onclick="shoot(\'left\')">↖️ Left</button>'+
-    '<button class="aim-btn" onclick="shoot(\'center\')">⬆️ Center</button>'+
-    '<button class="aim-btn" onclick="shoot(\'right\')">↗️ Right</button>'+
-    '</div>'+
-    (msg?'<p style="margin-top:7px;font-weight:bold;color:'+(msg.indexOf('GOAL')!==-1?'#2ecc71':'#e74c3c')+'">'+msg+'</p>':'')+
-    '<button class="gcbtn" style="margin-top:9px" onclick="startSoccer()">New Game</button>'+
-    '<button class="gcbtn" style="margin-top:9px" onclick="openGameMenu()">Back</button>';
-}
-function shoot(dir){
-  if(!sOn) return;
-  sScore++;
-  var dirs=['left','center','right'];
-  var goalie=dirs[Math.floor(Math.random()*3)];
-  var scored=dir!==goalie;
-  if(scored) sGoals++;
-  var fb=document.getElementById('gfb');
-  if(fb) fb.textContent=scored?'⚽':'🧤';
-  if(sGoals>=3){
-    sOn=false;
-    document.getElementById('popup-body').innerHTML=
-      '<div class="outcome win" style="font-size:1.05em;margin:10px 0">🏆 You scored 3 goals in '+sScore+' shots!<br>'+getN()+' does a victory lap around the arena!</div>'+
-      '<button class="gcbtn" onclick="startSoccer()">Play Again</button>'+
-      '<button class="gcbtn" onclick="openGameMenu()">Back</button>';
-    return;
-  }
-  drawSoccer(scored?'GOAL! '+getN()+' breathes fire! 🔥':'Saved! Try again!');
-}
-
-// ========== POPUP ==========
-function showPopup(title,text,extra){
-  document.getElementById('popup-title').textContent=title;
-  document.getElementById('popup-body').innerHTML=(text?'<div class="popup-text">'+text+'</div>':'')+(extra||'');
-  document.getElementById('popup').classList.add('open');
-}
-function closePopup(){
-  document.getElementById('popup').classList.remove('open');
-}
-
-// ========== KEYBOARD SUPPORT ==========
 document.addEventListener('keydown',function(e){
-  if(e.key==='ArrowLeft'||e.key==='a') keys.left=true;
-  if(e.key==='ArrowRight'||e.key==='d') keys.right=true;
-  if(e.key==='ArrowUp'||e.key==='w') keys.up=true;
-  if(e.key==='ArrowDown'||e.key==='s') keys.down=true;
+  if(e.key==='ArrowLeft'||e.key==='a') keys.left=1;
+  if(e.key==='ArrowRight'||e.key==='d') keys.right=1;
+  if(e.key==='ArrowUp'||e.key==='w') keys.up=1;
+  if(e.key==='ArrowDown'||e.key==='s') keys.down=1;
   if(e.key==='1') setMode('walk');
   if(e.key==='2') setMode('run');
   if(e.key==='3') setMode('fly');
 });
 document.addEventListener('keyup',function(e){
-  if(e.key==='ArrowLeft'||e.key==='a') keys.left=false;
-  if(e.key==='ArrowRight'||e.key==='d') keys.right=false;
-  if(e.key==='ArrowUp'||e.key==='w') keys.up=false;
-  if(e.key==='ArrowDown'||e.key==='s') keys.down=false;
+  if(e.key==='ArrowLeft'||e.key==='a') keys.left=0;
+  if(e.key==='ArrowRight'||e.key==='d') keys.right=0;
+  if(e.key==='ArrowUp'||e.key==='w') keys.up=0;
+  if(e.key==='ArrowDown'||e.key==='s') keys.down=0;
 });
 </script>
 
