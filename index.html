@@ -297,6 +297,80 @@ box-shadow:0 2px 6px rgba(0,0,0,.4);
 .paint-swatch:hover,.paint-swatch.sel-swatch{
 transform:scale(1.3);border-color:#fff;
 }
+
+/* Menu button — bottom centre of screen */
+#menu-btn{
+position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+z-index:50;pointer-events:all;
+background:linear-gradient(135deg,rgba(20,10,40,.92),rgba(40,20,70,.92));
+border:2px solid rgba(255,215,0,.45);
+border-radius:50px;
+padding:9px 22px;
+font-family:‘Cinzel’,serif;font-size:.75em;font-weight:700;
+color:#ffd700;cursor:pointer;
+box-shadow:0 0 18px rgba(255,215,0,.18),0 4px 14px rgba(0,0,0,.5);
+backdrop-filter:blur(6px);
+transition:all .18s;
+display:none;
+}
+#menu-btn:hover,#menu-btn:active{
+background:linear-gradient(135deg,rgba(40,20,80,.95),rgba(70,40,120,.95));
+border-color:#ffd700;
+box-shadow:0 0 28px rgba(255,215,0,.35),0 4px 14px rgba(0,0,0,.5);
+transform:translateX(-50%) scale(1.06);
+}
+/* Confirmation overlay when going back to menu */
+#menu-confirm{
+position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;
+display:none;align-items:center;justify-content:center;
+}
+#menu-confirm.open{display:flex;}
+#menu-confirm .mc-box{
+background:linear-gradient(135deg,#100c00,#090600);
+border:2px solid rgba(255,215,0,.4);border-radius:16px;
+padding:24px 28px;text-align:center;max-width:300px;
+box-shadow:0 0 35px rgba(255,140,0,.2);
+}
+#menu-confirm h3{font-family:‘Cinzel’,serif;color:#ffd700;margin:0 0 10px;font-size:1.05em;}
+#menu-confirm p{color:#e0d0b0;font-size:.85em;margin:0 0 16px;line-height:1.5;}
+.mc-btns{display:flex;gap:10px;justify-content:center;}
+.mc-btn{padding:9px 18px;border-radius:10px;border:none;font-family:‘Cinzel’,serif;
+font-size:.78em;font-weight:700;cursor:pointer;}
+.mc-yes{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;}
+.mc-no{background:linear-gradient(135deg,#27ae60,#1e8449);color:#fff;}
+
+/* Dragon Hunter Fort */
+.fort-hud{position:fixed;top:60px;left:50%;transform:translateX(-50%);
+background:rgba(40,10,10,.88);border:2px solid rgba(200,50,50,.5);
+border-radius:12px;padding:6px 18px;font-family:‘Cinzel’,serif;font-size:.72em;
+color:#ff8080;z-index:45;display:none;pointer-events:none;
+box-shadow:0 0 18px rgba(200,0,0,.25);}
+.fort-hud.active{display:block;}
+.cage-overlay{position:fixed;inset:0;z-index:300;display:none;
+background:rgba(0,0,0,.0);pointer-events:none;}
+.cage-overlay.active{display:block;}
+/* Cage bars drawn on canvas - overlay just blocks interaction with world */
+.escape-panel{position:fixed;bottom:0;left:0;right:0;z-index:400;
+background:linear-gradient(0deg,rgba(20,5,5,.97) 80%,transparent);
+padding:16px;display:none;pointer-events:all;}
+.escape-panel.active{display:block;}
+.escape-title{font-family:‘Cinzel’,serif;color:#ff6060;font-size:.9em;
+text-align:center;margin-bottom:8px;font-weight:700;}
+.escape-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.esc-btn{padding:9px 14px;border-radius:11px;border:2px solid rgba(255,100,100,.4);
+background:rgba(255,60,60,.12);color:#ff9090;font-family:‘Cinzel’,serif;
+font-size:.72em;font-weight:700;cursor:pointer;transition:all .15s;}
+.esc-btn:hover{background:rgba(255,60,60,.28);border-color:#ff6060;transform:scale(1.05);}
+.esc-btn.good{border-color:rgba(100,255,100,.4);background:rgba(60,255,60,.1);color:#80ff80;}
+.esc-btn.good:hover{background:rgba(60,255,60,.22);border-color:#60ff60;}
+
+/* Ocean biome */
+#ocean-hud{position:fixed;top:60px;left:50%;transform:translateX(-50%);
+background:rgba(0,20,50,.88);border:2px solid rgba(60,160,255,.4);
+border-radius:12px;padding:6px 18px;font-family:‘Cinzel’,serif;font-size:.72em;
+color:#80d4ff;z-index:45;display:none;pointer-events:none;
+box-shadow:0 0 18px rgba(0,100,255,.2);}
+#ocean-hud.active{display:block;}
 </style>
 
 </head>
@@ -424,6 +498,8 @@ transform:scale(1.3);border-color:#fff;
   <button class="ab ahw" onclick="enterHiddenWorld()">🌀 Hidden World</button>
   <button class="ab arsc" onclick="startRescue()">🆘 Rescue</button>
   <button class="ab ahatch" onclick="openHatchery()">🥚 Hatchery</button>
+  <button class="ab" style="background:linear-gradient(135deg,#7a1010,#4a0808);" onclick="teleportToFort()">⚓ Hunter Fort</button>
+  <button class="ab" style="background:linear-gradient(135deg,#0a3a6a,#051828);" onclick="teleportToOcean()">🌊 Ocean</button>
 </div>
 
 <!-- Controls -->
@@ -1437,6 +1513,35 @@ var wildDragons=[];
 
 // Rescue mission
 var rescueMission=null; // {x,y,found,dragonType}
+
+// ─── Dragon Hunter Fort ───────────────────────────────────────────────────
+var inFort = false;
+
+// ─── Ocean ────────────────────────────────────────────────────────────────
+var inOcean = false;
+var inBoat  = false;       // player is sailing in a boat
+var currentBoat = null;    // which boat {x,y,vx,vy,sway,angle,...}
+var oceanScrollX = 0;      // how far we've scrolled across the ocean
+var oceanWaveT = 0;        // wave animation timer
+var dockBoats = [];        // boats tied to the dock
+var oceanIslands = [];     // scattered islands
+var seaCreatures = [];     // fish, whale, dolphin
+var nearBoatIdx = -1;      // which dock boat is close to player
+var fortCaught = false;      // player is caged
+var fortEscaping = false;    // escape minigame active
+var fortEscapeStep = 0;      // which step of escape
+var fortHP = 100;            // player HP while in fort
+var fortAlertTimer = 0;
+var hunters = [];            // {x,y,vx,type,alertR,alertTimer,netTimer,cannonTimer,state,netX,netY,netVX,netVY}
+var cannonballs = [];        // {x,y,vx,vy,life}
+var nets = [];               // {x,y,vx,vy,life,spread}
+var cageBarAnim = 0;
+var fortParticles = [];      // sparks, smoke etc
+
+var FORT_COLORS = {
+  sky1:'#1a1008', sky2:'#2a1a0a',
+  ground1:'#3a2808', ground2:'#2a1a04',
+};
 var rescueActive=false;
 
 // Coins
@@ -1608,6 +1713,31 @@ function mpRenderOtherPlayers(){
     ctx.fillText(op.drNick||'Dragon', tagX, tagY+10);
     ctx.restore();
   });
+}
+
+
+function openMenuConfirm(){
+  document.getElementById('menu-confirm').classList.add('open');
+}
+function closeMenuConfirm(){
+  document.getElementById('menu-confirm').classList.remove('open');
+}
+function goBackToMenu(){
+  closeMenuConfirm();
+  // Hide world UI
+  ['hud','mbadge','abar','ctrl','mbtns'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.style.display='none';
+  });
+  document.getElementById('menu-btn').style.display='none';
+  // Switch screens
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById('s-title').classList.add('active');
+  // Rebuild grids so colours/selections are current
+  document.getElementById('dgrid').innerHTML='';
+  buildDragonGrid();
+  buildPetsGrid();
+  drawVikingPreview();
 }
 
 window.addEventListener('beforeunload', function(){
@@ -1796,6 +1926,7 @@ function startWorld(){
   document.getElementById('s-world').classList.add('active');
 
   ['hud','mbadge','abar','ctrl'].forEach(function(id){document.getElementById(id).style.display='';});
+  document.getElementById('menu-btn').style.display='block';
   document.getElementById('hud').style.display='flex';
 
   wc=document.getElementById('wc');
@@ -1900,6 +2031,11 @@ function gameLoop(){
 }
 
 function update(){
+  // No movement while caged in fort
+  if(fortCaught){ if(inFort){updateFort();} return; }
+  // While sailing, boat steers via oceanScrollX — only left/right keys matter (handled in updateOcean)
+  if(inBoat){ updateOcean(); return; }
+
   var spd={walk:2.5,run:6,fly:4}[moveMode];
   if(keys.left){drX-=spd;facing=-1;}
   if(keys.right){drX+=spd;facing=1;}
@@ -1968,8 +2104,13 @@ function update(){
     }
   }
 
+  // Ocean update
+  if(inOcean) updateOcean();
+  // Fort update (only runs when inFort)
+  if(inFort) updateFort();
+
   // Pets follow player
-  updatePets();
+  if(!inFort) updatePets();
 
   // Coin proximity
   for(var i=floatCoins.length-1;i>=0;i--){
@@ -1988,7 +2129,9 @@ function update(){
 // ============================================================
 function render(){
   ctx.clearRect(0,0,WW,WH);
-  if(inHiddenWorld) renderHiddenWorld();
+  if(inFort) renderFort();
+  else if(inOcean) renderOcean();
+  else if(inHiddenWorld) renderHiddenWorld();
   else if(inHouse) renderInside();
   else renderOutdoor();
 }
@@ -3199,6 +3342,16 @@ function trySleep(){
 // Sheep interaction
 wc&&wc.addEventListener('click',handleClick);
 function handleClick(e){
+  // Board / disembark ocean boats
+  if(inOcean){
+    if(inBoat){
+      var ni=getNearIsland();
+      if(ni) disembark();
+      return;
+    }
+    if(nearBoatIdx>=0){ boardBoat(nearBoatIdx); return; }
+  }
+
   var ex=e.clientX,ey=e.clientY;
   // Sheep grab / drop
   if(!carryingSheep){
@@ -3230,6 +3383,1197 @@ setTimeout(function(){
   var wcanv=document.getElementById('wc');
   if(wcanv) wcanv.addEventListener('click',handleClick);
 },500);
+
+// ============================================================
+// DRAGON HUNTER FORT
+// ============================================================
+
+function teleportToFort(){
+  inFort=true; inHiddenWorld=false; inHouse=false;
+  fortCaught=false; fortEscaping=false; fortHP=100;
+  drX=WW*0.15; drY=WH*0.25;
+  setMode('fly');
+  initHunters();
+  cannonballs=[]; nets=[]; fortParticles=[];
+  document.getElementById('fort-hud').classList.add('active');
+  document.getElementById('fort-alert').textContent='Fly carefully!';
+  showFlash('⚓ Dragon Hunter Fort! Fly free — avoid hunters!');
+}
+
+function leaveFort(){
+  inFort=false; fortCaught=false; fortEscaping=false;
+  document.getElementById('fort-hud').classList.remove('active');
+  document.getElementById('cage-overlay').classList.remove('active');
+  document.getElementById('escape-panel').classList.remove('active');
+  hunters=[]; cannonballs=[]; nets=[];
+  showFlash('✅ Escaped the Hunter Fort!');
+  changeStat('happy',20); coins=Math.min(999,coins+15); updateCoins();
+}
+
+function initHunters(){
+  hunters=[];
+  var types=['cannon','net','patrol'];
+  for(var i=0;i<7;i++){
+    var t=types[i%3];
+    hunters.push({
+      x: WW*(0.3+i*0.1), y: 0,
+      vx: (Math.random()>0.5?1:-1)*(t==='patrol'?1.2:0),
+      type: t,
+      alertR: t==='cannon'?180:t==='net'?140:100,
+      alertTimer:0,
+      netTimer:0, cannonTimer:Math.floor(Math.random()*120),
+      state:'idle', // idle|alert|shooting
+      netX:0,netY:0,netVX:0,netVY:0,
+      facing:1,
+      animF:0,
+      tower: t!=='patrol', // cannon/net guys stand on tower
+      towerX: WW*(0.25+i*0.1),
+    });
+  }
+}
+
+function updateFort(){
+  if(!inFort) return;
+  if(fortCaught){ cageBarAnim++; return; }
+
+  cageBarAnim++;
+  fortAlertTimer=Math.max(0,fortAlertTimer-1);
+
+  var playerCX=drX+50, playerCY=GL-drY-30;
+  var caught=false;
+
+  hunters.forEach(function(h){
+    h.animF++;
+    // Patrol movement
+    if(h.type==='patrol'){
+      h.x+=h.vx;
+      if(h.x<WW*0.2||h.x>WW*0.9){h.vx*=-1;}
+      h.facing=h.vx>0?1:-1;
+    }
+
+    var hx=h.tower?h.towerX:h.x;
+    var hy=h.tower?(GL-110):GL;
+    var dx=playerCX-hx, dy=playerCY-hy;
+    var dist=Math.sqrt(dx*dx+dy*dy);
+
+    // Alert detection
+    if(dist<h.alertR){
+      h.state='alert';
+      h.alertTimer=80;
+      fortAlertTimer=90;
+      document.getElementById('fort-alert').textContent='⚠️ Detected!';
+      h.facing=dx>0?1:-1;
+    } else {
+      h.alertTimer=Math.max(0,h.alertTimer-1);
+      if(h.alertTimer===0) h.state='idle';
+    }
+
+    // Cannon fire
+    if(h.type==='cannon'&&h.state==='alert'){
+      h.cannonTimer++;
+      if(h.cannonTimer>80){
+        h.cannonTimer=0;
+        var spd=5;
+        var ang=Math.atan2(dy,dx);
+        cannonballs.push({
+          x:hx+Math.cos(ang)*30, y:hy+Math.sin(ang)*30,
+          vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd,
+          life:90
+        });
+        fortParticles.push({x:hx,y:hy,type:'smoke',life:25,vx:-h.facing*1.5,vy:-1.5});
+        showFlash('💥 Cannon fire!');
+      }
+    }
+
+    // Net throw
+    if(h.type==='net'&&h.state==='alert'){
+      h.netTimer++;
+      if(h.netTimer>100){
+        h.netTimer=0;
+        var nang=Math.atan2(dy,dx);
+        nets.push({
+          x:hx, y:hy,
+          vx:Math.cos(nang)*4.5, vy:Math.sin(nang)*4.5,
+          life:70, spread:0, caught:false
+        });
+        showFlash('🕸️ Net thrown!');
+      }
+    }
+
+    // Patrol grab when very close on ground
+    if(h.type==='patrol'&&dist<45&&drY===0){
+      caught=true;
+    }
+  });
+
+  // Update cannonballs
+  for(var i=cannonballs.length-1;i>=0;i--){
+    var cb=cannonballs[i];
+    cb.x+=cb.vx; cb.y+=cb.vy; cb.vy+=0.15; cb.life--;
+    if(cb.life<=0||cb.y>WH){cannonballs.splice(i,1);continue;}
+    // Hit player
+    var cdx=cb.x-playerCX, cdy=cb.y-playerCY;
+    if(Math.sqrt(cdx*cdx+cdy*cdy)<38){
+      fortHP=Math.max(0,fortHP-25);
+      for(var p=0;p<8;p++) fortParticles.push({x:cb.x,y:cb.y,type:'spark',life:18,
+        vx:(Math.random()-0.5)*5,vy:Math.random()*-3-1});
+      cannonballs.splice(i,1);
+      if(fortHP<=0) caught=true;
+    }
+  }
+
+  // Update nets
+  for(var j=nets.length-1;j>=0;j--){
+    var nt=nets[j];
+    nt.x+=nt.vx; nt.y+=nt.vy; nt.vy+=0.1; nt.life--;
+    if(nt.life<=0){nets.splice(j,1);continue;}
+    // Spread when slowing
+    nt.spread=Math.min(1,(90-nt.life)/30);
+    // Hit player
+    var ndx=nt.x-playerCX, ndy=nt.y-playerCY;
+    if(Math.sqrt(ndx*ndx+ndy*ndy)<40){
+      nets.splice(j,1);
+      caught=true;
+    }
+  }
+
+  // Particles
+  for(var k=fortParticles.length-1;k>=0;k--){
+    var fp=fortParticles[k];
+    fp.x+=fp.vx; fp.y+=fp.vy; fp.life--;
+    if(fp.life<=0) fortParticles.splice(k,1);
+  }
+
+  // Update fort HUD
+  document.getElementById('fort-alert').textContent=
+    fortAlertTimer>0 ? '⚠️ ALERT! HP: '+fortHP : 'HP: '+fortHP+' — Fly free!';
+
+  if(caught) startCaught();
+}
+
+function startCaught(){
+  fortCaught=true;
+  drY=0; setMode('walk');
+  document.getElementById('cage-overlay').classList.add('active');
+  showEscapePanel(0);
+}
+
+function showEscapePanel(step){
+  var panel=document.getElementById('escape-panel');
+  var btns=document.getElementById('escape-btns');
+  panel.classList.add('active');
+  fortEscapeStep=step;
+
+  var steps=[
+    { // Step 0 — locked in cage
+      title:'🔒 You are locked in a cage!',
+      choices:[
+        {txt:'🔍 Look for a weak bar',good:Math.random()>0.4,win:false,next:1},
+        {txt:'📢 Call your dragon!',good:true,win:false,next:1},
+        {txt:'😴 Play dead...',good:false,win:false,next:0},
+      ]
+    },
+    { // Step 1 — found a way
+      title:'🐉 Your dragon hears you! It circles above...',
+      choices:[
+        {txt:'🔥 Signal dragon to blast the lock!',good:true,win:false,next:2},
+        {txt:'💪 Try to bend the bars yourself',good:Math.random()>0.5,win:false,next:2},
+        {txt:'🪝 Grab the guard\'s key',good:Math.random()>0.6,win:false,next:2},
+      ]
+    },
+    { // Step 2 — almost out
+      title:'💥 The lock is weakened! One more push!',
+      choices:[
+        {txt:'🚀 BURST through the door!',good:true,win:true,next:3},
+        {txt:'🤫 Sneak past the guard',good:Math.random()>0.45,win:true,next:3},
+        {txt:'🦅 Jump and grab dragon mid-air!',good:true,win:true,next:3},
+      ]
+    }
+  ];
+
+  if(step>=steps.length){
+    // Won!
+    panel.classList.remove('active');
+    document.getElementById('cage-overlay').classList.remove('active');
+    leaveFort();
+    showPop('🏆 ESCAPED!',
+      drNick+' blasted the cage open and you leapt onto their back, soaring away as the hunters scrambled below!',
+      '<div class="ow">+20 Happy! +15 🪙 coins! Freedom!</div>');
+    return;
+  }
+
+  var s=steps[step];
+  document.querySelector('.escape-title').textContent=s.title;
+
+  btns.innerHTML='';
+  s.choices.forEach(function(ch){
+    var btn=document.createElement('button');
+    btn.className='esc-btn'+(ch.good?' good':'');
+    btn.textContent=ch.txt;
+    btn.onclick=function(){
+      if(ch.good||ch.win){
+        if(ch.win||ch.next>=steps.length){
+          showFlash('✅ '+ch.txt);
+          setTimeout(function(){showEscapePanel(3);},400);
+        } else {
+          showFlash('✅ Working!');
+          setTimeout(function(){showEscapePanel(ch.next);},600);
+        }
+      } else {
+        fortHP=Math.max(0,fortHP-15);
+        showFlash('❌ No luck! HP -15');
+        if(fortHP<=0){
+          // Fail — restart escape from step 0
+          setTimeout(function(){
+            fortHP=40;
+            showEscapePanel(0);
+          },700);
+        }
+      }
+    };
+    btns.appendChild(btn);
+  });
+}
+
+// ── RENDER FORT ────────────────────────────────────────────────────────────
+function renderFort(){
+  var n=isNight;
+
+  // === SKY — dark, smoky, threatening ===
+  var fsky=ctx.createLinearGradient(0,0,0,GL);
+  fsky.addColorStop(0,'#180808');fsky.addColorStop(0.5,'#2a1008');fsky.addColorStop(1,'#3a1808');
+  ctx.fillStyle=fsky;ctx.fillRect(0,0,WW,WH);
+
+  // Smoke clouds
+  for(var sc=0;sc<6;sc++){
+    var scx=((sc*WW*0.18+animF*0.4)%WW);
+    var scy=WH*0.08+sc*WH*0.04;
+    ctx.fillStyle='rgba(80,50,30,'+(0.15+sc*0.05)+')';
+    ctx.beginPath();ctx.arc(scx,scy,50+sc*15,0,Math.PI*2);ctx.fill();
+  }
+
+  // Stars (dim, orange-tinted)
+  for(var st=0;st<30;st++){
+    var sx=((st*173)%WW), sy=((st*97)%(GL*0.5));
+    ctx.fillStyle='rgba(255,180,100,.4)';
+    ctx.beginPath();ctx.arc(sx,sy,0.8,0,Math.PI*2);ctx.fill();
+  }
+
+  // === FORT GROUND ===
+  var fg=ctx.createLinearGradient(0,GL,0,WH);
+  fg.addColorStop(0,'#3a2206');fg.addColorStop(1,'#1a0e02');
+  ctx.fillStyle=fg;ctx.fillRect(0,GL,WW,WH-GL);
+  // Wooden planks
+  ctx.strokeStyle='rgba(30,15,0,.5)';ctx.lineWidth=2;
+  for(var fp2=0;fp2<WW;fp2+=38){ctx.beginPath();ctx.moveTo(fp2,GL);ctx.lineTo(fp2,WH);ctx.stroke();}
+
+  // === FORT WALLS & TOWERS ===
+  drawFortStructure();
+
+  // === HUNTERS ===
+  hunters.forEach(function(h){
+    var hx=h.tower?h.towerX:h.x;
+    var hy=h.tower?(GL-100):GL;
+    drawHunter(hx,hy,h);
+    // Alert ring
+    if(h.state==='alert'){
+      var ar=h.alertR*(0.5+0.5*Math.sin(cageBarAnim*0.18));
+      ctx.strokeStyle='rgba(255,80,0,.35)';ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(hx,hy,ar,0,Math.PI*2);ctx.stroke();
+    }
+    // Alert emoji
+    if(h.state==='alert'){
+      ctx.font='18px serif';ctx.textAlign='center';
+      ctx.fillText('❗',hx,hy-130);
+    }
+  });
+
+  // === CANNONBALLS ===
+  cannonballs.forEach(function(cb){
+    // Trail
+    ctx.fillStyle='rgba(255,120,0,.4)';
+    ctx.beginPath();ctx.ellipse(cb.x-cb.vx*3,cb.y-cb.vy*3,10,6,Math.atan2(cb.vy,cb.vx),0,Math.PI*2);ctx.fill();
+    // Ball
+    var cbg=ctx.createRadialGradient(cb.x-2,cb.y-2,1,cb.x,cb.y,10);
+    cbg.addColorStop(0,'#888');cbg.addColorStop(0.5,'#444');cbg.addColorStop(1,'#222');
+    ctx.fillStyle=cbg;ctx.beginPath();ctx.arc(cb.x,cb.y,10,0,Math.PI*2);ctx.fill();
+    // Fire glow
+    ctx.fillStyle='rgba(255,140,0,.5)';ctx.beginPath();ctx.arc(cb.x,cb.y,14,0,Math.PI*2);ctx.fill();
+  });
+
+  // === NETS ===
+  nets.forEach(function(nt){
+    var ns=8+nt.spread*16;
+    ctx.strokeStyle='rgba(180,140,60,'+(0.7+nt.spread*0.3)+')';ctx.lineWidth=1.5;
+    // Draw net as grid of lines
+    for(var ni=-2;ni<=2;ni++){
+      ctx.beginPath();ctx.moveTo(nt.x+ni*ns*nt.spread,nt.y-ns*2);
+      ctx.lineTo(nt.x+ni*ns*nt.spread*0.5,nt.y+ns*2);ctx.stroke();
+    }
+    for(var nj=-2;nj<=2;nj++){
+      ctx.beginPath();ctx.moveTo(nt.x-ns*2,nt.y+nj*ns*nt.spread*0.5);
+      ctx.lineTo(nt.x+ns*2,nt.y+nj*ns*nt.spread*0.3);ctx.stroke();
+    }
+    // Corner weights
+    ctx.fillStyle='#8a6020';
+    [[-ns*2,-ns],[ ns*2,-ns],[-ns*2,ns],[ns*2,ns]].forEach(function(pt){
+      ctx.beginPath();ctx.arc(nt.x+pt[0]*nt.spread,nt.y+pt[1]*nt.spread,4,0,Math.PI*2);ctx.fill();
+    });
+  });
+
+  // === PARTICLES ===
+  fortParticles.forEach(function(fp3){
+    var al=fp3.life/25;
+    if(fp3.type==='spark'){
+      ctx.fillStyle='rgba(255,'+(120+Math.random()*135)+',0,'+al+')';
+      ctx.beginPath();ctx.arc(fp3.x,fp3.y,3*al,0,Math.PI*2);ctx.fill();
+    } else if(fp3.type==='smoke'){
+      ctx.fillStyle='rgba(100,80,60,'+al*0.4+')';
+      ctx.beginPath();ctx.arc(fp3.x,fp3.y,12*(1-al)*2+5,0,Math.PI*2);ctx.fill();
+    }
+  });
+
+  // === PLAYER ===
+  if(!fortCaught){
+    var dsy=GL-drY-30;
+    var dscale=moveMode==='fly'?1.2:1.0;
+    var shw=Math.max(0.05,1-drY/300);
+    ctx.save();ctx.globalAlpha=shw*0.3;
+    ctx.fillStyle='#000';ctx.beginPath();ctx.ellipse(drX+50,GL+4,35*shw,8*shw,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+    drawDragonCtx(ctx,dragonDef,drX+60,dsy+10,dscale,facing===1,moveMode==='fly',animF,chewT>0,drinkT>0,false);
+    if(moveMode!=='fly') drawViking(ctx,vik,drX,GL-2,0.88);
+    else drawVikingRiding(ctx,vik,drX+60,dsy+10,dscale,facing===1);
+
+    // Player HP bar
+    ctx.fillStyle='rgba(0,0,0,.5)';ctx.beginPath();ctx.roundRect(drX,GL-drY-65,60,8,4);ctx.fill();
+    var hpC=fortHP>60?'#2ecc71':fortHP>30?'#f39c12':'#e74c3c';
+    ctx.fillStyle=hpC;ctx.beginPath();ctx.roundRect(drX,GL-drY-65,60*(fortHP/100),8,4);ctx.fill();
+  } else {
+    // Draw cage with player inside
+    drawCage();
+  }
+
+  // === LABELS ===
+  ctx.fillStyle='rgba(255,100,100,.65)';ctx.font='11px Cinzel,Georgia';ctx.textAlign='center';
+  ctx.fillText('⚓ Dragon Hunter Fort',WW/2,GL-8);
+
+  // Exit zone label (left edge)
+  if(drX<120&&!fortCaught){
+    labelAt(ctx,'← Fly left to escape!',80,GL-90,'#ff8080');
+  }
+}
+
+function drawFortStructure(){
+  var n=isNight;
+  // Main fort wall across back
+  var wallY=GL-60;
+  // Wall base
+  ctx.fillStyle='#4a3010';
+  ctx.fillRect(WW*0.18,wallY,WW*0.72,60);
+  // Stone facing
+  ctx.fillStyle='#5a4018';
+  ctx.fillRect(WW*0.18,wallY,WW*0.72,55);
+  // Stone blocks pattern
+  ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=1.5;
+  for(var wr=0;wr<3;wr++){
+    for(var wc2=0;wc2<16;wc2++){
+      var wx3=WW*0.18+wc2*(WW*0.72/16);
+      var wy3=wallY+wr*18+(wc2%2)*9;
+      ctx.strokeRect(wx3,wy3,WW*0.72/16,18);
+    }
+  }
+  // Battlements / crenellations
+  ctx.fillStyle='#4a3010';
+  for(var cr=0;cr<18;cr++){
+    var cx5=WW*0.18+cr*(WW*0.72/17);
+    if(cr%2===0) ctx.fillRect(cx5,wallY-20,WW*0.72/17-3,20);
+  }
+
+  // TOWERS at thirds
+  [WW*0.25, WW*0.5, WW*0.75].forEach(function(tx,ti){
+    // Tower body
+    ctx.fillStyle='#3a2808';ctx.fillRect(tx-30,wallY-95,60,95);
+    ctx.fillStyle='#4a3812';ctx.fillRect(tx-28,wallY-93,56,91);
+    // Tower stone blocks
+    ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=1;
+    for(var ts=0;ts<5;ts++) ctx.strokeRect(tx-28,wallY-93+ts*18,56,18);
+    // Tower battlements
+    ctx.fillStyle='#3a2808';
+    for(var tc=0;tc<4;tc++) ctx.fillRect(tx-26+tc*14,wallY-110,10,18);
+    // Arrow slit window
+    ctx.fillStyle='#1a0a00';ctx.fillRect(tx-4,wallY-70,8,22);
+    // Torch
+    var torchFlicker=0.85+0.15*Math.sin(animF*0.15+ti);
+    ctx.fillStyle='rgba(255,'+(140+Math.floor(Math.sin(animF*0.2)*40))+',0,'+torchFlicker+')';
+    ctx.beginPath();ctx.arc(tx+22,wallY-55,7*torchFlicker,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#5a3010';ctx.fillRect(tx+20,wallY-55,4,20);
+    // Cannon barrel sticking out of tower
+    if(ti===1||ti===0||ti===2){
+      ctx.fillStyle='#333';
+      ctx.save();ctx.translate(tx,wallY-65);
+      ctx.fillRect(-6,-5,38,10);
+      ctx.fillStyle='#222';ctx.beginPath();ctx.arc(32,0,8,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    }
+    // Fort flag
+    ctx.fillStyle='#8b0000';ctx.fillRect(tx-1,wallY-130,2,28);
+    ctx.fillStyle='#cc0000';ctx.beginPath();ctx.moveTo(tx+1,wallY-128);ctx.lineTo(tx+20,wallY-120);ctx.lineTo(tx+1,wallY-112);ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='bold 8px sans-serif';ctx.textAlign='center';ctx.fillText('☠',tx+10,wallY-117);
+  });
+
+  // Wooden dock/platform in front
+  ctx.fillStyle='#5a3810';
+  ctx.fillRect(WW*0.2,GL-18,WW*0.6,18);
+  ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=2;
+  for(var dp=0;dp<12;dp++) ctx.strokeRect(WW*0.2+dp*(WW*0.6/12),GL-18,WW*0.6/12,18);
+
+  // Ship/boat silhouette at right
+  ctx.fillStyle='#3a2008';
+  ctx.beginPath();ctx.moveTo(WW*0.82,GL);ctx.lineTo(WW*0.82,GL-40);ctx.lineTo(WW-20,GL-30);ctx.lineTo(WW,GL);ctx.fill();
+  ctx.fillStyle='#2a1404';ctx.fillRect(WW*0.88,GL-80,5,50);
+  ctx.fillStyle='rgba(100,60,20,.4)';
+  ctx.beginPath();ctx.moveTo(WW*0.885,GL-78);ctx.lineTo(WW*0.935,GL-62);ctx.lineTo(WW*0.885,GL-48);ctx.fill();
+}
+
+function drawHunter(x,y,h){
+  ctx.save();
+  if(h.facing===-1) {ctx.scale(-1,1);x=-x;}
+  ctx.translate(x,y);
+
+  var alert=h.state==='alert';
+  var skinC='#d4a870', coatC=alert?'#8b2020':'#4a3020', helmetC='#888';
+
+  // Shadow
+  ctx.restore();ctx.save();
+  ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(h.tower?h.towerX:h.x,y+4,18,5,0,0,Math.PI*2);ctx.fill();
+  ctx.restore();ctx.save();
+  if(h.facing===-1){ctx.scale(-1,1);x=-(h.tower?h.towerX:h.x);}else{x=h.tower?h.towerX:h.x;}
+  ctx.translate(x,y);
+
+  // Legs
+  ctx.fillStyle=coatC;
+  var legBob=Math.sin(h.animF*(h.type==='patrol'?0.12:0))*5;
+  ctx.fillRect(-8,0,7,26+legBob);
+  ctx.fillRect(2,0,7,26-legBob);
+  // Boots
+  ctx.fillStyle='#1a0a00';ctx.fillRect(-10,22+legBob,9,8);ctx.fillRect(1,22-legBob,9,8);
+
+  // Coat body
+  var cg2=ctx.createLinearGradient(-14,-30,14,0);
+  cg2.addColorStop(0,alert?'#aa2828':'#5a3828');cg2.addColorStop(1,alert?'#882020':'#3a2018');
+  ctx.fillStyle=cg2;ctx.beginPath();ctx.roundRect(-13,-30,26,30,3);ctx.fill();
+  // Belt
+  ctx.fillStyle='#2a1a00';ctx.fillRect(-13,-4,26,5);
+  ctx.fillStyle='#c8a020';ctx.fillRect(-4,-4,8,5);
+
+  // Arms — weapon varies
+  if(h.type==='cannon'){
+    // Holding a torch/ramrod
+    ctx.fillStyle='#5a3a1a';ctx.fillRect(14,-25,5,22);
+    ctx.fillStyle='rgba(255,120,0,.8)';ctx.beginPath();ctx.arc(16,-25,7,0,Math.PI*2);ctx.fill();
+  } else if(h.type==='net'){
+    // Net bag on shoulder
+    ctx.fillStyle='#8a6020';ctx.fillRect(12,-28,12,18);
+    ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=1;
+    for(var ni2=0;ni2<3;ni2++) ctx.strokeRect(12,ni2*6-28,12,6);
+  } else {
+    // Patrol — holding a spear
+    ctx.fillStyle='#5a3a1a';ctx.fillRect(14,-45,4,50);
+    ctx.fillStyle='#aaa';ctx.beginPath();ctx.moveTo(14,-45);ctx.lineTo(18,-45);ctx.lineTo(16,-58);ctx.fill();
+  }
+  // Other arm
+  ctx.fillStyle=coatC;ctx.fillRect(-18,-26,6,22);
+
+  // Neck
+  ctx.fillStyle=skinC;ctx.fillRect(-5,-35,10,8);
+
+  // Head
+  var hg3=ctx.createRadialGradient(-2,-44,3,0,-42,11);
+  hg3.addColorStop(0,'#e8c090');hg3.addColorStop(1,skinC);
+  ctx.fillStyle=hg3;ctx.beginPath();ctx.ellipse(0,-42,10,12,0,0,Math.PI*2);ctx.fill();
+
+  // Helmet
+  ctx.fillStyle=helmetC;ctx.beginPath();
+  ctx.arc(0,-46,11,Math.PI,0);ctx.fill();
+  ctx.fillRect(-12,-46,24,5);
+  // Visor stripe
+  ctx.fillStyle='rgba(0,0,0,.3)';ctx.fillRect(-10,-46,20,3);
+  // Eye visible under helmet
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(5,-43,2.5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#1a0a00';ctx.beginPath();ctx.arc(5.5,-43,1.5,0,Math.PI*2);ctx.fill();
+
+  // Beard / scarf
+  ctx.fillStyle='#4a3020';ctx.beginPath();ctx.moveTo(-8,-34);ctx.lineTo(8,-34);ctx.lineTo(6,-28);ctx.lineTo(-6,-28);ctx.fill();
+
+  ctx.restore();
+}
+
+function drawCage(){
+  // Cage drawn at centre of screen
+  var cx=WW*0.5, cy=GL-90;
+  var cw=110, ch=130;
+
+  // Cage shadow
+  ctx.fillStyle='rgba(0,0,0,.4)';ctx.beginPath();ctx.ellipse(cx,GL+5,cw/2+10,12,0,0,Math.PI*2);ctx.fill();
+
+  // Cage base
+  ctx.fillStyle='#4a3010';ctx.fillRect(cx-cw/2-5,GL-15,cw+10,15);
+
+  // Player + dragon inside cage (small)
+  drawViking(ctx,vik,cx-25,GL-20,0.6);
+  drawDragonCtx(ctx,dragonDef,cx+25,GL-22,0.5,true,false,cageBarAnim,false,false,false);
+
+  // Cage bars — drawn OVER player
+  ctx.strokeStyle='#5a4010';ctx.lineWidth=6;
+  ctx.lineCap='round';
+  // Vertical bars
+  for(var bar=-2;bar<=2;bar++){
+    var bx=cx+bar*(cw/4.5);
+    // Shake bars near escape step 2
+    var shake=(fortEscapeStep>=2)?Math.sin(cageBarAnim*0.3+bar)*4:0;
+    ctx.beginPath();ctx.moveTo(bx+shake,GL-ch);ctx.lineTo(bx+shake,GL);ctx.stroke();
+    // Metal sheen
+    ctx.strokeStyle='rgba(180,140,60,.35)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(bx-1+shake,GL-ch);ctx.lineTo(bx-1+shake,GL);ctx.stroke();
+    ctx.strokeStyle='#5a4010';ctx.lineWidth=6;
+  }
+  // Horizontal bands
+  [0.2,0.5,0.8].forEach(function(t){
+    var hy2=GL-ch*t;
+    ctx.strokeStyle='#4a3008';ctx.lineWidth=8;
+    ctx.beginPath();ctx.moveTo(cx-cw/2,hy2);ctx.lineTo(cx+cw/2,hy2);ctx.stroke();
+    ctx.strokeStyle='rgba(160,120,50,.3)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(cx-cw/2,hy2-1);ctx.lineTo(cx+cw/2,hy2-1);ctx.stroke();
+  });
+
+  // Lock on door
+  var lockShake=(fortEscapeStep>=1)?Math.sin(cageBarAnim*0.25)*3:0;
+  ctx.fillStyle='#8a6020';ctx.beginPath();ctx.roundRect(cx-14+lockShake,GL-50,28,22,4);ctx.fill();
+  ctx.fillStyle='#c8a030';ctx.beginPath();ctx.arc(cx+lockShake,GL-44,8,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#5a3010';ctx.lineWidth=3;
+  ctx.beginPath();ctx.arc(cx+lockShake,GL-48,5,Math.PI,0);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx-5+lockShake,GL-48);ctx.lineTo(cx-5+lockShake,GL-40);ctx.lineTo(cx+5+lockShake,GL-40);ctx.lineTo(cx+5+lockShake,GL-48);ctx.stroke();
+
+  // Crack effect at escape step 2
+  if(fortEscapeStep>=2){
+    ctx.strokeStyle='rgba(255,200,0,.6)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(cx-5,GL-50);ctx.lineTo(cx-12,GL-62);ctx.lineTo(cx-3,GL-68);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx+5,GL-50);ctx.lineTo(cx+10,GL-58);ctx.stroke();
+    // Glow pulse
+    var gp=0.3+0.3*Math.sin(cageBarAnim*0.2);
+    ctx.fillStyle='rgba(255,180,0,'+gp+')';
+    ctx.beginPath();ctx.arc(cx,GL-50,22,0,Math.PI*2);ctx.fill();
+  }
+
+  // Your dragon flying overhead, circling (after step 1)
+  if(fortEscapeStep>=1){
+    var dCircX=cx+Math.cos(cageBarAnim*0.03)*120;
+    var dCircY=GL-160+Math.sin(cageBarAnim*0.05)*30;
+    drawDragonCtx(ctx,dragonDef,dCircX,dCircY,0.75,dCircX>cx,true,cageBarAnim,false,false,false);
+    labelAt(ctx,'🐉 '+drNick+' is coming!',cx,GL-200,'#ffd700');
+  }
+
+  // Caption
+  labelAt(ctx,'🔒 Trapped! Choose your escape below.',cx,GL-ch-14,'#ff8080');
+}
+
+// ============================================================
+// OCEAN BIOME
+// ============================================================
+
+function teleportToOcean(){
+  inOcean=true; inFort=false; inHiddenWorld=false; inHouse=false;
+  inBoat=false; currentBoat=null;
+  oceanScrollX=0; oceanWaveT=0;
+  drX=WW*0.18; drY=0;
+  setMode('walk');
+  initOcean();
+  document.getElementById('ocean-hud').classList.add('active');
+  document.getElementById('ocean-status').textContent='The Great Ocean — board a boat!';
+  showFlash('🌊 The Great Ocean!');
+}
+
+function leaveOcean(){
+  inOcean=false; inBoat=false; currentBoat=null;
+  document.getElementById('ocean-hud').classList.remove('active');
+  showFlash('← Back to Berk!');
+}
+
+function initOcean(){
+  // 4 boats tied to the dock
+  dockBoats=[];
+  var boatTypes=[
+    {color:'#8b4513',sail:'#e8d4a0',name:'Sea Star',   w:100,h:40},
+    {color:'#5a3010',sail:'#c8e8ff',name:'Storm Rider', w:120,h:45},
+    {color:'#2a5a8a',sail:'#ffd700',name:'Golden Fin',  w:90, h:38},
+    {color:'#4a2808',sail:'#ff8060',name:'Red Wing',    w:110,h:42},
+  ];
+  boatTypes.forEach(function(bt,i){
+    dockBoats.push({
+      x: WW*0.28 + i*130,
+      y: GL+22,
+      sway: Math.random()*Math.PI*2,
+      swaySpd: 0.018+Math.random()*0.012,
+      color: bt.color, sail: bt.sail,
+      name: bt.name, w: bt.w, h: bt.h,
+      ropeAngle: 0,
+      idx: i
+    });
+  });
+
+  // Scatter islands across the ocean world (at fixed ocean-world-X positions)
+  oceanIslands=[
+    {wx:900,  wy:0, size:1.0,  trees:3, name:'Shell Cove',    hasRuins:false, hasTreasure:true},
+    {wx:1800, wy:0, size:1.4,  trees:5, name:'Fog Island',    hasRuins:true,  hasTreasure:false},
+    {wx:2700, wy:0, size:0.85, trees:2, name:'Tiny Rock',     hasRuins:false, hasTreasure:false},
+    {wx:3500, wy:0, size:1.2,  trees:4, name:'Dragon Perch',  hasRuins:false, hasTreasure:true},
+    {wx:4400, wy:0, size:1.6,  trees:6, name:'Ancient Isle',  hasRuins:true,  hasTreasure:true},
+  ];
+
+  // Sea creatures
+  seaCreatures=[];
+  for(var i=0;i<12;i++){
+    seaCreatures.push({
+      wx: 200+Math.random()*5000,
+      type: ['fish','fish','fish','dolphin','whale'][Math.floor(Math.random()*5)],
+      vx: (Math.random()>0.5?1:-1)*(0.8+Math.random()*1.2),
+      y: 0, bob: Math.random()*Math.PI*2,
+      visible: false
+    });
+  }
+}
+
+function boardBoat(idx){
+  currentBoat = dockBoats[idx];
+  inBoat = true;
+  setMode('fly');  // dragon flies overhead
+  oceanScrollX = 0;
+  document.getElementById('ocean-status').textContent='Sailing on '+currentBoat.name+'!';
+  showFlash('⛵ Sailing on '+currentBoat.name+'! Use ◄► to steer!');
+}
+
+function disembark(){
+  inBoat=false; currentBoat=null;
+  setMode('walk');
+  drX=WW*0.18; drY=0;
+  document.getElementById('ocean-status').textContent='Back on the dock!';
+  showFlash('🚢 Docked!');
+}
+
+function updateOcean(){
+  if(!inOcean) return;
+  oceanWaveT++;
+
+  // Sway dock boats
+  dockBoats.forEach(function(b){
+    b.sway += b.swaySpd;
+  });
+
+  // Sea creatures move
+  seaCreatures.forEach(function(sc){
+    sc.wx += sc.vx;
+    sc.bob += 0.04;
+    if(sc.wx < -200) sc.wx = 5200;
+    if(sc.wx > 5200) sc.wx = -200;
+  });
+
+  if(inBoat && currentBoat){
+    // Player steers the boat by scrolling ocean
+    var spd = keys.left?-3.5 : keys.right?3.5 : 0;
+    oceanScrollX += spd;
+    oceanScrollX = Math.max(0, oceanScrollX);
+    currentBoat.sway += currentBoat.swaySpd;
+
+    // Dragon flies overhead while in boat
+    drY = 120 + Math.sin(oceanWaveT*0.04)*30;
+
+    // Update HUD
+    var nearIsland = getNearIsland();
+    if(nearIsland){
+      document.getElementById('ocean-status').textContent='Near '+nearIsland.name+'! 🏝️';
+    }
+  } else {
+    // On dock — check proximity to boats
+    nearBoatIdx=-1;
+    dockBoats.forEach(function(b,i){
+      if(Math.abs(drX - b.x)<65 && drY===0) nearBoatIdx=i;
+    });
+    if(nearBoatIdx>=0){
+      document.getElementById('ocean-status').textContent='Press Board! → '+dockBoats[nearBoatIdx].name;
+    } else {
+      document.getElementById('ocean-status').textContent='The Great Ocean';
+    }
+    // Left edge goes back to Berk
+    if(drX < 30) leaveOcean();
+  }
+}
+
+function getNearIsland(){
+  for(var i=0;i<oceanIslands.length;i++){
+    var isl=oceanIslands[i];
+    var screenX = isl.wx - oceanScrollX + WW*0.18;
+    if(Math.abs(screenX - WW*0.5) < 180) return isl;
+  }
+  return null;
+}
+
+// ── RENDER OCEAN ──────────────────────────────────────────────────────────
+function renderOcean(){
+  var t = oceanWaveT;
+  var n = isNight;
+
+  // === SKY ===
+  var osky=ctx.createLinearGradient(0,0,0,GL);
+  if(n){osky.addColorStop(0,'#01080f');osky.addColorStop(1,'#051520');}
+  else{osky.addColorStop(0,'#1a6fb8');osky.addColorStop(1,'#5ab8e8');}
+  ctx.fillStyle=osky;ctx.fillRect(0,0,WW,WH);
+
+  // Clouds drifting
+  for(var cl=0;cl<5;cl++){
+    var cx2=((cl*WW*0.22 + t*0.3)%WW);
+    var cy2=WH*0.06+cl*WH*0.04;
+    drawCloud3D(cx2,cy2,0.7+cl*0.15);
+  }
+
+  // Sun/moon
+  if(n){
+    ctx.fillStyle='rgba(220,230,255,.9)';ctx.beginPath();ctx.arc(WW*0.8,WH*0.08,22,0,Math.PI*2);ctx.fill();
+    var mg=ctx.createRadialGradient(WW*0.8,WH*0.08,15,WW*0.8,WH*0.08,55);
+    mg.addColorStop(0,'rgba(180,200,255,.18)');mg.addColorStop(1,'transparent');
+    ctx.fillStyle=mg;ctx.beginPath();ctx.arc(WW*0.8,WH*0.08,55,0,Math.PI*2);ctx.fill();
+  } else {
+    var sunG=ctx.createRadialGradient(WW*0.75,WH*0.1,5,WW*0.75,WH*0.1,32);
+    sunG.addColorStop(0,'#fffbe0');sunG.addColorStop(0.5,'#ffd700');sunG.addColorStop(1,'rgba(255,180,0,0)');
+    ctx.fillStyle=sunG;ctx.beginPath();ctx.arc(WW*0.75,WH*0.1,32,0,Math.PI*2);ctx.fill();
+  }
+
+  // === OCEAN WATER ===
+  // Deep water fill
+  var wg=ctx.createLinearGradient(0,GL,0,WH);
+  if(n){wg.addColorStop(0,'#021428');wg.addColorStop(1,'#010810');}
+  else{wg.addColorStop(0,'#0a6ab0');wg.addColorStop(1,'#053d6a');}
+  ctx.fillStyle=wg;ctx.fillRect(0,GL,WW,WH-GL);
+
+  // Wave layers — drawn back to front
+  for(var wl=4;wl>=0;wl--){
+    var wAlpha=0.12+wl*0.08;
+    var wOffset=t*0.6*(1+wl*0.3);
+    var wAmp=4+wl*3;
+    var wFreq=0.015-wl*0.002;
+    var wy2=GL + wl*((WH-GL)/5);
+    var wc3=n?'rgba(30,80,140,'+wAlpha+')':'rgba(30,130,220,'+wAlpha+')';
+    ctx.fillStyle=wc3;
+    ctx.beginPath();ctx.moveTo(0,wy2);
+    for(var wx2=0;wx2<=WW;wx2+=8){
+      ctx.lineTo(wx2, wy2+Math.sin((wx2+wOffset)*wFreq)*wAmp);
+    }
+    ctx.lineTo(WW,WH);ctx.lineTo(0,WH);ctx.closePath();ctx.fill();
+  }
+
+  // Sparkle reflections on water
+  ctx.fillStyle=n?'rgba(180,200,255,.35)':'rgba(255,255,255,.45)';
+  for(var sp=0;sp<20;sp++){
+    var spx=((sp*WW*0.054+t*1.2)%WW);
+    var spy=GL+10+((sp*17)%(WH-GL-20));
+    var sps=(0.5+Math.sin(t*0.1+sp)*0.5)*3;
+    ctx.beginPath();ctx.arc(spx,spy,sps,0,Math.PI*2);ctx.fill();
+  }
+
+  // === ISLANDS (scrolled) ===
+  oceanIslands.forEach(function(isl){
+    var screenX = isl.wx - oceanScrollX + WW*0.18;
+    if(screenX < -200 || screenX > WW+200) return;
+    drawOceanIsland(screenX, GL, isl);
+  });
+
+  // === SEA CREATURES ===
+  seaCreatures.forEach(function(sc){
+    var screenX = sc.wx - oceanScrollX + WW*0.18;
+    if(screenX<-50||screenX>WW+50) return;
+    var surfY = GL+8+Math.sin(sc.bob)*5;
+    drawSeaCreature(screenX, surfY, sc);
+  });
+
+  // === DOCK (always at left, fixed) ===
+  if(!inBoat) drawDock();
+
+  // === BOATS ===
+  if(inBoat && currentBoat){
+    // Draw the boat the player is in, centred on screen
+    drawBoatSailing(WW*0.5, GL+currentBoat.h*0.3 + Math.sin(currentBoat.sway)*6, currentBoat);
+
+    // Dragon flies overhead
+    var drCircX = WW*0.5 + Math.cos(t*0.022)*80;
+    var drCircY = GL - 160 + Math.sin(t*0.028)*25;
+    drawDragonCtx(ctx,dragonDef,drCircX,drCircY,1.0,drCircX>WW*0.5,true,animF,false,false,false);
+    // Dragon shadow on water
+    ctx.fillStyle='rgba(0,0,0,.12)';ctx.beginPath();
+    ctx.ellipse(drCircX,GL+12,22,7,0,0,Math.PI*2);ctx.fill();
+
+    // Boat wake lines
+    for(var wk=1;wk<=4;wk++){
+      var wkAlpha=0.25-wk*0.05;
+      ctx.strokeStyle='rgba(200,230,255,'+wkAlpha+')';ctx.lineWidth=wk*1.5;
+      ctx.beginPath();
+      ctx.moveTo(WW*0.5-50,GL+10+wk*5);
+      ctx.quadraticCurveTo(WW*0.5-140,GL+20+wk*6,WW*0.5-260,GL+8+wk*4);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(WW*0.5+50,GL+10+wk*5);
+      ctx.quadraticCurveTo(WW*0.5+140,GL+20+wk*6,WW*0.5+260,GL+8+wk*4);
+      ctx.stroke();
+    }
+
+    // Player (viking) inside boat — shown from above/side
+    drawVikingInBoat(WW*0.5, GL, currentBoat);
+
+    // Disembark hint near island
+    var ni=getNearIsland();
+    if(ni){
+      var niX=ni.wx-oceanScrollX+WW*0.18;
+      labelAt(ctx,'🏝️ '+ni.name+' — Tap Disembark!',WW/2,GL-55,'#ffd700');
+      // Draw disembark button
+      ctx.fillStyle='rgba(255,215,0,.15)';ctx.strokeStyle='rgba(255,215,0,.6)';ctx.lineWidth=2;
+      ctx.beginPath();ctx.roundRect(WW/2-55,GL-82,110,24,10);ctx.fill();ctx.stroke();
+      ctx.fillStyle='#ffd700';ctx.font='bold 11px Cinzel,Georgia';ctx.textAlign='center';
+      ctx.fillText('🚢 Disembark',WW/2,GL-65);
+    }
+
+    // Compass
+    drawCompass(WW-60,60);
+
+  } else {
+    // On the dock — draw player dragon flying + viking walking
+    var dsy=GL-drY-30;
+    drawDragonCtx(ctx,dragonDef,drX+60,dsy+10,0.9,facing===1,moveMode==='fly',animF,false,false,false);
+    var vbob=(keys.left||keys.right)?Math.sin(animF*0.3)*4:0;
+    drawViking(ctx,vik,drX,GL-2+vbob,0.88);
+
+    // "Board" prompt above nearest boat
+    if(nearBoatIdx>=0){
+      var nb=dockBoats[nearBoatIdx];
+      labelAt(ctx,'⛵ Board '+nb.name+'?',nb.x,nb.y-nb.h-35,'#ffd700');
+      ctx.fillStyle='rgba(255,215,0,.12)';ctx.strokeStyle='rgba(255,215,0,.55)';ctx.lineWidth=2;
+      ctx.beginPath();ctx.roundRect(nb.x-45,nb.y-nb.h-58,90,22,10);ctx.fill();ctx.stroke();
+      ctx.fillStyle='#ffd700';ctx.font='bold 10px Cinzel,Georgia';ctx.textAlign='center';
+      ctx.fillText('Tap to Board!',nb.x,nb.y-nb.h-43);
+    }
+    // Arrow back to Berk
+    labelAt(ctx,'← Back to Berk',55,GL-80,'rgba(255,255,255,.6)');
+  }
+
+  // Horizon glow
+  var hg=ctx.createLinearGradient(0,GL-18,0,GL+8);
+  hg.addColorStop(0,n?'rgba(0,40,80,.6)':'rgba(120,200,255,.4)');
+  hg.addColorStop(1,'transparent');
+  ctx.fillStyle=hg;ctx.fillRect(0,GL-18,WW,26);
+
+  // HUD label
+  ctx.fillStyle=n?'rgba(100,180,255,.5)':'rgba(200,240,255,.65)';
+  ctx.font='11px Cinzel,Georgia';ctx.textAlign='center';
+  ctx.fillText('🌊 The Great Ocean',WW/2,GL-10);
+}
+
+function drawDock(){
+  var dockX=WW*0.12;
+  var dockW=WW*0.72;
+
+  // Dock shadow on water
+  ctx.fillStyle='rgba(0,0,0,.2)';
+  ctx.beginPath();ctx.ellipse(dockX+dockW*0.5,GL+10,dockW*0.5,18,0,0,Math.PI*2);ctx.fill();
+
+  // Main dock planks
+  var dg=ctx.createLinearGradient(0,GL-12,0,GL+18);
+  dg.addColorStop(0,'#8b6030');dg.addColorStop(1,'#5a3a10');
+  ctx.fillStyle=dg;ctx.beginPath();
+  ctx.moveTo(dockX,GL-12);ctx.lineTo(dockX+dockW,GL-12);
+  ctx.lineTo(dockX+dockW+15,GL+18);ctx.lineTo(dockX-15,GL+18);ctx.closePath();ctx.fill();
+
+  // Plank lines
+  ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=1.5;
+  for(var pl=0;pl<22;pl++){
+    var px=dockX+pl*(dockW/21);
+    ctx.beginPath();ctx.moveTo(px,GL-12);ctx.lineTo(px+7,GL+18);ctx.stroke();
+  }
+
+  // Dock edge highlight
+  ctx.strokeStyle='rgba(200,160,80,.3)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(dockX,GL-12);ctx.lineTo(dockX+dockW,GL-12);ctx.stroke();
+
+  // Piles/posts into water
+  ctx.fillStyle='#4a2a08';
+  [dockX+20, dockX+dockW*0.33, dockX+dockW*0.66, dockX+dockW-20].forEach(function(px){
+    ctx.fillRect(px-5,GL,10,WH-GL);
+    // Rope ring
+    ctx.strokeStyle='rgba(160,120,60,.7)';ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(px,GL+5,7,0,Math.PI*2);ctx.stroke();
+  });
+
+  // Dock boats tied up
+  dockBoats.forEach(function(b,i){
+    drawDockedBoat(b.x, b.y, b);
+    // Tie rope from dock post to boat
+    var postX=dockX+20+i*((dockW-40)/3);
+    var sway=Math.sin(b.sway)*5;
+    ctx.strokeStyle='rgba(160,120,60,.6)';ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(postX,GL+5);
+    ctx.quadraticCurveTo((postX+b.x)*0.5,GL+18+Math.sin(b.sway)*4,b.x+sway,b.y-b.h+5);
+    ctx.stroke();
+    // Small dot at tie
+    ctx.fillStyle='#8a6030';ctx.beginPath();ctx.arc(b.x+sway,b.y-b.h+5,4,0,Math.PI*2);ctx.fill();
+  });
+}
+
+function drawDockedBoat(x, y, b){
+  var sway=Math.sin(b.sway)*4;
+  ctx.save();ctx.translate(x+sway, y+Math.sin(b.sway)*2);ctx.rotate(Math.sin(b.sway)*0.025);
+
+  // Shadow on water
+  ctx.restore();
+  ctx.fillStyle='rgba(0,0,0,.18)';
+  ctx.beginPath();ctx.ellipse(x+sway,y+14,b.w*0.45,10,0,0,Math.PI*2);ctx.fill();
+  ctx.save();ctx.translate(x+sway, y+Math.sin(b.sway)*2);ctx.rotate(Math.sin(b.sway)*0.025);
+
+  var hw=b.w/2;
+
+  // Hull
+  ctx.fillStyle=b.color;
+  ctx.beginPath();
+  ctx.moveTo(-hw,0);ctx.lineTo(-hw+8,b.h);ctx.lineTo(hw-8,b.h);ctx.lineTo(hw,0);
+  ctx.quadraticCurveTo(hw+16,-b.h*0.3,0,-b.h*0.55);
+  ctx.quadraticCurveTo(-hw-16,-b.h*0.3,-hw,0);ctx.closePath();ctx.fill();
+
+  // Hull stripe
+  ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(-hw+2,0);ctx.lineTo(hw-2,0);ctx.stroke();
+
+  // Wooden deck
+  var deckG=ctx.createLinearGradient(-hw,-b.h*0.5,hw,0);
+  deckG.addColorStop(0,'#c8a060');deckG.addColorStop(1,'#a07840');
+  ctx.fillStyle=deckG;
+  ctx.beginPath();
+  ctx.moveTo(-hw+4,-2);ctx.lineTo(hw-4,-2);
+  ctx.quadraticCurveTo(hw+10,-b.h*0.28,0,-b.h*0.5);
+  ctx.quadraticCurveTo(-hw-10,-b.h*0.28,-hw+4,-2);ctx.closePath();ctx.fill();
+  // Deck planks
+  ctx.strokeStyle='rgba(80,50,20,.3)';ctx.lineWidth=1;
+  for(var dk=0;dk<5;dk++){
+    var dpx=-hw+8+dk*(b.w-16)/4;
+    ctx.beginPath();ctx.moveTo(dpx,-2);ctx.lineTo(dpx*0.5,-b.h*0.48);ctx.stroke();
+  }
+
+  // Mast
+  ctx.fillStyle='#5a3010';ctx.fillRect(-3,-b.h*0.5-90,6,90);
+
+  // Sail
+  ctx.fillStyle=b.sail;
+  var sailBow=Math.sin(b.sway*0.8)*14;
+  ctx.beginPath();
+  ctx.moveTo(-2,-b.h*0.5-88);
+  ctx.quadraticCurveTo(32+sailBow,-b.h*0.5-60,-2,-b.h*0.5-8);
+  ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.15)';ctx.lineWidth=1;ctx.stroke();
+
+  // Sail rope
+  ctx.strokeStyle='rgba(160,120,60,.6)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(-2,-b.h*0.5-88);ctx.lineTo(-hw+8,-2);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-2,-b.h*0.5-8);ctx.lineTo(hw-8,-2);ctx.stroke();
+
+  // Flag on top
+  ctx.fillStyle='#8b0000';
+  ctx.beginPath();ctx.moveTo(-2,-b.h*0.5-92);ctx.lineTo(16,-b.h*0.5-85);ctx.lineTo(-2,-b.h*0.5-78);ctx.fill();
+
+  // Boat name on hull
+  ctx.fillStyle='rgba(255,220,150,.75)';ctx.font='bold 8px Cinzel,Georgia';ctx.textAlign='center';
+  ctx.fillText(b.name,0,b.h*0.45);
+
+  ctx.restore();
+}
+
+function drawBoatSailing(x, y, b){
+  // Same as docked but bigger, in motion
+  ctx.save();ctx.translate(x, y);ctx.rotate(Math.sin(b.sway)*0.04);
+  var hw=b.w*0.6, bh=b.h*1.2;
+  // Hull
+  ctx.fillStyle=b.color;
+  ctx.beginPath();
+  ctx.moveTo(-hw,0);ctx.lineTo(-hw+12,bh);ctx.lineTo(hw-12,bh);ctx.lineTo(hw,0);
+  ctx.quadraticCurveTo(hw+22,-bh*0.3,0,-bh*0.6);
+  ctx.quadraticCurveTo(-hw-22,-bh*0.3,-hw,0);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.2)';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(-hw+3,0);ctx.lineTo(hw-3,0);ctx.stroke();
+  // Deck
+  var dg2=ctx.createLinearGradient(-hw,-bh*0.55,hw,0);
+  dg2.addColorStop(0,'#d8b070');dg2.addColorStop(1,'#b08848');
+  ctx.fillStyle=dg2;
+  ctx.beginPath();
+  ctx.moveTo(-hw+5,-3);ctx.lineTo(hw-5,-3);
+  ctx.quadraticCurveTo(hw+14,-bh*0.3,0,-bh*0.58);
+  ctx.quadraticCurveTo(-hw-14,-bh*0.3,-hw+5,-3);ctx.closePath();ctx.fill();
+  for(var dk2=0;dk2<6;dk2++){
+    ctx.strokeStyle='rgba(80,50,20,.25)';ctx.lineWidth=1;
+    var dpx2=-hw+10+dk2*(hw*2-20)/5;
+    ctx.beginPath();ctx.moveTo(dpx2,-3);ctx.lineTo(dpx2*0.5,-bh*0.55);ctx.stroke();
+  }
+  // Mast
+  ctx.fillStyle='#5a3010';ctx.fillRect(-4,-bh*0.55-110,8,110);
+  // Big sail
+  ctx.fillStyle=b.sail;
+  var sailBow2=Math.sin(b.sway*0.7+oceanWaveT*0.02)*18;
+  ctx.beginPath();
+  ctx.moveTo(-3,-bh*0.55-108);
+  ctx.quadraticCurveTo(44+sailBow2,-bh*0.55-68,-3,-bh*0.55-10);
+  ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=1;ctx.stroke();
+  // Ropes
+  ctx.strokeStyle='rgba(160,120,60,.55)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(-3,-bh*0.55-108);ctx.lineTo(-hw+10,-3);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-3,-bh*0.55-10);ctx.lineTo(hw-10,-3);ctx.stroke();
+  // Flag
+  ctx.fillStyle='#8b0000';
+  ctx.beginPath();ctx.moveTo(-3,-bh*0.55-115);ctx.lineTo(20,-bh*0.55-105);ctx.lineTo(-3,-bh*0.55-95);ctx.fill();
+  // Boat name
+  ctx.fillStyle='rgba(255,220,150,.8)';ctx.font='bold 9px Cinzel,Georgia';ctx.textAlign='center';
+  ctx.fillText(b.name,0,bh*0.5);
+  ctx.restore();
+}
+
+function drawVikingInBoat(boatX, y, b){
+  // Viking visible sitting inside the boat, seen from side
+  var bh=b.h*1.2;
+  var vikX=boatX-14, vikY=y-10;
+  ctx.save();ctx.rotate(Math.sin(b.sway)*0.04);
+  drawViking(ctx,vik,vikX,vikY,0.72);
+  ctx.restore();
+  // Steering wheel / tiller
+  ctx.fillStyle='#5a3010';ctx.strokeStyle='#8a6030';ctx.lineWidth=3;
+  ctx.beginPath();ctx.arc(boatX+18,y-22,12,0,Math.PI*2);ctx.stroke();
+  for(var sp2=0;sp2<4;sp2++){
+    var spa=sp2*Math.PI/2+oceanWaveT*0.01;
+    ctx.beginPath();ctx.moveTo(boatX+18,y-22);
+    ctx.lineTo(boatX+18+Math.cos(spa)*12,y-22+Math.sin(spa)*12);ctx.stroke();
+  }
+  ctx.fillStyle='#6a4018';ctx.beginPath();ctx.arc(boatX+18,y-22,5,0,Math.PI*2);ctx.fill();
+}
+
+function drawOceanIsland(x, y, isl){
+  var s=isl.size;
+  // Island shadow on water
+  ctx.fillStyle='rgba(0,0,0,.15)';
+  ctx.beginPath();ctx.ellipse(x+12,y+10,85*s,18*s,0,0,Math.PI*2);ctx.fill();
+  // Sand base mounds
+  ctx.fillStyle='#d4a840';
+  ctx.beginPath();ctx.ellipse(x,y,80*s,28*s,0,Math.PI,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#e8c060';
+  ctx.beginPath();ctx.ellipse(x,y-8*s,66*s,22*s,0,Math.PI,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#f0d080';
+  ctx.beginPath();ctx.ellipse(x-8*s,y-15*s,46*s,16*s,0,Math.PI,Math.PI*2);ctx.fill();
+  // Grass strip
+  ctx.fillStyle='#4a8a2a';ctx.strokeStyle='#3a6a1a';ctx.lineWidth=1;
+  ctx.beginPath();ctx.ellipse(x,y-16*s,50*s,10*s,0,Math.PI,Math.PI*2);ctx.fill();
+  // Rocks
+  [[-30,-18],[20,-12],[-10,-8],[35,-20]].forEach(function(r){
+    if(Math.abs(r[0])<60*s){
+      var rg=ctx.createRadialGradient(x+r[0]*s-2,y+r[1]*s-2,1,x+r[0]*s,y+r[1]*s,7*s);
+      rg.addColorStop(0,'#aaa');rg.addColorStop(1,'#666');
+      ctx.fillStyle=rg;
+      ctx.beginPath();ctx.ellipse(x+r[0]*s,y+r[1]*s,7*s,5*s,-0.3,0,Math.PI*2);ctx.fill();
+    }
+  });
+  // Ruins if hasRuins
+  if(isl.hasRuins){
+    ctx.fillStyle='rgba(180,160,120,.85)';
+    // Broken column stump left
+    ctx.fillRect(x-38*s,y-35*s,12*s,22*s);
+    ctx.fillRect(x-44*s,y-38*s,24*s,6*s);
+    // Arch fragment right
+    ctx.fillRect(x+22*s,y-38*s,10*s,26*s);
+    ctx.fillRect(x+18*s,y-42*s,18*s,6*s);
+    ctx.fillRect(x+14*s,y-34*s,6*s,20*s);
+    ctx.strokeStyle='rgba(120,100,80,.4)';ctx.lineWidth=1;
+    ctx.strokeRect(x-38*s,y-35*s,12*s,22*s);
+    ctx.strokeRect(x+22*s,y-38*s,10*s,26*s);
+  }
+  // Treasure chest if hasTreasure
+  if(isl.hasTreasure){
+    ctx.fillStyle='#8b4513';ctx.beginPath();ctx.roundRect(x-8*s,y-28*s,16*s,12*s,2);ctx.fill();
+    ctx.fillStyle='#a0520e';ctx.fillRect(x-8*s,y-28*s,16*s,5*s);
+    ctx.fillStyle='#ffd700';ctx.fillRect(x-12*s,y-25*s,24*s,3*s);
+    ctx.beginPath();ctx.arc(x,y-22*s,3*s,0,Math.PI*2);ctx.fill();
+    ctx.font='10px serif';ctx.textAlign='center';ctx.fillText('💰',x,y-40*s);
+  }
+  // Palm trees
+  for(var pt=0;pt<isl.trees;pt++){
+    var ptx=x+(-isl.trees*14+pt*28)*s;
+    var pty=y-18*s;
+    drawPalm3D(ptx,pty+12*s);
+  }
+  // Island name
+  labelAt(ctx,isl.name,x,y-105*s-isl.trees*12,'rgba(255,255,255,.85)');
+}
+
+function drawSeaCreature(x, y, sc){
+  ctx.save();ctx.translate(x,y);
+  if(sc.vx<0) ctx.scale(-1,1);
+  if(sc.type==='whale'){
+    var wg2=ctx.createRadialGradient(-15,-8,5,0,0,40);
+    wg2.addColorStop(0,'#4a6a8a');wg2.addColorStop(1,'#2a4a6a');
+    ctx.fillStyle=wg2;
+    ctx.beginPath();ctx.ellipse(0,0,40,18,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#6a8aaa';ctx.beginPath();ctx.ellipse(-10,0,28,12,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(30,-2,12,5,0.2,0,Math.PI*2);ctx.fill();
+    // Tail
+    ctx.fillStyle='#3a5a7a';
+    ctx.beginPath();ctx.moveTo(-38,0);ctx.lineTo(-52,-14);ctx.lineTo(-50,-2);ctx.lineTo(-52,14);ctx.closePath();ctx.fill();
+    // Spout
+    if(Math.sin(sc.bob*0.5)>0.6){
+      ctx.strokeStyle='rgba(200,230,255,.7)';ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(-5,-18);ctx.quadraticCurveTo(-2,-42+Math.sin(sc.bob)*8,-8,-52);ctx.stroke();
+    }
+    ctx.fillStyle='rgba(0,0,0,.5)';ctx.beginPath();ctx.arc(26,-4,2.5,0,Math.PI*2);ctx.fill();
+  } else if(sc.type==='dolphin'){
+    ctx.fillStyle='#5a8ab0';
+    ctx.beginPath();ctx.ellipse(0,0,22,8,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#7aaad0';ctx.beginPath();ctx.ellipse(-4,0,16,5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(18,-1,6,4,0.2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#4a7aa0';
+    ctx.beginPath();ctx.moveTo(-20,0);ctx.lineTo(-28,-10);ctx.lineTo(-26,0);ctx.lineTo(-28,10);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(8,-18);ctx.lineTo(10,-8);ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,.5)';ctx.beginPath();ctx.arc(14,-1,2,0,Math.PI*2);ctx.fill();
+  } else {
+    // Fish
+    var fc=sc.type==='fish'?['#ff8c00','#ffd700','#ff6060','#80ff80'][Math.floor(Math.abs(sc.wx)%4)]:'#60a0ff';
+    ctx.fillStyle=fc;
+    ctx.beginPath();ctx.ellipse(0,0,10,5,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(-16,-5);ctx.lineTo(-14,0);ctx.lineTo(-16,5);ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,.5)';ctx.beginPath();ctx.arc(6,0,1.5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.4)';
+    ctx.beginPath();ctx.ellipse(2,-1,3,2,0.3,0,Math.PI*2);ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawCompass(x,y){
+  var r=22;
+  ctx.fillStyle='rgba(0,0,0,.5)';ctx.beginPath();ctx.arc(x,y,r+3,0,Math.PI*2);ctx.fill();
+  var cg2=ctx.createRadialGradient(x-5,y-5,2,x,y,r);
+  cg2.addColorStop(0,'rgba(60,80,120,.9)');cg2.addColorStop(1,'rgba(20,30,60,.9)');
+  ctx.fillStyle=cg2;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(255,215,0,.4)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();
+  // Cardinal points
+  ctx.fillStyle='#fff';ctx.font='bold 8px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('N',x,y-r+8);ctx.fillText('S',x,y+r-8);
+  ctx.fillText('E',x+r-8,y);ctx.fillText('W',x-r+8,y);
+  // Needle
+  var needleAngle=Math.atan2(oceanScrollX-WW*0.5,500)*0.5;
+  ctx.save();ctx.translate(x,y);ctx.rotate(needleAngle);
+  ctx.fillStyle='#e74c3c';ctx.beginPath();ctx.moveTo(0,-r*0.7);ctx.lineTo(4,0);ctx.lineTo(-4,0);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#aaa';ctx.beginPath();ctx.moveTo(0,r*0.7);ctx.lineTo(4,0);ctx.lineTo(-4,0);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#ffd700';ctx.beginPath();ctx.arc(0,0,3,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
 
 function enterHiddenWorld(){
   if(!inHiddenWorld){
@@ -4389,7 +5733,7 @@ function setMode(m){
   var badge=document.getElementById('mbadge');
   badge.textContent=m==='walk'?'🚶 Walking':m==='run'?'💨 Running!':'🦅 Flying!';
   if(m!=='fly'){velY=0;}
-  document.getElementById('hloc').textContent=inHiddenWorld?'✨ Hidden World':inHouse?'🏠 Inside':'🌍 Isle of Berk';
+  document.getElementById('hloc').textContent=inFort?'⚓ Hunter Fort':inOcean?(inBoat?'⛵ Sailing':'🌊 Ocean Dock'):inHiddenWorld?'✨ Hidden World':inHouse?'🏠 Inside':'🌍 Isle of Berk';
 }
 function dk(dir,on){keys[dir]=on;}
 
@@ -4484,8 +5828,40 @@ setInterval(function(){
   if(inHiddenWorld&&drX<80&&moveMode!=='fly'){
     inHiddenWorld=false;showFlash('← Back to Berk!');
   }
+  // Fort escape via left edge (fly out)
+  if(inFort&&!fortCaught&&drX<30){
+    leaveFort();
+  }
 },500);
 </script>
 
+<div class="fort-hud" id="ocean-hud">🌊 <span id="ocean-status">The Great Ocean</span></div>
+<!-- Dragon Hunter Fort HUD -->
+<div class="fort-hud" id="fort-hud">⚠️ Dragon Hunter Territory! <span id="fort-alert"></span></div>
+
+<!-- Cage overlay + escape panel -->
+
+<div class="cage-overlay" id="cage-overlay"></div>
+<div class="escape-panel" id="escape-panel">
+  <div class="escape-title">🔒 You're trapped in a cage! Escape!</div>
+  <div class="escape-btns" id="escape-btns"></div>
+</div>
+
+<!-- Menu Button -->
+
+<button id="menu-btn" onclick="openMenuConfirm()">☰ Menu</button>
+
+<!-- Menu Confirm Overlay -->
+
+<div id="menu-confirm">
+  <div class="mc-box">
+    <h3>🏠 Back to Menu?</h3>
+    <p>Your dragon and viking settings will be saved. Your progress stays!</p>
+    <div class="mc-btns">
+      <button class="mc-btn mc-yes" onclick="goBackToMenu()">Yes, go back</button>
+      <button class="mc-btn mc-no" onclick="closeMenuConfirm()">Keep playing</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
