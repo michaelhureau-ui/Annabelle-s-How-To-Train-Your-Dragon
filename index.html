@@ -105,35 +105,22 @@ box-shadow:30px 0 0 rgba(255,255,255,.08);
 pointer-events:none;
 }
 
-/* RIGHT PANEL — mode buttons + action buttons, top-right */
-#mbtns{
-position:fixed;top:8px;right:8px;
-display:flex;flex-direction:column;gap:4px;align-items:stretch;
-z-index:50;pointer-events:all;
-width:102px;
+/* RIGHT PANEL — all buttons in abar */
+#mbtns{ display:none; } /* kept empty for compat */
+/* Walk/Run/Fly colours when inside abar */
+#mw{background:linear-gradient(135deg,rgba(39,174,96,.9),rgba(30,132,73,.9));}
+#mr{background:linear-gradient(135deg,rgba(230,126,34,.9),rgba(211,84,0,.9));}
+#mf{background:linear-gradient(135deg,rgba(41,128,185,.9),rgba(26,82,118,.9));}
+/* Active mode highlight */
+#mw.am,#mr.am,#mf.am{
+border:2px solid #ffd700 !important;
+box-shadow:0 0 10px rgba(255,215,0,.45);
 }
-.mbtn{
-padding:7px 10px;border-radius:10px;
-border:2px solid rgba(255,255,255,.2);
-font-family:‘Cinzel’,serif;font-size:.65em;font-weight:700;
-cursor:pointer;color:#fff;
-transition:all .15s;text-align:center;
-box-shadow:0 2px 6px rgba(0,0,0,.4);
-backdrop-filter:blur(4px);
-}
-.mbtn.am{border-color:#ffd700;box-shadow:0 0 10px rgba(255,215,0,.4);}
-#mw{background:linear-gradient(135deg,rgba(39,174,96,.88),rgba(30,132,73,.88));}
-#mr{background:linear-gradient(135deg,rgba(230,126,34,.88),rgba(211,84,0,.88));}
-#mf{background:linear-gradient(135deg,rgba(41,128,185,.88),rgba(26,82,118,.88));}
 
 /* Action bar — right side vertical panel below mode buttons */
-/* Divider between mode+action sections */
-#right-divider{
-position:fixed;top:106px;right:8px;width:102px;
-height:1px;background:rgba(255,215,0,.2);z-index:50;display:none;
-}
+#right-divider{ display:none !important; }
 #abar{
-position:fixed;top:112px;right:8px;
+position:fixed;top:8px;right:8px;
 z-index:40;
 display:flex;flex-direction:column;gap:4px;align-items:stretch;
 width:102px;
@@ -537,6 +524,10 @@ box-shadow:0 0 18px rgba(0,100,255,.2);}
 <!-- Action bar -->
 
 <div id="abar" style="display:none;">
+  <button class="ab" id="mw" onclick="setMode('walk')">🚶 Walk</button>
+  <button class="ab" id="mr" onclick="setMode('run')">💨 Run</button>
+  <button class="ab" id="mf" onclick="setMode('fly')">🦅 Fly</button>
+  <div style="height:1px;background:rgba(255,215,0,.25);margin:2px 0;"></div>
   <button class="ab af" onclick="feedDragon()">🐟 Feed</button>
   <button class="ab aw" onclick="waterDragon()">💧 Water</button>
   <button class="ab aa" onclick="openArena()">🏋️ Train</button>
@@ -560,13 +551,9 @@ box-shadow:0 0 18px rgba(0,100,255,.2);}
     <div id="joystick-thumb"></div>
   </div>
 </div>
-<!-- Mode buttons — always top-right when world is active -->
+<!-- right-divider kept for show/hide compat -->
 <div id="right-divider"></div>
-<div id="mbtns" style="display:none;">
-  <button class="mbtn am" id="mw" onclick="setMode('walk')">🚶 Walk</button>
-  <button class="mbtn" id="mr" onclick="setMode('run')">💨 Run</button>
-  <button class="mbtn" id="mf" onclick="setMode('fly')">🦅 Fly</button>
-</div>
+<div id="mbtns" style="display:none;"></div>
 
 <!-- Popup -->
 
@@ -2155,7 +2142,8 @@ function startWorld(){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
   document.getElementById('s-world').classList.add('active');
 
-  ['hud','mbadge','abar','ctrl'].forEach(function(id){document.getElementById(id).style.display='';});
+  ['hud','mbadge','ctrl'].forEach(function(id){document.getElementById(id).style.display='';});
+  document.getElementById('abar').style.display='flex';
   document.getElementById('menu-btn').style.display='block';
   document.getElementById('hud').style.display='flex';
 
@@ -2165,6 +2153,7 @@ function startWorld(){
   window.addEventListener('resize',resize);
 
   drX=WW*0.35; drY=0;
+  setMode('walk'); // highlight walk button on start
   mudX=WW*0.25; mudY=GL;
   bathX=WW*0.55; bathY=GL;
   penX=WW*0.12; penY=GL;
@@ -2295,7 +2284,15 @@ function update(){
     velY*=0.9; drY-=velY;
     if(drY<0){drY=0;velY=0;}
     if(drY>WH*0.48){drY=WH*0.48;velY=0;}
-  } else {drY=0;velY=0;}
+  } else {
+    // Walk/Run: can move up/down on the grass (Y axis = depth on ground plane)
+    var walkSpd={walk:1.8,run:4}[moveMode]||1.8;
+    if(keys.up)   drY=Math.min(drY+walkSpd, WH*0.18); // walk "into" screen (up)
+    if(keys.down) drY=Math.max(drY-walkSpd, 0);        // walk "toward camera" (down)
+    velY=0;
+    // Smooth snap back to ground when not pressing up/down
+    if(!keys.up && !keys.down && drY>0) drY=Math.max(0,drY-0.8);
+  }
 
   // Timers
   if(chewT>0) chewT--;
@@ -2873,11 +2870,16 @@ function renderOutdoor(){
 
   // === PLAYER SHADOW ===
   var dsy=GL-drY-30;
-  var dscale=moveMode==='fly'?1.2:1.0;
+  // Perspective scale: smaller when walking deeper into the scene
+  var perspScale = moveMode==='fly' ? 1.2 : (1.0 - drY/(WH*0.35));
+  perspScale = Math.max(0.55, Math.min(1.2, perspScale));
+  var dscale = perspScale;
   var shw=Math.max(0.05,1-drY/300);
   ctx.save();ctx.globalAlpha=shw*0.3;
   ctx.fillStyle='#000';
-  ctx.beginPath();ctx.ellipse(drX+50,GL+4,35*shw,8*shw,0,0,Math.PI*2);ctx.fill();
+  // When walking on grass, shadow stays at ground level (GL)
+  var shadowY = moveMode!=='fly' ? GL+4 : GL+4;
+  ctx.beginPath();ctx.ellipse(drX+50,shadowY,35*shw*dscale,8*shw*dscale,0,0,Math.PI*2);ctx.fill();
   ctx.restore();
 
   // === CARRIED ITEMS ===
@@ -6781,8 +6783,9 @@ function closePop(){document.getElementById('pop').classList.remove('open');batt
 // ============================================================
 function setMode(m){
   moveMode=m;
-  document.querySelectorAll('.mbtn').forEach(function(b){b.classList.remove('am');});
-  document.getElementById('m'+m[0]).classList.add('am');
+  ['mw','mr','mf'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.remove('am');});
+  var modeId={walk:'mw',run:'mr',fly:'mf'}[m];
+  if(modeId){var el=document.getElementById(modeId);if(el)el.classList.add('am');}
   var badge=document.getElementById('mbadge');
   badge.textContent=m==='walk'?'🚶 Walking':m==='run'?'💨 Running!':'🦅 Flying!';
   if(m!=='fly'){velY=0;}
