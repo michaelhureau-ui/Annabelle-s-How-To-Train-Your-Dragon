@@ -542,6 +542,8 @@ box-shadow:0 0 18px rgba(0,100,255,.2);}
   <button class="ab ahatch" onclick="openHatchery()">🥚 Hatchery</button>
   <button class="ab" style="background:linear-gradient(135deg,#7a1010,#4a0808);" onclick="teleportToFort()">⚓ Hunter Fort</button>
   <button class="ab" style="background:linear-gradient(135deg,#0a3a6a,#051828);" onclick="teleportToOcean()">🌊 Ocean</button>
+  <button class="ab" style="background:linear-gradient(135deg,#3a1a00,#1a0800);" onclick="teleportToDragonsEdge()">🏔️ Dragon's Edge</button>
+  <button class="ab" style="background:linear-gradient(135deg,#080318,#030110);border:1px solid rgba(160,100,255,.4);" onclick="teleportToVanaheim()">🌿 Vanaheim</button>
 </div>
 
 <!-- Controls -->
@@ -1545,6 +1547,10 @@ var snowMeltRate=0;        // positive when not snowing
 var inHiddenWorld=false;
 var inHouse=false;
 var inGreatHall=false;
+var inDragonsEdge=false;   // Dragon's Edge island biome
+var deScrollX=0;           // horizontal scroll on the island
+var deVolcanoGlow=0;       // animated lava glow (0-1)
+var deWaveT=0;             // wave timer
 var chewT=0,drinkT=0; // animation timers
 var mudT=0; // dragon in mud
 var dragonMuddy=false;
@@ -2351,6 +2357,9 @@ function update(){
 
   // Ocean update
   if(inOcean) updateOcean();
+  // Dragon's Edge update
+  if(inDragonsEdge) updateDragonsEdge();
+  if(inVanaheim) updateVanaheim();
   // Snow update (always runs while world active)
   updateSnow();
   // Fort update (only runs when inFort)
@@ -2378,6 +2387,8 @@ function render(){
   ctx.clearRect(0,0,WW,WH);
   if(inFort) renderFort();
   else if(inOcean) renderOcean();
+  else if(inDragonsEdge) renderDragonsEdge();
+  else if(inVanaheim) renderVanaheim();
   else if(inHiddenWorld) renderHiddenWorld();
   else if(inGreatHall) renderGreatHall();
   else if(inHouse) renderInside();
@@ -5630,6 +5641,985 @@ function darken(hex,amt){
 }
 
 
+
+// ============================================================
+// DRAGON'S EDGE — Full Island Biome
+// ============================================================
+
+function teleportToDragonsEdge(){
+  inDragonsEdge=true; inFort=false; inHiddenWorld=false;
+  inHouse=false; inOcean=false; inGreatHall=false;
+  deScrollX=0; deWaveT=0; deVolcanoGlow=0;
+  drX=WW*0.22; drY=0;
+  setMode('walk');
+  showFlash("🏔️ Welcome to Dragon's Edge!");
+}
+
+function leaveDragonsEdge(){
+  inDragonsEdge=false;
+  showFlash('← Left Dragon\'s Edge');
+}
+
+function updateDragonsEdge(){
+  if(!inDragonsEdge) return;
+  deWaveT++;
+  // Volcano glow pulses slowly
+  deVolcanoGlow = 0.55 + 0.45*Math.sin(deWaveT*0.03);
+  // Left/right scrolls the island slightly
+  if(keys.left&&drX<60)  deScrollX=Math.max(-300, deScrollX-2);
+  if(keys.right&&drX>WW-80) deScrollX=Math.min(300, deScrollX+2);
+}
+
+// ── MAIN RENDER ───────────────────────────────────────────────────────────
+function renderDragonsEdge(){
+  var t=deWaveT, n=isNight;
+  var sc=deScrollX; // scroll offset
+
+  // ═══════════════════════════════════════════════════════
+  // SKY — dramatic volcanic atmosphere
+  // ═══════════════════════════════════════════════════════
+  var sky=ctx.createLinearGradient(0,0,0,GL);
+  if(n){
+    sky.addColorStop(0,'#02010a'); sky.addColorStop(0.6,'#0a0318'); sky.addColorStop(1,'#1a0808');
+  } else {
+    sky.addColorStop(0,'#1a3060'); sky.addColorStop(0.5,'#3a5888'); sky.addColorStop(1,'#6a3018');
+  }
+  ctx.fillStyle=sky; ctx.fillRect(0,0,WW,WH);
+
+  // Volcano haze glow on horizon
+  var hazX=WW*0.62-sc*0.3;
+  var hazG=ctx.createRadialGradient(hazX,GL,20,hazX,GL-40,220);
+  hazG.addColorStop(0,'rgba(255,80,0,'+(0.18*deVolcanoGlow)+')');
+  hazG.addColorStop(0.5,'rgba(255,40,0,'+(0.08*deVolcanoGlow)+')');
+  hazG.addColorStop(1,'transparent');
+  ctx.fillStyle=hazG; ctx.fillRect(0,0,WW,WH);
+
+  // Ash clouds (slow-drifting dark clouds)
+  for(var cl=0;cl<6;cl++){
+    var cax=((cl*WW*0.18+t*0.18+sc*0.08)%(WW+180))-90;
+    var cay=WH*0.04+cl*WH*0.035;
+    drawAshCloud(cax, cay, 0.8+cl*0.12, n);
+  }
+
+  // Stars at night
+  if(n){
+    for(var st=0;st<40;st++){
+      var stx=(st*173+sc*0.05)%WW, sty=(st*97)%(GL*0.6);
+      ctx.fillStyle='rgba(255,220,180,'+(0.3+0.3*Math.sin(t*0.07+st))+')';
+      ctx.beginPath();ctx.arc(stx,sty,0.7,0,Math.PI*2);ctx.fill();
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // OCEAN AROUND THE ISLAND — back horizon strip
+  // ═══════════════════════════════════════════════════════
+  // Far ocean horizon band
+  var fogC=n?'rgba(10,5,20,0.7)':'rgba(40,80,120,0.55)';
+  ctx.fillStyle=fogC; ctx.fillRect(0,GL-18,WW,20);
+
+  // Ocean water (lower half of screen below GL)
+  var wg=ctx.createLinearGradient(0,GL,0,WH);
+  if(n){wg.addColorStop(0,'#050818');wg.addColorStop(1,'#020510');}
+  else{wg.addColorStop(0,'#0a4a80');wg.addColorStop(1,'#042840');}
+  ctx.fillStyle=wg; ctx.fillRect(0,GL,WW,WH-GL);
+
+  // Ocean waves — rocky island shore, choppier
+  for(var wl=3;wl>=0;wl--){
+    var wAlpha=0.14+wl*0.1;
+    var wOff=t*0.7*(1+wl*0.25);
+    var wAmp=5+wl*4;
+    var wFreq=0.018-wl*0.003;
+    var wy=GL + 4 + wl*((WH-GL)*0.22);
+    var wColor=n?'rgba(20,60,120,'+wAlpha+')':'rgba(20,120,200,'+wAlpha+')';
+    ctx.fillStyle=wColor;
+    ctx.beginPath(); ctx.moveTo(0,wy);
+    for(var wx=0;wx<=WW;wx+=8){
+      ctx.lineTo(wx, wy+Math.sin((wx+wOff)*wFreq)*wAmp);
+    }
+    ctx.lineTo(WW,WH); ctx.lineTo(0,WH); ctx.closePath(); ctx.fill();
+  }
+
+  // Lava reflection on water near volcano
+  var lavReflX=WW*0.62-sc*0.4;
+  ctx.fillStyle='rgba(255,60,0,'+(0.06*deVolcanoGlow)+')';
+  ctx.beginPath();ctx.ellipse(lavReflX,GL+30,120,25,0,0,Math.PI*2);ctx.fill();
+
+  // Ocean sparkles
+  ctx.fillStyle=n?'rgba(150,180,255,.3)':'rgba(255,255,255,.4)';
+  for(var sp=0;sp<18;sp++){
+    var spx=((sp*WW*0.06+t*1.1)%WW);
+    var spy=GL+8+((sp*19)%(WH-GL-22));
+    var sps=(0.4+Math.sin(t*0.1+sp)*0.4)*2.5;
+    ctx.beginPath();ctx.arc(spx,spy,sps,0,Math.PI*2);ctx.fill();
+  }
+
+  // Distant small islands on horizon (silhouettes)
+  [[-sc*0.2+WW*0.08,GL-22,55,18],[WW*0.85-sc*0.15,GL-16,40,14]].forEach(function(si){
+    ctx.fillStyle=n?'rgba(10,5,15,0.7)':'rgba(20,35,50,0.5)';
+    ctx.beginPath();ctx.ellipse(si[0],si[1],si[2],si[3],0,Math.PI,Math.PI*2);ctx.fill();
+  });
+
+  // ═══════════════════════════════════════════════════════
+  // ISLAND GROUND — rocky volcanic terrain
+  // ═══════════════════════════════════════════════════════
+  drawDeGround(sc, n);
+
+  // ═══════════════════════════════════════════════════════
+  // VOLCANO — centrepiece
+  // ═══════════════════════════════════════════════════════
+  drawVolcano(WW*0.62-sc*0.4, GL, n, t);
+
+  // ═══════════════════════════════════════════════════════
+  // HUT VILLAGE — several huts spread across the island
+  // ═══════════════════════════════════════════════════════
+  drawDeHuts(sc, n, t);
+
+  // ═══════════════════════════════════════════════════════
+  // ISLAND CLIFFS / ROCKS along shore
+  // ═══════════════════════════════════════════════════════
+  drawDeCliffs(sc, n);
+
+  // ═══════════════════════════════════════════════════════
+  // DRAGON NEST / PERCHES
+  // ═══════════════════════════════════════════════════════
+  drawDragonNests(sc, n, t);
+
+  // ═══════════════════════════════════════════════════════
+  // WILD DRAGONS flying over the edge
+  // ═══════════════════════════════════════════════════════
+  var edgeDragons=[
+    {color:'#1a1a2e',accent:'#3a3a6a',eye:'#22d3ee',shape:'sleek'},
+    {color:'#8b0000',accent:'#ff2200',eye:'#ff8800',shape:'nightmare'},
+    {color:'#050508',accent:'#00aaff',eye:'#00d4ff',shape:'shadow'},
+  ];
+  for(var ed=0;ed<3;ed++){
+    var edx=((ed*WW*0.35+t*1.4+sc*0.2)%(WW+120))-60;
+    var edy=GL-140-ed*28+Math.sin(t*0.04+ed*1.5)*22;
+    drawDragonCtx(ctx,edgeDragons[ed],edx,edy,0.72,edx>WW*0.5||ed===1,true,t+ed*60,false,false,false);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // PLAYER
+  // ═══════════════════════════════════════════════════════
+  var dsy=GL-drY-30;
+  var pscale=moveMode==='fly'?1.15:(1.0-drY/(WH*0.35));
+  pscale=Math.max(0.55,Math.min(1.15,pscale));
+  // Shadow
+  ctx.save();ctx.globalAlpha=0.28;ctx.fillStyle='#000';
+  ctx.beginPath();ctx.ellipse(drX+50,GL+4,30*pscale,7*pscale,0,0,Math.PI*2);ctx.fill();ctx.restore();
+  drawDragonCtx(ctx,dragonDef,drX+60,dsy+10,pscale,facing===1,moveMode==='fly',animF,chewT>0,drinkT>0,false);
+  if(moveMode!=='fly') drawViking(ctx,vik,drX,GL-2,pscale*0.88);
+  else drawVikingRiding(ctx,vik,drX+60,dsy+10,pscale,facing===1);
+
+  // ═══════════════════════════════════════════════════════
+  // VOLCANO EMBER PARTICLES — drawn ON TOP of everything
+  // ═══════════════════════════════════════════════════════
+  drawVolcanoEmbers(WW*0.62-sc*0.4, GL, t);
+
+  // HUD label + exit hint
+  ctx.fillStyle='rgba(255,180,80,.75)';ctx.font='13px Cinzel,Georgia';ctx.textAlign='center';
+  ctx.fillText("🏔️ Dragon's Edge",WW/2,GL-10);
+  labelAt(ctx,'← Fly out to leave',52,GL-80,'rgba(255,200,120,.7)');
+
+  // Snow in winter
+  if(isSnowing){ drawSnow(); }
+}
+
+// ── GROUND ────────────────────────────────────────────────────────────────
+function drawDeGround(sc, n){
+  // Dark volcanic soil — black/charcoal with red cracks
+  var grd=ctx.createLinearGradient(0,GL,0,WH);
+  grd.addColorStop(0,n?'#1a0c08':'#2e1608');
+  grd.addColorStop(1,n?'#0a0604':'#180a04');
+  ctx.fillStyle=grd; ctx.fillRect(0,GL,WW,WH-GL);
+
+  // Lava crack lines in ground
+  ctx.strokeStyle='rgba(255,80,0,'+(0.25*deVolcanoGlow)+')';ctx.lineWidth=1.5;
+  var cracks=[[0.15,0.18],[0.28,0.35],[0.42,0.38],[0.55,0.44],[0.7,0.32],[0.82,0.4]];
+  cracks.forEach(function(c){
+    var cx=WW*c[0]-sc*0.1, cy=GL+8;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+14,cy+12);ctx.lineTo(cx+8,cy+22);ctx.stroke();
+    // Inner glow
+    ctx.strokeStyle='rgba(255,160,0,'+(0.15*deVolcanoGlow)+')';ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+14,cy+12);ctx.stroke();
+    ctx.strokeStyle='rgba(255,80,0,'+(0.25*deVolcanoGlow)+')';ctx.lineWidth=1.5;
+  });
+
+  // Rocky ground surface patches
+  ctx.fillStyle=n?'rgba(40,20,10,0.6)':'rgba(60,30,12,0.55)';
+  for(var rp=0;rp<10;rp++){
+    var rx=WW*0.06+rp*(WW*0.09)-sc*0.08, ry=GL+5+rp*3;
+    ctx.beginPath();ctx.ellipse(rx,ry,28+rp*3,8,0,0,Math.PI*2);ctx.fill();
+  }
+
+  // Scattered volcanic rocks on ground
+  [[0.08,-sc*0.12],[0.18,-sc*0.1],[0.35,-sc*0.08],[0.5,-sc*0.06],[0.72,-sc*0.1],[0.88,-sc*0.08]].forEach(function(r,i){
+    var rx=WW*r[0]+r[1], ry=GL+2;
+    var rs=8+i*4;
+    var rg=ctx.createRadialGradient(rx-rs*0.3,ry-rs*0.3,1,rx,ry,rs);
+    rg.addColorStop(0,'#3a2010');rg.addColorStop(1,'#1a0a04');
+    ctx.fillStyle=rg;
+    ctx.beginPath();ctx.ellipse(rx,ry,rs,rs*0.55,-0.2,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(80,40,20,.3)';ctx.lineWidth=1;ctx.stroke();
+  });
+
+  // Sparse scrubby grass tufts (tough plants surviving in volcanic soil)
+  ctx.fillStyle='rgba(60,80,20,0.7)';
+  for(var gr=0;gr<WW;gr+=22){
+    var gh=3+Math.sin(gr*0.41)*2;
+    var grx=gr-sc*0.05;
+    ctx.beginPath();ctx.moveTo(grx,GL);ctx.lineTo(grx+3,GL-gh);ctx.lineTo(grx+6,GL);ctx.fill();
+  }
+}
+
+// ── VOLCANO ────────────────────────────────────────────────────────────────
+function drawVolcano(cx, ground, n, t){
+  var vw=210, vh=260;
+
+  // Shadow
+  ctx.fillStyle='rgba(0,0,0,0.3)';
+  ctx.beginPath();ctx.ellipse(cx+18,ground+8,vw*0.55,18,0,0,Math.PI*2);ctx.fill();
+
+  // Outer volcano body (far side, darker)
+  var vbg=ctx.createLinearGradient(cx-vw*0.5,ground,cx+vw*0.5,ground-vh);
+  vbg.addColorStop(0,'#3a1a08');vbg.addColorStop(0.4,'#2a1006');vbg.addColorStop(1,'#180806');
+  ctx.fillStyle=vbg;
+  ctx.beginPath();
+  ctx.moveTo(cx-vw*0.52,ground);
+  ctx.bezierCurveTo(cx-vw*0.4,ground-vh*0.2, cx-vw*0.22,ground-vh*0.65, cx-22,ground-vh);
+  ctx.lineTo(cx+22,ground-vh);
+  ctx.bezierCurveTo(cx+vw*0.22,ground-vh*0.65, cx+vw*0.4,ground-vh*0.2, cx+vw*0.52,ground);
+  ctx.closePath();ctx.fill();
+
+  // Rock face — layered geological strata
+  var strata=[
+    {y:0.25,c:'rgba(60,25,8,0.4)'},{y:0.45,c:'rgba(50,20,6,0.35)'},
+    {y:0.62,c:'rgba(45,18,5,0.3)'},{y:0.78,c:'rgba(40,15,4,0.25)'}
+  ];
+  strata.forEach(function(s){
+    var sy=ground-vh*s.y;
+    var sw=vw*(1-s.y*0.7)*0.52;
+    ctx.fillStyle=s.c;
+    ctx.beginPath();ctx.ellipse(cx,sy,sw,6,0,0,Math.PI*2);ctx.fill();
+  });
+
+  // Lava channel grooves running down the sides
+  ctx.strokeStyle='rgba(255,60,0,'+(0.35*deVolcanoGlow)+')';ctx.lineWidth=2;
+  [[-0.28,0.35],[-0.14,0.28],[0.1,0.32],[0.25,0.38]].forEach(function(ch){
+    ctx.beginPath();
+    ctx.moveTo(cx+ch[0]*vw, ground-vh*0.1);
+    ctx.quadraticCurveTo(cx+ch[0]*vw*1.1, ground-vh*ch[1], cx+ch[0]*vw*0.5, ground-vh*0.75);
+    ctx.stroke();
+    // Fill glow
+    ctx.strokeStyle='rgba(255,140,0,'+(0.18*deVolcanoGlow)+')';ctx.lineWidth=5;
+    ctx.beginPath();
+    ctx.moveTo(cx+ch[0]*vw, ground-vh*0.1);
+    ctx.quadraticCurveTo(cx+ch[0]*vw*1.1, ground-vh*ch[1], cx+ch[0]*vw*0.5, ground-vh*0.75);
+    ctx.stroke();
+    ctx.strokeStyle='rgba(255,60,0,'+(0.35*deVolcanoGlow)+')';ctx.lineWidth=2;
+  });
+
+  // Snow cap (upper portion — dormant = cooler up top)
+  var snowY=ground-vh*0.82;
+  ctx.fillStyle='rgba(220,235,250,0.88)';
+  ctx.beginPath();
+  ctx.moveTo(cx-45,snowY+8);
+  ctx.bezierCurveTo(cx-30,snowY-5, cx-12,snowY-15, cx,snowY-18);
+  ctx.bezierCurveTo(cx+12,snowY-15, cx+30,snowY-5, cx+45,snowY+8);
+  ctx.closePath();ctx.fill();
+  // Snow shading
+  ctx.fillStyle='rgba(180,200,240,0.4)';
+  ctx.beginPath();
+  ctx.moveTo(cx+4,snowY-2);ctx.bezierCurveTo(cx+18,snowY-8,cx+32,snowY-4,cx+42,snowY+4);
+  ctx.lineTo(cx+4,snowY+2);ctx.closePath();ctx.fill();
+
+  // Crater rim
+  var cRimY=ground-vh+8;
+  var cRimG=ctx.createLinearGradient(cx-50,cRimY-6,cx+50,cRimY+6);
+  cRimG.addColorStop(0,'#4a2010');cRimG.addColorStop(0.5,'#3a1808');cRimG.addColorStop(1,'#2a1004');
+  ctx.fillStyle=cRimG;
+  ctx.beginPath();ctx.ellipse(cx,cRimY,52,14,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(80,30,10,.5)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.ellipse(cx,cRimY,52,14,0,0,Math.PI*2);ctx.stroke();
+
+  // Crater interior — deep lava glow (DORMANT — mostly dark with glow)
+  var craG=ctx.createRadialGradient(cx,cRimY,2,cx,cRimY,40);
+  craG.addColorStop(0,'rgba(255,'+(60+Math.floor(deVolcanoGlow*80))+',0,'+(0.7*deVolcanoGlow)+')');
+  craG.addColorStop(0.4,'rgba(180,30,0,'+(0.5*deVolcanoGlow)+')');
+  craG.addColorStop(1,'rgba(60,10,0,'+(0.3*deVolcanoGlow)+')');
+  ctx.fillStyle=craG;
+  ctx.beginPath();ctx.ellipse(cx,cRimY+2,40,11,0,0,Math.PI*2);ctx.fill();
+
+  // Slow lava bubble
+  var bubbleT=Math.sin(t*0.025)*0.5+0.5;
+  if(bubbleT>0.6){
+    var ba=((bubbleT-0.6)/0.4)*deVolcanoGlow;
+    ctx.fillStyle='rgba(255,120,0,'+ba*0.8+')';
+    ctx.beginPath();ctx.ellipse(cx+Math.sin(t*0.05)*8,cRimY-2,12*ba,6*ba,0,0,Math.PI*2);ctx.fill();
+  }
+
+  // Steam wisps rising from crater
+  for(var sm=0;sm<4;sm++){
+    var smProg=((t*0.012+sm*0.25)%1);
+    var smX=cx+Math.sin(t*0.04+sm*1.6)*14;
+    var smY=cRimY-smProg*100;
+    var smA=(1-smProg)*0.22*deVolcanoGlow;
+    ctx.fillStyle='rgba(200,160,100,'+smA+')';
+    ctx.beginPath();ctx.ellipse(smX,smY,8+smProg*20,8+smProg*16,0,0,Math.PI*2);ctx.fill();
+  }
+
+  // Volcano label
+  labelAt(ctx,'🌋 Dormant Volcano',cx,ground-vh-22,'rgba(255,180,80,.85)');
+}
+
+// ── EMBER PARTICLES (drawn on top) ────────────────────────────────────────
+function drawVolcanoEmbers(cx, ground, t){
+  if(deVolcanoGlow<0.4) return;
+  var count=Math.floor(deVolcanoGlow*18);
+  for(var e=0;e<count;e++){
+    var ep=((t*0.018+e*0.055)%1);
+    var angle=(e/count)*Math.PI*2;
+    var ex=cx+Math.sin(angle+t*0.02)*16*ep - ep*30*Math.sin(angle);
+    var ey=ground-255+ep*(-120-ep*60)+Math.sin(t*0.06+e)*12;
+    if(ey>ground) continue;
+    var ea=(1-ep)*deVolcanoGlow*0.8;
+    var er=3*(1-ep)*deVolcanoGlow+0.5;
+    ctx.fillStyle='rgba(255,'+(80+Math.floor((1-ep)*140))+',0,'+ea+')';
+    ctx.beginPath();ctx.arc(ex,ey,er,0,Math.PI*2);ctx.fill();
+    // Tail
+    if(er>1.5){
+      ctx.strokeStyle='rgba(255,60,0,'+ea*0.4+')';ctx.lineWidth=er*0.5;
+      ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(ex-Math.sin(angle)*er*3,ey+er*3);ctx.stroke();
+    }
+  }
+}
+
+// ── ASH CLOUDS ─────────────────────────────────────────────────────────────
+function drawAshCloud(x, y, sc, n){
+  var puffs=[[0,0,32],[22*sc,4,26],[40*sc,-2,20],[-18*sc,6,22],[-34*sc,0,18],[12*sc,-9,16]];
+  puffs.forEach(function(p){
+    var cg=ctx.createRadialGradient(x+p[0]-p[2]*0.2,y+p[1]-p[2]*0.2,p[2]*0.1,x+p[0],y+p[1],p[2]*sc);
+    if(n){cg.addColorStop(0,'#1a1008');cg.addColorStop(1,'#0a0804');}
+    else{cg.addColorStop(0,'#5a4030');cg.addColorStop(0.6,'#3a2818');cg.addColorStop(1,'#251808');}
+    ctx.fillStyle=cg;ctx.beginPath();ctx.arc(x+p[0],y+p[1],p[2]*sc,0,Math.PI*2);ctx.fill();
+  });
+}
+
+// ── HUTS ──────────────────────────────────────────────────────────────────
+function drawDeHuts(sc, n, t){
+  // Six huts spread around — Dragon Riders' outpost huts
+  var hutDefs=[
+    {wx:0.08, size:1.0,  rot: 0.0,  hasFlag:true,  color:'#5a3010'},
+    {wx:0.18, size:0.88, rot: 0.05, hasFlag:false, color:'#4a2808'},
+    {wx:0.30, size:1.05, rot:-0.03, hasFlag:true,  color:'#5a3010'},
+    {wx:0.78, size:0.9,  rot: 0.04, hasFlag:false, color:'#4a2808'},
+    {wx:0.88, size:1.0,  rot:-0.05, hasFlag:true,  color:'#5a3010'},
+    {wx:0.96, size:0.82, rot: 0.02, hasFlag:false, color:'#4a2808'},
+  ];
+  hutDefs.forEach(function(h){
+    var hx=WW*h.wx - sc*0.12;
+    drawDeHut(hx, GL, h.size, h.rot, h.hasFlag, h.color, n, t);
+  });
+  // Central larger command hut
+  drawDeHut(WW*0.45 - sc*0.12, GL, 1.35, 0, true, '#3a1a04', n, t, true);
+}
+
+function drawDeHut(x, ground, s, rot, hasFlag, woodColor, n, t, isMain){
+  ctx.save();
+  ctx.translate(x, ground);
+  ctx.rotate(rot);
+
+  var hw=38*s, hh=44*s;
+
+  // Shadow
+  ctx.fillStyle='rgba(0,0,0,0.25)';
+  ctx.beginPath();ctx.ellipse(4,6,hw*0.8,10*s,0,0,Math.PI*2);ctx.fill();
+
+  // Wall planks
+  var wallG=ctx.createLinearGradient(-hw,0,hw,-hh);
+  wallG.addColorStop(0,lighten(woodColor,0.08));wallG.addColorStop(1,woodColor);
+  ctx.fillStyle=wallG;
+  ctx.beginPath();ctx.roundRect(-hw,-hh,hw*2,hh+4,3*s);ctx.fill();
+  // Plank lines
+  ctx.strokeStyle='rgba(0,0,0,0.25)';ctx.lineWidth=1.2;
+  for(var pk=0;pk<5;pk++){
+    var py=-hh+pk*(hh/4);
+    ctx.beginPath();ctx.moveTo(-hw,py);ctx.lineTo(hw,py);ctx.stroke();
+    // Horizontal nails
+    ctx.fillStyle='rgba(80,50,20,0.5)';
+    ctx.beginPath();ctx.arc(-hw+8,py,1.5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(hw-8,py,1.5,0,Math.PI*2);ctx.fill();
+  }
+
+  // Door
+  var doorW=12*s, doorH=20*s;
+  ctx.fillStyle='#1a0a00';
+  ctx.beginPath();ctx.roundRect(-doorW/2,-doorH,doorW,doorH,2*s);ctx.fill();
+  ctx.strokeStyle='rgba(100,60,20,0.5)';ctx.lineWidth=1;ctx.stroke();
+  // Door handle
+  ctx.fillStyle='#c8a020';ctx.beginPath();ctx.arc(doorW*0.3,-doorH*0.45,1.5,0,Math.PI*2);ctx.fill();
+
+  // Window (small, glowing at night)
+  var winW=10*s, winH=8*s;
+  if(n){
+    ctx.fillStyle='rgba(255,200,80,0.85)';
+  } else {
+    ctx.fillStyle='rgba(150,200,240,0.5)';
+  }
+  // Left window
+  ctx.beginPath();ctx.roundRect(-hw+8,-hh*0.62,winW,winH,1.5);ctx.fill();
+  ctx.strokeStyle='rgba(80,50,20,0.4)';ctx.lineWidth=1;ctx.stroke();
+  // Cross pane
+  ctx.strokeStyle='rgba(60,40,15,0.5)';ctx.lineWidth=0.8;
+  ctx.beginPath();ctx.moveTo(-hw+8+winW/2,-hh*0.62);ctx.lineTo(-hw+8+winW/2,-hh*0.62+winH);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-hw+8,-hh*0.62+winH/2);ctx.lineTo(-hw+8+winW,-hh*0.62+winH/2);ctx.stroke();
+  if(n){
+    // Night window glow
+    var wg2=ctx.createRadialGradient(-hw+8+winW/2,-hh*0.62+winH/2,1,-hw+8+winW/2,-hh*0.62+winH/2,18);
+    wg2.addColorStop(0,'rgba(255,200,80,0.3)');wg2.addColorStop(1,'transparent');
+    ctx.fillStyle=wg2;ctx.beginPath();ctx.arc(-hw+8+winW/2,-hh*0.62+winH/2,18,0,Math.PI*2);ctx.fill();
+  }
+
+  // THATCHED ROOF — thick angled thatch/bark style
+  var roofH=32*s;
+  var roofG=ctx.createLinearGradient(-hw-8,-hh-roofH,hw+8,-hh);
+  roofG.addColorStop(0,n?'#1a0e04':'#4a2e0a');roofG.addColorStop(0.5,n?'#2a1808':'#6a3e10');roofG.addColorStop(1,n?'#1a0e04':'#3a2408');
+  ctx.fillStyle=roofG;
+  ctx.beginPath();
+  ctx.moveTo(-hw-10,-hh+2);
+  ctx.lineTo(0,-hh-roofH);
+  ctx.lineTo(hw+10,-hh+2);
+  ctx.closePath();ctx.fill();
+  // Thatch texture lines
+  ctx.strokeStyle='rgba(0,0,0,0.18)';ctx.lineWidth=1;
+  for(var tl=0;tl<6;tl++){
+    var ty=-hh-roofH*(1-tl/5);
+    var tw=(hw+10)*(1-tl/6);
+    ctx.beginPath();ctx.moveTo(-tw,ty);ctx.lineTo(tw,ty);ctx.stroke();
+  }
+  // Roof ridge cap
+  ctx.fillStyle=n?'#120a02':'#3a2008';
+  ctx.beginPath();ctx.moveTo(-6,-hh-roofH+2);ctx.lineTo(0,-hh-roofH-4);ctx.lineTo(6,-hh-roofH+2);ctx.fill();
+
+  // Smoke from chimney on main hut
+  if(isMain){
+    var chiX=hw*0.55, chiY=-hh-roofH*0.45;
+    ctx.fillStyle='#2a1a08';ctx.fillRect(chiX-3,chiY,6,roofH*0.35);
+    for(var sm2=0;sm2<3;sm2++){
+      var sp2=((t*0.015+sm2*0.33)%1);
+      var sa=( 1-sp2)*0.3;
+      ctx.fillStyle='rgba(180,140,80,'+sa+')';
+      ctx.beginPath();ctx.ellipse(chiX+Math.sin(t*0.04+sm2)*5,chiY-sp2*40,5+sp2*14,5+sp2*12,0,0,Math.PI*2);ctx.fill();
+    }
+  }
+
+  // Dragon's Edge pennant flag on flagpole
+  if(hasFlag){
+    var fpX=hw-5, fpY=-hh-roofH-4;
+    ctx.fillStyle='#3a2808';ctx.fillRect(fpX-1,fpY-30*s,2,30*s);
+    // Flag — dark red with dragon silhouette
+    var flagBow=Math.sin(t*0.08)*5*s;
+    ctx.fillStyle='#8b1a1a';
+    ctx.beginPath();ctx.moveTo(fpX,fpY);ctx.lineTo(fpX+18*s,fpY-5*s+flagBow);ctx.lineTo(fpX,fpY-12*s);ctx.fill();
+    // Tiny dragon on flag
+    ctx.fillStyle='#ffd700';ctx.font=(6*s)+'px serif';ctx.textAlign='center';
+    ctx.fillText('🐉',fpX+9*s,fpY-4*s+flagBow*0.5);
+  }
+
+  // Barrel / crate outside
+  ctx.fillStyle='#4a2808';ctx.beginPath();ctx.roundRect(hw+4,-18*s,10*s,16*s,2);ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.strokeStyle='rgba(60,40,15,.5)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(hw+4,-12*s);ctx.lineTo(hw+14*s,-12*s);ctx.stroke();
+
+  ctx.restore();
+
+  // Label on main hut
+  if(isMain){
+    labelAt(ctx,"Dragon Riders' HQ", x, ground-44*1.35-32-22,'rgba(255,180,80,.85)');
+  }
+}
+
+// ── CLIFFS / ROCKY SHORE ─────────────────────────────────────────────────
+function drawDeCliffs(sc, n){
+  // Left cliff face
+  var cl=ctx.createLinearGradient(0,GL,0,GL-90);
+  cl.addColorStop(0,'#2a1206');cl.addColorStop(1,'#1a0a04');
+  ctx.fillStyle=cl;
+  ctx.beginPath();
+  ctx.moveTo(-20,GL);ctx.lineTo(-20,GL-60);ctx.lineTo(20,GL-80);ctx.lineTo(60,GL-55);ctx.lineTo(100,GL-70);ctx.lineTo(120,GL-40);ctx.lineTo(120,GL);
+  ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=2;ctx.stroke();
+  // Cliff detail cracks
+  ctx.strokeStyle='rgba(40,20,8,.5)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(30,GL-30);ctx.lineTo(50,GL-55);ctx.lineTo(65,GL-48);ctx.stroke();
+
+  // Right cliff face
+  var cr=ctx.createLinearGradient(WW,GL,WW,GL-90);
+  cr.addColorStop(0,'#2a1206');cr.addColorStop(1,'#1a0a04');
+  ctx.fillStyle=cr;
+  ctx.beginPath();
+  ctx.moveTo(WW+20,GL);ctx.lineTo(WW+20,GL-55);ctx.lineTo(WW-30,GL-75);ctx.lineTo(WW-80,GL-50);ctx.lineTo(WW-110,GL-65);ctx.lineTo(WW-130,GL-38);ctx.lineTo(WW-130,GL);
+  ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=2;ctx.stroke();
+
+  // Shore rocks protruding from water
+  [[0.06,12],[0.12,8],[0.9,10],[0.94,7]].forEach(function(r){
+    var rx=WW*r[0]-sc*0.06, ry=GL+4;
+    var rg=ctx.createRadialGradient(rx-4,ry-4,1,rx,ry,r[1]);
+    rg.addColorStop(0,'#3a1a08');rg.addColorStop(1,'#1a0a04');
+    ctx.fillStyle=rg;
+    ctx.beginPath();ctx.ellipse(rx,ry,r[1],r[1]*0.55,-0.3,0,Math.PI*2);ctx.fill();
+  });
+}
+
+// ── DRAGON NESTS ──────────────────────────────────────────────────────────
+function drawDragonNests(sc, n, t){
+  // Two perch platforms with nesting dragons
+  [[0.38,GL-28,0.6],[0.54,GL-22,0.5]].forEach(function(np,ni){
+    var nx=WW*np[0]-sc*0.1, ny=np[1];
+    // Rock perch
+    var pg=ctx.createLinearGradient(nx-30,ny,nx+30,ny-20);
+    pg.addColorStop(0,'#3a2010');pg.addColorStop(1,'#1a0c04');
+    ctx.fillStyle=pg;
+    ctx.beginPath();ctx.ellipse(nx,ny,32,12,-0.1,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(60,30,10,.3)';ctx.lineWidth=1.5;ctx.stroke();
+    // Nest (ring of sticks)
+    ctx.strokeStyle='rgba(60,40,15,.7)';ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(nx,ny-4,16,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle='rgba(80,50,20,.5)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(nx,ny-4,12,0,Math.PI*2);ctx.stroke();
+    // Nesting dragon (small, sleeping)
+    var sleepColor=ni===0?{color:'#1a1a2e',accent:'#3a3a6a',eye:'#22d3ee',bodyShape:'sleek'}
+                        :{color:'#050508',accent:'#00aaff',eye:'#00d4ff',bodyShape:'shadow'};
+    ctx.save();ctx.translate(nx-12,ny-8);ctx.scale(np[2],np[2]);ctx.rotate(-0.3);
+    drawDragonCtx(ctx,sleepColor,0,0,1.0,true,false,t+ni*30,false,false,false);
+    ctx.restore();
+    labelAt(ctx,ni===0?'Resting Night Fury':'Sleeping Shadow Fury',nx,ny-55,'rgba(200,180,120,.7)');
+  });
+}
+
+
+
+// ============================================================
+// VANAHEIM — Secret Dragon Resting Place
+// ============================================================
+
+var inVanaheim = false;
+var vnWaveT   = 0;
+var vnMistT   = 0;
+var vnScrollX = 0;
+var vnReveal  = 0;
+var vnSpirits = [];
+var vnLightRays = [];
+
+function teleportToVanaheim(){
+  inVanaheim=true; inFort=false; inHiddenWorld=false;
+  inHouse=false; inOcean=false; inGreatHall=false; inDragonsEdge=false;
+  vnWaveT=0; vnMistT=0; vnScrollX=0; vnReveal=0;
+  drX=WW*0.18; drY=0;
+  setMode('walk');
+  initVanaheim();
+  showFlash('\U0001f33f You have found Vanaheim...');
+  setTimeout(function(){ showFlash('\U0001f409 The final resting place of dragons...'); }, 1600);
+}
+
+function leaveVanaheim(){
+  inVanaheim=false;
+  showFlash('\u2190 You leave Vanaheim in silence...');
+}
+
+function initVanaheim(){
+  vnSpirits=[];
+  for(var i=0;i<55;i++){
+    vnSpirits.push({
+      x: Math.random()*1.2-0.1,
+      y: Math.random()*400+50,
+      vx:(Math.random()-0.5)*0.18,
+      vy:-0.28-Math.random()*0.35,
+      size:1.2+Math.random()*3,
+      alpha:0.3+Math.random()*0.5,
+      hue: Math.floor(Math.random()*360),
+      phase: Math.random()*Math.PI*2,
+    });
+  }
+  vnLightRays=[];
+  for(var r=0;r<7;r++){
+    vnLightRays.push({
+      x: 0.05+r*0.145,
+      width: 22+Math.random()*30,
+      alpha: 0.04+Math.random()*0.06,
+      phase: Math.random()*Math.PI*2,
+    });
+  }
+}
+
+function updateVanaheim(){
+  if(!inVanaheim) return;
+  vnWaveT++;
+  vnReveal = Math.min(1, vnReveal + 0.003);
+  vnSpirits.forEach(function(sp){
+    sp.y += sp.vy;
+    sp.phase += 0.03;
+    sp.x += Math.sin(sp.phase)*0.0018;
+    if(sp.y < -20){ sp.y = WH*0.72; sp.x=Math.random(); }
+    if(sp.x<-0.05) sp.x=1.05;
+    if(sp.x>1.05)  sp.x=-0.05;
+  });
+  if(keys.left&&drX<60)  vnScrollX=Math.max(-400,vnScrollX-2);
+  if(keys.right&&drX>WW-80) vnScrollX=Math.min(400,vnScrollX+2);
+}
+
+function renderVanaheim(){
+  var t=vnWaveT, rv=vnReveal, sc=vnScrollX;
+
+  // SKY
+  var sky=ctx.createLinearGradient(0,0,0,GL);
+  sky.addColorStop(0,  '#0a0520');
+  sky.addColorStop(0.3,'#1a0a38');
+  sky.addColorStop(0.65,'#2a1828');
+  sky.addColorStop(1,  '#3a1808');
+  ctx.fillStyle=sky; ctx.fillRect(0,0,WW,WH);
+
+  // Stars
+  for(var st=0;st<80;st++){
+    var stx=(st*173.7+sc*0.02)%WW;
+    var sty=(st*97.3)%(GL*0.75);
+    var sta=0.25+0.45*Math.sin(t*0.04+st*0.7);
+    var stc=st%3===0?'rgba(255,200,160,'+sta+')':st%3===1?'rgba(180,160,255,'+sta+')':'rgba(220,240,255,'+sta+')';
+    ctx.fillStyle=stc;
+    ctx.beginPath();ctx.arc(stx,sty,st%5===0?1.4:0.6,0,Math.PI*2);ctx.fill();
+  }
+
+  // Aurora bands
+  for(var ab=0;ab<3;ab++){
+    var aPhase=t*0.008+ab*1.1;
+    var aY=GL*0.15+ab*GL*0.12;
+    var aAlpha=(0.06+0.04*Math.sin(t*0.012+ab))*rv;
+    var aColors=['rgba(0,255,180,','rgba(120,80,255,','rgba(0,200,255,'];
+    ctx.strokeStyle=aColors[ab]+aAlpha+')';
+    ctx.lineWidth=18+ab*8;
+    ctx.beginPath();
+    for(var ax=0;ax<=WW+40;ax+=20){
+      var ay=aY+Math.sin((ax+t*0.6+ab*80)*0.012)*22+Math.sin((ax*0.007+t*0.02))*14;
+      if(ax===0) ctx.moveTo(ax,ay); else ctx.lineTo(ax,ay);
+    }
+    ctx.stroke();
+  }
+
+  // God-rays
+  vnLightRays.forEach(function(ray){
+    var rAlpha=(ray.alpha+0.02*Math.sin(t*0.018+ray.phase))*rv;
+    var rx=WW*ray.x-sc*0.05;
+    var rg=ctx.createLinearGradient(rx,0,rx,GL);
+    rg.addColorStop(0,'rgba(255,220,160,'+rAlpha+')');
+    rg.addColorStop(0.6,'rgba(255,200,120,'+(rAlpha*0.5)+')');
+    rg.addColorStop(1,'transparent');
+    ctx.fillStyle=rg;
+    ctx.beginPath();
+    ctx.moveTo(rx-ray.width*0.3,0); ctx.lineTo(rx+ray.width*0.3,0);
+    ctx.lineTo(rx+ray.width*1.1,GL); ctx.lineTo(rx-ray.width*1.1,GL);
+    ctx.closePath(); ctx.fill();
+  });
+
+  // OCEAN
+  var wg=ctx.createLinearGradient(0,GL,0,WH);
+  wg.addColorStop(0,'#0a0828');wg.addColorStop(1,'#04041a');
+  ctx.fillStyle=wg; ctx.fillRect(0,GL,WW,WH-GL);
+  // Horizon shimmer
+  var hzG=ctx.createLinearGradient(0,GL-12,0,GL+10);
+  hzG.addColorStop(0,'rgba(140,100,255,0.35)');hzG.addColorStop(1,'transparent');
+  ctx.fillStyle=hzG; ctx.fillRect(0,GL-12,WW,22);
+  // Gentle swells
+  for(var wl=2;wl>=0;wl--){
+    var wOff=t*0.25*(1+wl*0.2);
+    var wy=GL+6+wl*((WH-GL)*0.28);
+    ctx.fillStyle='rgba(80,60,160,'+(0.08+wl*0.06)+')';
+    ctx.beginPath();ctx.moveTo(0,wy);
+    for(var wx2=0;wx2<=WW;wx2+=12){
+      ctx.lineTo(wx2, wy+Math.sin((wx2+wOff)*0.01)*(2+wl*2));
+    }
+    ctx.lineTo(WW,WH);ctx.lineTo(0,WH);ctx.closePath();ctx.fill();
+  }
+  // Bioluminescent shimmer
+  for(var bs=0;bs<25;bs++){
+    var bsx=((bs*WW*0.043+t*0.6)%WW);
+    var bsy=GL+8+((bs*23)%(WH-GL-18));
+    var bsA=0.2+0.25*Math.sin(t*0.07+bs*0.8);
+    var bsc=bs%3===0?'rgba(0,255,180,'+bsA+')':bs%3===1?'rgba(120,80,255,'+bsA+')':'rgba(100,200,255,'+bsA+')';
+    ctx.fillStyle=bsc;ctx.beginPath();ctx.arc(bsx,bsy,1+Math.sin(t*0.05+bs)*0.8,0,Math.PI*2);ctx.fill();
+  }
+  // Distant island silhouettes
+  [[-sc*0.2+WW*0.06,GL-20,45,15],[WW*0.88-sc*0.15,GL-14,38,12]].forEach(function(si){
+    ctx.fillStyle='rgba(15,8,30,0.65)';
+    ctx.beginPath();ctx.ellipse(si[0],si[1],si[2],si[3],0,Math.PI,Math.PI*2);ctx.fill();
+  });
+
+  // GROUND
+  drawVnGround(sc,t,rv);
+
+  // SACRED STONES
+  drawVnSacredStones(sc,t,rv);
+
+  // ANCIENT TREES
+  drawVnTrees(sc,t,rv);
+
+  // RESTING DRAGONS
+  drawVnDragons(sc,t,rv);
+
+  // FLYING DRAGONS
+  drawVnFlyingDragons(sc,t,rv);
+
+  // SPIRIT PARTICLES
+  drawVnSpirits(t,rv);
+
+  // MIST
+  drawVnMist(sc,t,rv);
+
+  // PLAYER
+  var dsy=GL-drY-30;
+  var psc2=moveMode==='fly'?1.1:Math.max(0.55,1.0-drY/(WH*0.35));
+  ctx.save();ctx.globalAlpha=0.22;ctx.fillStyle='#000';
+  ctx.beginPath();ctx.ellipse(drX+50,GL+4,28*psc2,6*psc2,0,0,Math.PI*2);ctx.fill();ctx.restore();
+  drawDragonCtx(ctx,dragonDef,drX+60,dsy+10,psc2,facing===1,moveMode==='fly',animF,chewT>0,drinkT>0,false);
+  if(moveMode!=='fly') drawViking(ctx,vik,drX,GL-2,psc2*0.88);
+  else drawVikingRiding(ctx,vik,drX+60,dsy+10,psc2,facing===1);
+
+  // Reveal vignette
+  if(rv<1){
+    ctx.fillStyle='rgba(0,0,0,'+(1-rv)+')';
+    ctx.fillRect(0,0,WW,WH);
+  }
+
+  // HUD
+  ctx.fillStyle='rgba(200,160,255,.8)';ctx.font='13px Cinzel,Georgia';ctx.textAlign='center';
+  ctx.fillText('\U0001f33f Vanaheim \u2014 Resting Place of Dragons',WW/2,GL-10);
+  labelAt(ctx,'\u2190 Leave in silence',50,GL-82,'rgba(180,140,255,.65)');
+  if(isSnowing){ drawSnow(); }
+}
+
+function drawVnGround(sc,t,rv){
+  var grd=ctx.createLinearGradient(0,GL,0,WH);
+  grd.addColorStop(0,'#0a1a08');grd.addColorStop(1,'#040e04');
+  ctx.fillStyle=grd; ctx.fillRect(0,GL,WW,WH-GL);
+  // Bioluminescent moss pools
+  for(var gp=0;gp<9;gp++){
+    var gpx=WW*(0.05+gp*0.11)-sc*0.08, gpy=GL+2;
+    var gpA=(0.12+0.08*Math.sin(t*0.04+gp*0.9))*rv;
+    var gpG=ctx.createRadialGradient(gpx,gpy,2,gpx,gpy,36+gp*3);
+    gpG.addColorStop(0,'rgba(0,255,160,'+gpA+')');gpG.addColorStop(1,'transparent');
+    ctx.fillStyle=gpG;ctx.beginPath();ctx.ellipse(gpx,gpy,45,15,0,0,Math.PI*2);ctx.fill();
+  }
+  // Glowing grass
+  for(var gr=0;gr<WW;gr+=9){
+    var grx=gr-sc*0.04;
+    var gh=6+Math.sin(grx*0.22+t*0.03)*3;
+    var grA=(0.5+0.25*Math.sin(grx*0.08+t*0.025))*rv;
+    ctx.fillStyle='rgba(0,'+(110+Math.floor(Math.sin(grx*0.05)*35))+',70,'+grA+')';
+    ctx.beginPath();ctx.moveTo(grx,GL);
+    ctx.quadraticCurveTo(grx+2,GL-gh*0.6,grx+1.5+Math.sin(grx*0.3)*1.5,GL-gh);
+    ctx.lineTo(grx+5,GL);ctx.fill();
+  }
+  // Glowing flowers
+  for(var fl=0;fl<14;fl++){
+    var fx=WW*(0.03+fl*0.07)-sc*0.06, fy=GL-9-fl%3*3;
+    var flA=(0.6+0.3*Math.sin(t*0.05+fl))*rv;
+    var flC=['rgba(180,80,255,','rgba(0,220,160,','rgba(255,180,80,','rgba(120,180,255,'][fl%4];
+    for(var pe=0;pe<5;pe++){
+      var pa=pe*(Math.PI*2/5)+t*0.01;
+      ctx.fillStyle=flC+flA+')';
+      ctx.beginPath();ctx.ellipse(fx+Math.cos(pa)*5,fy+Math.sin(pa)*5,3,2,pa,0,Math.PI*2);ctx.fill();
+    }
+    ctx.fillStyle='rgba(255,255,150,'+flA+')';
+    ctx.beginPath();ctx.arc(fx,fy,2.5,0,Math.PI*2);ctx.fill();
+  }
+}
+
+function drawVnSacredStones(sc,t,rv){
+  var stones=[
+    {wx:0.06,h:55,w:14},{wx:0.28,h:70,w:18},
+    {wx:0.50,h:90,w:22,isAltar:true},
+    {wx:0.72,h:68,w:17},{wx:0.94,h:52,w:13}
+  ];
+  var runes=['\u10c0','\u10c5','\u10d0','\u10d5','\u10da'];
+  stones.forEach(function(s,si){
+    var sx=WW*s.wx-sc*0.1, sy=GL;
+    ctx.fillStyle='rgba(0,0,0,0.28)';
+    ctx.beginPath();ctx.ellipse(sx+4,sy+4,s.w*0.9,6,0,0,Math.PI*2);ctx.fill();
+    var sg=ctx.createLinearGradient(sx-s.w,sy,sx+s.w,sy-s.h);
+    sg.addColorStop(0,'#2a2a3a');sg.addColorStop(1,'#1a1a28');
+    ctx.fillStyle=sg;
+    ctx.beginPath();
+    ctx.moveTo(sx-s.w,sy);ctx.lineTo(sx-s.w+2,sy-s.h+8);
+    ctx.lineTo(sx-s.w*0.4,sy-s.h);ctx.lineTo(sx+s.w*0.4,sy-s.h+3);
+    ctx.lineTo(sx+s.w-2,sy-s.h+10);ctx.lineTo(sx+s.w,sy);
+    ctx.closePath();ctx.fill();
+    ctx.strokeStyle='rgba(120,100,160,0.4)';ctx.lineWidth=1.5;ctx.stroke();
+    var runeA=(0.55+0.3*Math.sin(t*0.04+s.wx*10))*rv;
+    ctx.fillStyle='rgba(160,100,255,'+runeA+')';
+    ctx.font='bold '+Math.floor(s.w*0.9)+'px serif';ctx.textAlign='center';
+    ctx.fillText(runes[si], sx, sy-s.h*0.45);
+    var runeG=ctx.createRadialGradient(sx,sy-s.h*0.45,2,sx,sy-s.h*0.45,s.w*1.8);
+    runeG.addColorStop(0,'rgba(160,100,255,'+(runeA*0.4)+')');runeG.addColorStop(1,'transparent');
+    ctx.fillStyle=runeG;ctx.beginPath();ctx.arc(sx,sy-s.h*0.45,s.w*1.8,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(0,120,60,0.35)';
+    ctx.beginPath();ctx.ellipse(sx,sy-3,s.w*0.9,4,0,0,Math.PI*2);ctx.fill();
+    if(s.isAltar){
+      ctx.fillStyle='#2a2838';
+      ctx.beginPath();ctx.ellipse(sx,sy-s.h-2,s.w*1.4,7,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='rgba(160,100,255,0.5)';ctx.lineWidth=1.5;ctx.stroke();
+      for(var ef=0;ef<5;ef++){
+        var ep=((t*0.022+ef*0.2)%1);
+        var eA=(1-ep)*0.7*rv;
+        ctx.fillStyle='rgba('+(150+Math.floor(ep*105))+','+(80-Math.floor(ep*60))+',255,'+eA+')';
+        ctx.beginPath();ctx.ellipse(sx+Math.sin(t*0.06+ef)*4,sy-s.h-8-ep*28,4-ep*3,5-ep*4,0,0,Math.PI*2);ctx.fill();
+      }
+      labelAt(ctx,'\u269b\ufe0f The Sacred Altar',sx,sy-s.h-40,'rgba(200,160,255,.85)');
+    }
+  });
+}
+
+function drawVnTrees(sc,t,rv){
+  [{wx:0.03,h:110,sp:55,hue:140},{wx:0.14,h:90,sp:45,hue:160},
+   {wx:0.40,h:130,sp:70,hue:120},{wx:0.60,h:125,sp:65,hue:150},
+   {wx:0.86,h:95,sp:50,hue:130},{wx:0.97,h:105,sp:52,hue:145}].forEach(function(tr){
+    var tx=WW*tr.wx-sc*0.08, ty=GL;
+    ctx.fillStyle='#1a1208';
+    ctx.beginPath();
+    ctx.moveTo(tx-7,ty);
+    ctx.bezierCurveTo(tx-5,ty-tr.h*0.4,tx-10,ty-tr.h*0.65,tx-4,ty-tr.h);
+    ctx.lineTo(tx+4,ty-tr.h);
+    ctx.bezierCurveTo(tx+10,ty-tr.h*0.65,tx+5,ty-tr.h*0.4,tx+7,ty);
+    ctx.closePath();ctx.fill();
+    for(var layer=3;layer>=0;layer--){
+      var layY=ty-tr.h+layer*18;
+      var layR=tr.sp*(1-layer*0.18);
+      var layA=(0.55+0.15*Math.sin(t*0.02+tr.wx*8+layer))*rv;
+      var tg=ctx.createRadialGradient(tx-layR*0.15,layY-layR*0.15,layR*0.1,tx,layY,layR);
+      var h=tr.hue+layer*10;
+      tg.addColorStop(0,'hsla('+h+',60%,28%,'+layA+')');
+      tg.addColorStop(0.5,'hsla('+h+',50%,18%,'+layA+')');
+      tg.addColorStop(1,'hsla('+h+',40%,10%,'+(layA*0.3)+')');
+      ctx.fillStyle=tg;ctx.beginPath();ctx.arc(tx,layY,layR,0,Math.PI*2);ctx.fill();
+    }
+    for(var ls=0;ls<8;ls++){
+      var lsa=(0.3+0.4*Math.sin(t*0.06+ls*0.7+tr.wx*10))*rv;
+      var lsx=tx+Math.cos(ls*0.785+t*0.01)*tr.sp*0.65;
+      var lsy=(ty-tr.h)+Math.sin(ls*0.785)*tr.sp*0.5;
+      ctx.fillStyle='hsla('+(tr.hue+ls*15)+',80%,60%,'+lsa+')';
+      ctx.beginPath();ctx.arc(lsx,lsy,1.5+Math.sin(t*0.08+ls)*0.8,0,Math.PI*2);ctx.fill();
+    }
+    for(var vn2=0;vn2<4;vn2++){
+      var vx=tx-tr.sp*0.3+vn2*tr.sp*0.2, vy2=ty-tr.h+tr.sp*0.4;
+      ctx.strokeStyle='rgba(0,80,40,0.4)';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(vx,vy2);
+      ctx.quadraticCurveTo(vx+Math.sin(vn2+t*0.01)*8,vy2+22,vx+Math.sin(vn2)*4,vy2+40+vn2*6);
+      ctx.stroke();
+    }
+  });
+}
+
+function drawVnDragons(sc,t,rv){
+  var rDragons=[
+    {x:WW*0.08-sc*0.1, col:'#1a1a2e',acc:'#3a3a6a',eye:'#22d3ee',sh:'sleek',    sc2:1.4, f:1,  name:'Toothless II',  glowR:34,glowG:211,glowB:238},
+    {x:WW*0.20-sc*0.1, col:'#8b0000',acc:'#cc3300',eye:'#ff8800',sh:'nightmare',sc2:1.1, f:-1, name:'Ember',          glowR:255,glowG:136,glowB:0},
+    {x:WW*0.32-sc*0.1, col:'#2a4a8a',acc:'#5a8aff',eye:'#88aaff',sh:'sleek',    sc2:1.25,f:1,  name:'Stormcloud',     glowR:136,glowG:170,glowB:255},
+    {x:WW*0.46-sc*0.1, col:'#050508',acc:'#00aaff',eye:'#00d4ff',sh:'shadow',   sc2:1.5, f:-1, name:'Shade',          glowR:0,  glowG:212,glowB:255},
+    {x:WW*0.58-sc*0.1, col:'#1a4a1a',acc:'#3a8a3a',eye:'#88ff88',sh:'nadder',   sc2:1.3, f:1,  name:'Thornback',      glowR:136,glowG:255,glowB:136},
+    {x:WW*0.70-sc*0.1, col:'#6a0dad',acc:'#aa44ff',eye:'#cc88ff',sh:'sleek',    sc2:1.1, f:-1, name:'Nightshade',     glowR:170,glowG:68, glowB:255},
+    {x:WW*0.80-sc*0.1, col:'#4a3000',acc:'#c87820',eye:'#ffd700',sh:'nightmare',sc2:1.35,f:1,  name:'Goldenwing',     glowR:255,glowG:215,glowB:0},
+    {x:WW*0.91-sc*0.1, col:'#002a4a',acc:'#0088cc',eye:'#44ccff',sh:'sleek',    sc2:1.0, f:-1, name:'Frostclaw',      glowR:68, glowG:204,glowB:255},
+  ];
+  rDragons.forEach(function(rd,i){
+    var breathe=Math.sin(t*0.025+i*0.7)*4;
+    // Glow pool
+    var gA=(0.12+0.06*Math.sin(t*0.03+i))*rv;
+    var dg=ctx.createRadialGradient(rd.x+40,GL,5,rd.x+40,GL,70);
+    dg.addColorStop(0,'rgba('+rd.glowR+','+rd.glowG+','+rd.glowB+','+(gA*1.5)+')');
+    dg.addColorStop(1,'transparent');
+    ctx.fillStyle=dg;ctx.beginPath();ctx.ellipse(rd.x+40,GL+4,85,22,0,0,Math.PI*2);ctx.fill();
+    // Dragon
+    ctx.save();ctx.globalAlpha=Math.min(1,rv*1.5);
+    drawDragonCtx(ctx,{color:rd.col,accent:rd.acc,eye:rd.eye,bodyShape:rd.sh},
+      rd.x+55,GL-18+breathe,rd.sc2,rd.f===1,false,t+i*120,false,false,false);
+    ctx.restore();
+    // Sleeping breath
+    var bP=((t*0.018+i*0.13)%1);
+    var bA=(1-bP)*0.22*rv;
+    ctx.fillStyle='rgba(200,220,255,'+bA+')';
+    ctx.beginPath();ctx.ellipse(rd.x+(rd.f===1?90:10),GL-30+breathe-bP*18,4+bP*10,4+bP*8,0,0,Math.PI*2);ctx.fill();
+    // Zzz
+    for(var z=0;z<3;z++){
+      var zp=((t*0.01+i*0.25+z*0.33)%1);
+      var zA=(1-zp)*0.6*rv;
+      var zx=rd.x+55+(rd.f===1?45:-15)+z*8, zy=GL-40-zp*35;
+      ctx.fillStyle='rgba(200,200,255,'+zA+')';
+      ctx.font='bold '+(9-z*2)+'px Cinzel,Georgia';ctx.textAlign='center';
+      ctx.fillText('z',zx,zy);
+    }
+    labelAt(ctx,rd.name,rd.x+50,GL-rd.sc2*72,'rgba(200,180,255,0.7)');
+  });
+}
+
+function drawVnFlyingDragons(sc,t,rv){
+  [{col:'#050508',acc:'#00aaff',eye:'#00d4ff',sh:'shadow'},
+   {col:'#1a1a2e',acc:'#4444aa',eye:'#8888ff',sh:'sleek'},
+   {col:'#3a0a50',acc:'#aa44ff',eye:'#dd99ff',sh:'sleek'},
+   {col:'#1a3a1a',acc:'#44aa44',eye:'#88ff88',sh:'nadder'}
+  ].forEach(function(fl,i){
+    var fAngle=t*0.007+i*Math.PI*0.5;
+    var fOrbX=WW*(0.2+i*0.18);
+    var fx=fOrbX+Math.cos(fAngle)*(60+i*25)-sc*0.05;
+    var fy=GL-195-i*20+Math.sin(fAngle*1.3)*18;
+    ctx.save();ctx.globalAlpha=Math.min(1,rv*1.3)*(0.6+0.3*Math.sin(t*0.02+i));
+    drawDragonCtx(ctx,fl,fx,fy,0.6+i*0.05,fx>fOrbX,true,t+i*90,false,false,false);
+    ctx.restore();
+  });
+}
+
+function drawVnSpirits(t,rv){
+  vnSpirits.forEach(function(sp){
+    if(sp.y<0||sp.y>WH) return;
+    var sa=sp.alpha*rv*(0.6+0.4*Math.sin(t*0.05+sp.phase));
+    var sx=sp.x*WW, sy=sp.y;
+    var spG=ctx.createRadialGradient(sx,sy,0.2,sx,sy,sp.size*2.5);
+    spG.addColorStop(0,'hsla('+sp.hue+',100%,85%,'+sa+')');
+    spG.addColorStop(0.5,'hsla('+sp.hue+',80%,60%,'+(sa*0.5)+')');
+    spG.addColorStop(1,'transparent');
+    ctx.fillStyle=spG;ctx.beginPath();ctx.arc(sx,sy,sp.size*2.5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='hsla('+sp.hue+',100%,95%,'+sa+')';
+    ctx.beginPath();ctx.arc(sx,sy,sp.size*0.5,0,Math.PI*2);ctx.fill();
+  });
+}
+
+function drawVnMist(sc,t,rv){
+  [{y:GL-5,h:28,a:0.35,s:0.15,amp:12},{y:GL-22,h:18,a:0.22,s:0.22,amp:18},
+   {y:GL-38,h:14,a:0.14,s:0.10,amp:22},{y:GL-55,h:12,a:0.10,s:0.28,amp:28}
+  ].forEach(function(ml){
+    var mA=ml.a*rv;
+    var mg=ctx.createLinearGradient(0,ml.y,0,ml.y+ml.h);
+    mg.addColorStop(0,'transparent');
+    mg.addColorStop(0.4,'rgba(160,140,220,'+mA+')');
+    mg.addColorStop(0.6,'rgba(140,120,200,'+mA+')');
+    mg.addColorStop(1,'transparent');
+    ctx.fillStyle=mg;
+    ctx.beginPath();ctx.moveTo(0,ml.y);
+    for(var mx=0;mx<=WW+30;mx+=18){
+      var my2=ml.y+Math.sin((mx+t*ml.s+sc*0.04)*0.018)*ml.amp;
+      if(mx===0) ctx.moveTo(mx,my2); else ctx.lineTo(mx,my2);
+    }
+    ctx.lineTo(WW,ml.y+ml.h);ctx.lineTo(0,ml.y+ml.h);ctx.closePath();ctx.fill();
+  });
+  // Edge mist walls
+  var em=ctx.createLinearGradient(0,0,WW*0.16,0);
+  em.addColorStop(0,'rgba(80,60,120,'+(0.7*rv)+')');em.addColorStop(1,'transparent');
+  ctx.fillStyle=em;ctx.fillRect(0,0,WW*0.16,WH);
+  var emr=ctx.createLinearGradient(WW,0,WW*0.84,0);
+  emr.addColorStop(0,'rgba(80,60,120,'+(0.7*rv)+')');emr.addColorStop(1,'transparent');
+  ctx.fillStyle=emr;ctx.fillRect(WW*0.84,0,WW*0.16,WH);
+}
+
 function enterHiddenWorld(){
   if(!inHiddenWorld){
     inHiddenWorld=true;inHouse=false;
@@ -6789,7 +7779,7 @@ function setMode(m){
   var badge=document.getElementById('mbadge');
   badge.textContent=m==='walk'?'🚶 Walking':m==='run'?'💨 Running!':'🦅 Flying!';
   if(m!=='fly'){velY=0;}
-  document.getElementById('hloc').textContent=inFort?'⚓ Hunter Fort':inOcean?(inBoat?'⛵ Sailing':'🌊 Ocean Dock'):inHiddenWorld?'✨ Hidden World':inGreatHall?'🏛️ Great Hall':inHouse?'🏠 Inside':'🌍 Isle of Berk';
+  document.getElementById('hloc').textContent=inFort?'⚓ Hunter Fort':inOcean?(inBoat?'⛵ Sailing':'🌊 Ocean Dock'):inDragonsEdge?"🏔️ Dragon's Edge":inVanaheim?"🌿 Vanaheim":inHiddenWorld?'✨ Hidden World':inGreatHall?'🏛️ Great Hall':inHouse?'🏠 Inside':'🌍 Isle of Berk';
   var hmonthEl=document.getElementById('hmonth');
   if(hmonthEl){
     var snowFlag=(isSnowing)?' ❄️':'';
@@ -6897,6 +7887,8 @@ setInterval(function(){
   }
   // Great Hall exit via left edge
   if(inGreatHall&&drX<30){ leaveGreatHall(); }
+  if(inDragonsEdge&&drX<30&&!inBoat){ leaveDragonsEdge(); }
+  if(inVanaheim&&drX<30){ leaveVanaheim(); }
 },500);
 </script>
 
