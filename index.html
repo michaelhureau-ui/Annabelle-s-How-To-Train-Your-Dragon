@@ -7860,11 +7860,37 @@ function dk(dir,on){keys[dir]=on;}
   });
   window._reinitJoystick = initJoystick;
 })();
+// Double-tap UP = Fly, single tap UP = Run, DOWN = Walk
+var _lastUpTap=0, _upTapTimer=null;
+
 document.addEventListener('keydown',function(e){
   if(e.key==='ArrowLeft'||e.key==='a') keys.left=1;
   if(e.key==='ArrowRight'||e.key==='d') keys.right=1;
-  if(e.key==='ArrowUp'||e.key==='w') keys.up=1;
-  if(e.key==='ArrowDown'||e.key==='s') keys.down=1;
+  if(e.key==='ArrowDown'||e.key==='s'){
+    keys.down=1;
+    // Bottom key = Walk
+    setMode('walk');
+  }
+  if(e.key==='ArrowUp'||e.key==='w'){
+    keys.up=1;
+    var now=Date.now();
+    if(now-_lastUpTap<320){
+      // Double-tap — Fly
+      clearTimeout(_upTapTimer);
+      _upTapTimer=null;
+      _lastUpTap=0;
+      setMode('fly');
+    } else {
+      // Might be single — wait to see if second tap comes
+      _lastUpTap=now;
+      clearTimeout(_upTapTimer);
+      _upTapTimer=setTimeout(function(){
+        // No second tap — single = Run
+        if(moveMode!=='fly') setMode('run');
+        _upTapTimer=null;
+      },320);
+    }
+  }
   if(e.key==='1') setMode('walk');
   if(e.key==='2') setMode('run');
   if(e.key==='3') setMode('fly');
