@@ -2971,10 +2971,19 @@ function drawDay(){
     ctx.beginPath();ctx.moveTo(sunX+Math.cos(ra)*26,sunY+Math.sin(ra)*26);
     ctx.lineTo(sunX+Math.cos(ra)*44,sunY+Math.sin(ra)*44);ctx.stroke();
   }
-  // 3D clouds
-  drawCloud3D(WW*0.15,WH*0.08,0.9);
-  drawCloud3D(WW*0.55,WH*0.12,1.1);
-  drawCloud3D(WW*0.82,WH*0.06,0.7);
+  // Drifting 3D clouds
+  drawCloud3D(((WW*0.15+animF*0.28)%(WW+220))-110, WH*0.08, 0.9);
+  drawCloud3D(((WW*0.55+animF*0.18)%(WW+220))-110, WH*0.12, 1.1);
+  drawCloud3D(((WW*0.82+animF*0.13)%(WW+220))-110, WH*0.06, 0.7);
+  drawCloud3D(((WW*0.30+animF*0.22)%(WW+220))-110, WH*0.10, 0.75);
+  // Birds drifting across the sky
+  for(var bi=0;bi<8;bi++){
+    var bx=((bi*WW*0.145+animF*(0.55+bi*0.07))%(WW+100))-50;
+    var by=GL*0.15+bi*GL*0.05+Math.sin(animF*0.04+bi*1.1)*10;
+    var bwing=Math.sin(animF*0.18+bi*0.9)*3;
+    ctx.strokeStyle='rgba(30,20,10,0.45)';ctx.lineWidth=1.2;ctx.beginPath();
+    ctx.moveTo(bx-7,by+bwing);ctx.lineTo(bx,by);ctx.lineTo(bx+7,by+bwing);ctx.stroke();
+  }
 }
 
 function drawNight(){
@@ -3001,9 +3010,10 @@ function drawNight(){
   var aur=ctx.createLinearGradient(0,GL*0.4,0,GL*0.6);
   aur.addColorStop(0,'rgba(0,80,60,0)');aur.addColorStop(0.5,'rgba(0,120,80,.12)');aur.addColorStop(1,'rgba(0,80,60,0)');
   ctx.fillStyle=aur;ctx.fillRect(0,GL*0.4,WW,GL*0.2);
-  // 3D clouds (dark)
-  drawCloud3D(WW*0.2,WH*0.07,0.8);
-  drawCloud3D(WW*0.7,WH*0.1,1.0);
+  // Drifting 3D clouds (dark)
+  drawCloud3D(((WW*0.2+animF*0.18)%(WW+220))-110, WH*0.07, 0.8);
+  drawCloud3D(((WW*0.7+animF*0.14)%(WW+220))-110, WH*0.1, 1.0);
+  drawCloud3D(((WW*0.45+animF*0.20)%(WW+220))-110, WH*0.09, 0.85);
 }
 
 function drawCloud3D(x,y,sc){
@@ -6213,6 +6223,7 @@ var vnScrollX = 0;
 var vnReveal  = 0;
 var vnSpirits = [];
 var vnLightRays = [];
+var vnRoamingDragons = [];
 
 function teleportToVanaheim(){
   inVanaheim=true; inFort=false; inHiddenWorld=false;
@@ -6253,6 +6264,25 @@ function initVanaheim(){
       phase: Math.random()*Math.PI*2,
     });
   }
+  // Roaming dragons that wander the ground like on Berk
+  vnRoamingDragons=[];
+  var vnRoamTypes=[
+    {col:'#3a0060',acc:'#aa44ff',eye:'#cc88ff',sh:'sleek'},
+    {col:'#004a1a',acc:'#00cc66',eye:'#44ff88',sh:'nadder'},
+    {col:'#1a0a00',acc:'#cc5500',eye:'#ffaa00',sh:'nightmare'},
+    {col:'#0a1a3a',acc:'#3366cc',eye:'#66aaff',sh:'sleek'},
+    {col:'#2a0028',acc:'#882288',eye:'#dd66ff',sh:'sleek'},
+  ];
+  for(var ri=0;ri<5;ri++){
+    var rrt=vnRoamTypes[ri];
+    vnRoamingDragons.push({
+      x: WW*(0.1+ri*0.18),
+      vx: (Math.random()-0.5)*0.8,
+      wobble: ri*1.2,
+      facing: 1,
+      col: rrt.col, acc: rrt.acc, eye: rrt.eye, sh: rrt.sh
+    });
+  }
 }
 
 function updateVanaheim(){
@@ -6269,6 +6299,14 @@ function updateVanaheim(){
   });
   if(keys.left&&drX<60)  vnScrollX=Math.max(-400,vnScrollX-2);
   if(keys.right&&drX>WW-80) vnScrollX=Math.min(400,vnScrollX+2);
+  vnRoamingDragons.forEach(function(rd){
+    rd.wobble+=0.04;
+    rd.vx+=(Math.random()-0.5)*0.05;
+    rd.vx=Math.max(-1.2,Math.min(1.2,rd.vx));
+    rd.x+=rd.vx;
+    rd.x=Math.max(WW*0.04,Math.min(WW*0.96,rd.x));
+    if(Math.abs(rd.vx)>0.05) rd.facing=rd.vx>0?1:-1;
+  });
 }
 
 function renderVanaheim(){
@@ -6367,6 +6405,9 @@ function renderVanaheim(){
 
   // RESTING DRAGONS
   drawVnDragons(sc,t,rv);
+
+  // ROAMING DRAGONS (wandering the ground like on Berk)
+  drawVnRoamingDragons(sc,t,rv);
 
   // FLYING DRAGONS
   drawVnFlyingDragons(sc,t,rv);
@@ -6562,18 +6603,42 @@ function drawVnDragons(sc,t,rv){
   });
 }
 
+function drawVnRoamingDragons(sc,t,rv){
+  vnRoamingDragons.forEach(function(rd,i){
+    var rx=rd.x-sc*0.08;
+    var ry=GL-18+Math.sin(rd.wobble)*3;
+    // Glow pool beneath each dragon
+    var gA=(0.08+0.04*Math.sin(t*0.03+i*0.9))*rv;
+    var dg=ctx.createRadialGradient(rx+40,GL,2,rx+40,GL,50);
+    dg.addColorStop(0,'rgba(100,60,180,'+(gA*2)+')');
+    dg.addColorStop(1,'transparent');
+    ctx.fillStyle=dg;ctx.beginPath();ctx.ellipse(rx+40,GL+4,60,16,0,0,Math.PI*2);ctx.fill();
+    // Shadow
+    ctx.save();ctx.globalAlpha=0.18;ctx.fillStyle='#000';
+    ctx.beginPath();ctx.ellipse(rx+50,GL+4,22,5,0,0,Math.PI*2);ctx.fill();ctx.restore();
+    // Dragon walking/wandering
+    ctx.save();ctx.globalAlpha=Math.min(1,rv*1.5);
+    drawDragonCtx(ctx,{color:rd.col,accent:rd.acc,eye:rd.eye,bodyShape:rd.sh},
+      rx+55,ry,0.72,rd.facing===1,false,t+i*80,false,false,false);
+    ctx.restore();
+  });
+}
+
 function drawVnFlyingDragons(sc,t,rv){
-  [{col:'#050508',acc:'#00aaff',eye:'#00d4ff',sh:'shadow'},
-   {col:'#1a1a2e',acc:'#4444aa',eye:'#8888ff',sh:'sleek'},
-   {col:'#3a0a50',acc:'#aa44ff',eye:'#dd99ff',sh:'sleek'},
-   {col:'#1a3a1a',acc:'#44aa44',eye:'#88ff88',sh:'nadder'}
+  [{col:'#050508',acc:'#00aaff',eye:'#00d4ff',sh:'shadow',   spd:0.007,orb:0.18,alt:195,amp:60},
+   {col:'#1a1a2e',acc:'#4444aa',eye:'#8888ff',sh:'sleek',   spd:0.009,orb:0.32,alt:215,amp:50},
+   {col:'#3a0a50',acc:'#aa44ff',eye:'#dd99ff',sh:'sleek',   spd:0.006,orb:0.46,alt:180,amp:70},
+   {col:'#1a3a1a',acc:'#44aa44',eye:'#88ff88',sh:'nadder',  spd:0.011,orb:0.60,alt:200,amp:55},
+   {col:'#4a0808',acc:'#cc2200',eye:'#ff6600',sh:'nightmare',spd:0.008,orb:0.72,alt:170,amp:65},
+   {col:'#002a3a',acc:'#0088cc',eye:'#44ccff',sh:'sleek',   spd:0.010,orb:0.84,alt:225,amp:45},
+   {col:'#2a1a00',acc:'#cc8800',eye:'#ffcc00',sh:'sleek',   spd:0.007,orb:0.25,alt:240,amp:40}
   ].forEach(function(fl,i){
-    var fAngle=t*0.007+i*Math.PI*0.5;
-    var fOrbX=WW*(0.2+i*0.18);
-    var fx=fOrbX+Math.cos(fAngle)*(60+i*25)-sc*0.05;
-    var fy=GL-195-i*20+Math.sin(fAngle*1.3)*18;
-    ctx.save();ctx.globalAlpha=Math.min(1,rv*1.3)*(0.6+0.3*Math.sin(t*0.02+i));
-    drawDragonCtx(ctx,fl,fx,fy,0.6+i*0.05,fx>fOrbX,true,t+i*90,false,false,false);
+    var fAngle=t*fl.spd+i*Math.PI*0.45;
+    var fOrbX=WW*fl.orb;
+    var fx=fOrbX+Math.cos(fAngle)*fl.amp-sc*0.05;
+    var fy=GL-fl.alt+Math.sin(fAngle*1.3)*22;
+    ctx.save();ctx.globalAlpha=Math.min(1,rv*1.3)*(0.55+0.35*Math.sin(t*0.02+i*0.8));
+    drawDragonCtx(ctx,fl,fx,fy,0.55+i*0.03,fx>fOrbX,true,t+i*90,false,false,false);
     ctx.restore();
   });
 }
