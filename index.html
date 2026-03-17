@@ -7869,22 +7869,24 @@ document.addEventListener('keydown',function(e){
   if(e.key==='ArrowRight'||e.key==='d') keys.right=1;
   if(e.key==='ArrowDown'||e.key==='s'){
     keys.down=1;
-    var now=Date.now();
-    if(now-_lastDownTap<320){
-      // Double-tap — Walk
-      clearTimeout(_downTapTimer);
-      _downTapTimer=null;
-      _lastDownTap=0;
-      setMode('walk');
-    } else {
-      // Might be single — wait to see if second tap comes
-      _lastDownTap=now;
-      clearTimeout(_downTapTimer);
-      _downTapTimer=setTimeout(function(){
-        // No second tap — if not flying, walk; if flying, just move down (no mode change)
-        if(moveMode!=='fly') setMode('walk');
+    if(!e.repeat){
+      var now=Date.now();
+      if(now-_lastDownTap<320){
+        // Double-tap — Walk
+        clearTimeout(_downTapTimer);
         _downTapTimer=null;
-      },320);
+        _lastDownTap=0;
+        setMode('walk');
+      } else {
+        // Might be single — wait to see if second tap comes
+        _lastDownTap=now;
+        clearTimeout(_downTapTimer);
+        _downTapTimer=setTimeout(function(){
+          // No second tap — if not flying, walk; if flying, just move down (no mode change)
+          if(moveMode!=='fly') setMode('walk');
+          _downTapTimer=null;
+        },320);
+      }
     }
   }
   if(e.key==='ArrowUp'||e.key==='w'){
