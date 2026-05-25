@@ -556,6 +556,8 @@ box-shadow:0 0 18px rgba(0,100,255,.2);}
   <button class="ab" style="background:linear-gradient(135deg,#0a3a6a,#051828);" onclick="teleportToOcean()">🌊 Ocean</button>
   <button class="ab" style="background:linear-gradient(135deg,#3a1a00,#1a0800);" onclick="teleportToDragonsEdge()">🏔️ Dragon's Edge</button>
   <button class="ab" style="background:linear-gradient(135deg,#080318,#030110);border:1px solid rgba(160,100,255,.4);" onclick="teleportToVanaheim()">🌿 Vanaheim</button>
+  <div style="height:1px;background:rgba(255,215,0,.25);margin:2px 0;"></div>
+  <button class="ab" style="background:linear-gradient(135deg,#0a2a0a,#050f05);border:1px solid rgba(100,200,100,.4);" onclick="openInventory()">🎒 Inventory</button>
 </div>
 
 <!-- Controls -->
@@ -1351,6 +1353,11 @@ var drNick = 'Toothless';
 var stats = {food:70,water:70,happy:70};
 var coins = 0;
 var ownedSaddles = [];
+var inventory = {wood:0, stone:0, fish:0, wool:0, iron:0, herbs:0};
+var builtStructures = [];
+var _gatherCooldowns = {};
+var GATHER_COOLDOWN = 20000;
+var GATHER_RADIUS = 68;
 var alphaUnlocked = false;
 var vipUnlocked = false;
 var vipExpiry = null;      // Date timestamp when VIP expires (48 hours)
@@ -2379,6 +2386,7 @@ function update(){
   // Dragon's Edge update
   if(inDragonsEdge) updateDragonsEdge();
   if(inVanaheim) updateVanaheim();
+  updateGatherSpots();
   // Snow update (always runs while world active)
   updateSnow();
   // Fort update (only runs when inFort)
@@ -2804,6 +2812,9 @@ function renderOutdoor(){
     ctx.fillStyle='rgba(160,200,255,'+(snowAccumulation*0.07)+')';
     ctx.fillRect(0,0,WW,WH);
   }
+
+  // === GATHER SPOTS ===
+  drawGatherSpots();
 
   // === BUILDINGS — using real screen X positions ===
   drawHouse3D(WW*0.10, GL);
@@ -7944,6 +7955,132 @@ function dk(dir,on){keys[dir]=on;}
   });
   window._reinitJoystick = initJoystick;
 })();
+// ============================================================
+// INVENTORY & RESOURCE GATHERING
+// ============================================================
+var BUILDINGS = [
+  {id:'longhouse', name:'Viking Longhouse', emoji:'🏠',
+   cost:{wood:5,stone:3}, desc:'A warm home. Boosts happiness on Berk.'},
+  {id:'dragnest',  name:'Dragon Nest',      emoji:'🪹',
+   cost:{wood:4,wool:2},  desc:'A cozy nest. Your dragon feels at home.'},
+  {id:'dock',      name:'Fishing Dock',     emoji:'⚓',
+   cost:{wood:6,iron:2},  desc:'Haul in more fish on every trip.'},
+  {id:'forge',     name:'Iron Forge',       emoji:'🔥',
+   cost:{stone:5,iron:3}, desc:'Smelt iron and craft stronger gear.'},
+  {id:'watchtower',name:'Watchtower',       emoji:'🗼',
+   cost:{wood:4,stone:4,iron:1}, desc:'Spot enemy ships before they land.'},
+  {id:'meadhall',  name:'Grand Mead Hall',  emoji:'🏛️',
+   cost:{wood:8,stone:6,iron:2}, desc:'The seat of Berk — seat of glory.'},
+  {id:'woolshed',  name:'Wool Shed',        emoji:'🐑',
+   cost:{wood:3,stone:2,wool:4}, desc:'Doubles wool gathered from sheep.'},
+  {id:'herbgarden',name:'Herb Garden',      emoji:'🌿',
+   cost:{wood:2,herbs:4}, desc:'Grow herbs that slow food drain.'},
+];
+
+var RES_LABELS = {wood:'🪵 Wood',stone:'🪨 Stone',fish:'🐟 Fish',wool:'🧶 Wool',iron:'🔩 Iron',herbs:'🌿 Herbs'};
+
+function getGatherSpots(){
+  return [
+    {id:'fish',  emoji:'🐟', label:'Fish',  x:WW*0.20, resource:'fish',  color:'rgba(60,160,255,'},
+    {id:'iron',  emoji:'🔩', label:'Iron',  x:WW*0.42, resource:'iron',  color:'rgba(180,180,180,'},
+    {id:'stone', emoji:'🪨', label:'Stone', x:WW*0.78, resource:'stone', color:'rgba(140,120,100,'},
+    {id:'wood',  emoji:'🪵', label:'Wood',  x:WW*0.05, resource:'wood',  color:'rgba(160,100,40,'},
+    {id:'wood2', emoji:'🪵', label:'Wood',  x:WW*0.95, resource:'wood',  color:'rgba(160,100,40,'},
+    {id:'wool',  emoji:'🧶', label:'Wool',  x:WW*0.12, resource:'wool',  color:'rgba(220,220,200,'},
+    {id:'herbs', emoji:'🌿', label:'Herbs', x:WW*0.32, resource:'herbs', color:'rgba(60,180,60,'},
+  ];
+}
+
+function updateGatherSpots(){
+  if(inHiddenWorld||inFort||inOcean||inDragonsEdge||inVanaheim||inGreatHall||inHouse) return;
+  var now=Date.now();
+  getGatherSpots().forEach(function(sp){
+    if(Math.abs(drX-sp.x)<GATHER_RADIUS){
+      var last=_gatherCooldowns[sp.id]||0;
+      if(now-last>GATHER_COOLDOWN){
+        _gatherCooldowns[sp.id]=now;
+        inventory[sp.resource]=(inventory[sp.resource]||0)+1;
+        showFlash(sp.emoji+' Gathered '+sp.label+'! ('+inventory[sp.resource]+')');
+      }
+    }
+  });
+}
+
+function drawGatherSpots(){
+  var now=Date.now();
+  getGatherSpots().forEach(function(sp,i){
+    var ready=(now-(_gatherCooldowns[sp.id]||0))>GATHER_COOLDOWN;
+    var pulse=0.5+0.5*Math.sin(animF*0.08+i*0.9);
+    var alpha=ready?(0.45+0.35*pulse):0.1;
+    var grd=ctx.createRadialGradient(sp.x,GL,0,sp.x,GL,32);
+    grd.addColorStop(0,sp.color+alpha+')');
+    grd.addColorStop(1,sp.color+'0)');
+    ctx.fillStyle=grd;
+    ctx.beginPath();ctx.ellipse(sp.x,GL+4,32,11,0,0,Math.PI*2);ctx.fill();
+    if(ready){
+      var fy=GL-30-Math.sin(animF*0.07+i*0.8)*5;
+      ctx.save();ctx.globalAlpha=0.75+0.25*pulse;
+      ctx.font='15px serif';ctx.textAlign='center';
+      ctx.fillText(sp.emoji,sp.x,fy);
+      ctx.restore();
+    }
+  });
+}
+
+function openInventory(){
+  var html='<div style="margin-bottom:10px">';
+  html+='<div style="font-family:Cinzel;color:#ffd700;font-size:.88em;margin-bottom:6px">📦 Materials</div>';
+  html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">';
+  Object.keys(RES_LABELS).forEach(function(k){
+    var parts=RES_LABELS[k].split(' ');
+    html+='<div style="background:rgba(255,255,255,.07);border-radius:8px;padding:6px 4px;text-align:center">';
+    html+='<div style="font-size:1.3em">'+parts[0]+'</div>';
+    html+='<div style="font-size:.7em;color:#bbb">'+parts[1]+'</div>';
+    html+='<div style="font-size:1.1em;color:#ffd700;font-weight:700">'+(inventory[k]||0)+'</div>';
+    html+='</div>';
+  });
+  html+='</div></div>';
+  html+='<div style="font-family:Cinzel;color:#ffd700;font-size:.88em;margin:10px 0 6px">🔨 Build on Berk</div>';
+  html+='<div style="display:flex;flex-direction:column;gap:5px">';
+  BUILDINGS.forEach(function(b){
+    var built=builtStructures.indexOf(b.id)!==-1;
+    var canAfford=!built&&Object.keys(b.cost).every(function(k){return (inventory[k]||0)>=b.cost[k];});
+    var costStr=Object.keys(b.cost).map(function(k){return RES_LABELS[k]+' ×'+b.cost[k];}).join('  ');
+    var borderAlpha=built?'.5':canAfford?'.3':'.1';
+    var bgAlpha=built?'.14':canAfford?'.09':'.04';
+    html+='<div style="background:rgba(255,255,255,'+bgAlpha+');border:1px solid rgba(255,215,0,'+borderAlpha+');border-radius:8px;padding:7px 9px;display:flex;align-items:center;gap:8px">';
+    html+='<div style="font-size:1.7em">'+b.emoji+'</div>';
+    html+='<div style="flex:1;min-width:0">';
+    html+='<div style="font-family:Cinzel;font-size:.76em;color:'+(built?'#2ecc71':'#ffd700')+'">'+b.name+(built?' ✅':'')+  '</div>';
+    html+='<div style="font-size:.67em;color:#aaa;margin:2px 0">'+b.desc+'</div>';
+    html+='<div style="font-size:.63em;color:#7af">'+costStr+'</div>';
+    html+='</div>';
+    if(!built){
+      var btnBg=canAfford?'#1a4a0a,#0a2a04':'#2a2a2a,#111';
+      var btnBorder=canAfford?'rgba(100,220,80,.6)':'rgba(255,255,255,.1)';
+      var btnCol=canAfford?'#8f8':'#555';
+      html+='<button onclick="buildStructure(\''+b.id+'\')" style="background:linear-gradient(135deg,'+btnBg+');border:1px solid '+btnBorder+';border-radius:6px;color:'+btnCol+';font-size:.7em;padding:5px 8px;cursor:'+(canAfford?'pointer':'default')+';white-space:nowrap">'+(canAfford?'Build ✔':'Need more')+'</button>';
+    }
+    html+='</div>';
+  });
+  html+='</div>';
+  html+='<div style="font-size:.62em;color:#666;margin-top:10px;text-align:center">Walk near glowing spots on Berk to gather materials</div>';
+  showPop('🎒 Inventory & Building','',html);
+}
+
+function buildStructure(id){
+  var b=BUILDINGS.find(function(b){return b.id===id;});
+  if(!b||builtStructures.indexOf(id)!==-1) return;
+  if(!Object.keys(b.cost).every(function(k){return (inventory[k]||0)>=b.cost[k];})){
+    showFlash('Not enough materials!'); return;
+  }
+  Object.keys(b.cost).forEach(function(k){inventory[k]-=b.cost[k];});
+  builtStructures.push(id);
+  closePop();
+  showFlash(b.emoji+' '+b.name+' built!');
+  setTimeout(openInventory,300);
+}
+
 // ============================================================
 // BACKGROUND MUSIC
 // ============================================================
