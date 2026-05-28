@@ -2820,6 +2820,7 @@ function renderOutdoor(){
   drawHouse3D(WW*0.10, GL);
   drawFishStand3D(WW*0.20, GL);
   drawBlacksmith3D(WW*0.42, GL);
+  drawCinema3D(WW*0.50, GL);
   drawWateringHole3D(WW*0.60, GL);
   drawArena3D(WW*0.78, GL);
   drawMudPit3D(mudX, GL);
@@ -2828,6 +2829,11 @@ function renderOutdoor(){
   drawHatchery3D(WW*0.32, GL);
   drawPortal3D(WW*0.68, GL);
   drawTropicalIsland3D(WW*0.88, GL);
+
+  // Cinema label when player is nearby
+  if(Math.abs(drX-(WW*0.50+30))<72){
+    labelAt(ctx,'🎬 Tap to watch movies',WW*0.50+30,GL-92,'rgba(150,200,255,.9)');
+  }
 
   // === WILD DRAGONS ===
   wildDragons.forEach(function(wd){
@@ -4241,6 +4247,10 @@ function handleClick(e){
   // Muddy dragon pick up
   if(dragonMuddy&&!carryingMudDragon&&Math.abs(mudX-ex)<70&&Math.abs(GL-ey)<60){
     carryingMudDragon=true;showFlash('🐉 Carrying muddy '+drNick+'!');
+  }
+  // Cinema
+  if(!inHiddenWorld&&!inFort&&!inOcean&&!inDragonsEdge&&!inVanaheim&&!inGreatHall&&!inHouse){
+    if(Math.abs(ex-(WW*0.50+30))<58&&ey>GL-90&&ey<GL+10){ openCinema(); return; }
   }
 }
 // Set up click after canvas exists
@@ -7955,6 +7965,91 @@ function dk(dir,on){keys[dir]=on;}
   });
   window._reinitJoystick = initJoystick;
 })();
+// ============================================================
+// CINEMA OF BERK
+// ============================================================
+var HTTYD_MOVIES=[
+  {title:'How to Train Your Dragon', year:'2010', emoji:'🐉',
+   desc:'Young Viking Hiccup befriends Toothless, a rare Night Fury, changing Berk forever.',
+   query:'how+to+train+your+dragon+2010+full+movie'},
+  {title:'How to Train Your Dragon 2', year:'2014', emoji:'🔥',
+   desc:'Five years later, Hiccup discovers a secret ice cave — and a deadly new threat.',
+   query:'how+to+train+your+dragon+2+2014+full+movie'},
+  {title:'The Hidden World', year:'2019', emoji:'🌀',
+   desc:'Hiccup must let Toothless go when he discovers where dragons truly belong.',
+   query:'how+to+train+your+dragon+hidden+world+2019+full+movie'},
+];
+
+function drawCinema3D(x,y){
+  // Shadow
+  ctx.fillStyle='rgba(0,0,0,0.2)';
+  ctx.beginPath();ctx.ellipse(x+30,y+5,44,9,0,0,Math.PI*2);ctx.fill();
+  // Back wall
+  ctx.fillStyle='#2a1808';
+  ctx.beginPath();ctx.moveTo(x-2,y);ctx.lineTo(x-2,y-53);ctx.lineTo(x+62,y-53);ctx.lineTo(x+62,y);ctx.fill();
+  // Front wall (wood)
+  var wg=ctx.createLinearGradient(x,y-55,x,y);
+  wg.addColorStop(0,'#6a4020');wg.addColorStop(1,'#3a2008');
+  ctx.fillStyle=wg;
+  ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-50);ctx.lineTo(x+60,y-50);ctx.lineTo(x+60,y);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#1a0c04';ctx.lineWidth=1.5;ctx.stroke();
+  // Plank lines
+  ctx.strokeStyle='rgba(0,0,0,0.18)';ctx.lineWidth=1;
+  for(var pl=0;pl<4;pl++){ctx.beginPath();ctx.moveTo(x,y-10-pl*12);ctx.lineTo(x+60,y-10-pl*12);ctx.stroke();}
+  // Roof
+  var rg=ctx.createLinearGradient(x,y-82,x+60,y-50);
+  rg.addColorStop(0,'#7a6030');rg.addColorStop(1,'#4a3818');
+  ctx.fillStyle=rg;
+  ctx.beginPath();ctx.moveTo(x-6,y-50);ctx.lineTo(x+30,y-84);ctx.lineTo(x+66,y-50);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#2a1808';ctx.lineWidth=1.5;ctx.stroke();
+  // Glowing screen
+  var pulse=0.6+0.35*Math.sin(animF*0.05);
+  var sg=ctx.createLinearGradient(x+8,y-48,x+52,y-14);
+  sg.addColorStop(0,'rgba(10,20,90,'+pulse+')');
+  sg.addColorStop(1,'rgba(5,10,55,'+(pulse*0.8)+')');
+  ctx.fillStyle=sg;
+  ctx.beginPath();ctx.roundRect(x+8,y-48,44,34,4);ctx.fill();
+  ctx.strokeStyle='rgba(80,140,255,'+(0.4+0.3*pulse)+')';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.roundRect(x+8,y-48,44,34,4);ctx.stroke();
+  // Dragon on screen
+  ctx.save();ctx.globalAlpha=0.5+0.25*pulse;
+  ctx.font='17px serif';ctx.textAlign='center';
+  ctx.fillText('🐉',x+30,y-26);ctx.restore();
+  // Screen glow
+  var glw=ctx.createRadialGradient(x+30,y-31,3,x+30,y-31,42);
+  glw.addColorStop(0,'rgba(40,80,255,'+(0.1*pulse)+')');glw.addColorStop(1,'transparent');
+  ctx.fillStyle=glw;ctx.beginPath();ctx.arc(x+30,y-31,42,0,Math.PI*2);ctx.fill();
+  // Torches
+  for(var tc=0;tc<2;tc++){
+    var tx=x+(tc===0?3:57),ty2=y-36;
+    ctx.fillStyle='#4a2a08';ctx.beginPath();ctx.rect(tx-2,ty2,4,12);ctx.fill();
+    var fl=0.7+0.3*Math.sin(animF*0.15+tc*Math.PI);
+    var fg=ctx.createRadialGradient(tx,ty2-4,0,tx,ty2-4,7);
+    fg.addColorStop(0,'rgba(255,220,80,'+fl+')');fg.addColorStop(0.5,'rgba(255,100,20,'+(fl*0.6)+')');fg.addColorStop(1,'transparent');
+    ctx.fillStyle=fg;ctx.beginPath();ctx.arc(tx,ty2-4,7,0,Math.PI*2);ctx.fill();
+  }
+  labelAt(ctx,'🎬 Cinema',x+30,y-92,'rgba(200,220,255,.75)');
+}
+
+function openCinema(){
+  var html='<div style="text-align:center;font-size:.72em;color:#7af;margin-bottom:12px">Now Showing at the Cinema of Berk</div>';
+  html+='<div style="display:flex;flex-direction:column;gap:8px">';
+  HTTYD_MOVIES.forEach(function(m){
+    html+='<div style="background:rgba(255,255,255,.06);border:1px solid rgba(100,150,255,.25);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px">';
+    html+='<div style="font-size:2.4em;flex-shrink:0">'+m.emoji+'</div>';
+    html+='<div style="flex:1;min-width:0">';
+    html+='<div style="font-family:Cinzel;font-size:.8em;color:#ffd700">'+m.title+'</div>';
+    html+='<div style="font-size:.65em;color:#7af;margin:2px 0">'+m.year+'</div>';
+    html+='<div style="font-size:.67em;color:#bbb">'+m.desc+'</div>';
+    html+='</div>';
+    html+='<a href="https://www.youtube.com/results?search_query='+m.query+'" target="_blank" rel="noopener" style="flex-shrink:0;background:linear-gradient(135deg,#1a3a6a,#0a1a3a);border:1px solid rgba(100,180,255,.4);border-radius:8px;color:#aad4ff;font-size:.72em;padding:8px 10px;text-decoration:none;text-align:center;cursor:pointer">▶ Watch</a>';
+    html+='</div>';
+  });
+  html+='</div>';
+  html+='<div style="font-size:.6em;color:#555;margin-top:10px;text-align:center">Opens YouTube search in a new tab — find your preferred streaming service there</div>';
+  showPop('🎬 Cinema of Berk','',html);
+}
+
 // ============================================================
 // INVENTORY & RESOURCE GATHERING
 // ============================================================
