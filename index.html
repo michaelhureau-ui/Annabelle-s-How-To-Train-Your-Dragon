@@ -7971,13 +7971,13 @@ function dk(dir,on){keys[dir]=on;}
 var HTTYD_MOVIES=[
   {title:'How to Train Your Dragon', year:'2010', emoji:'🐉',
    desc:'Young Viking Hiccup befriends Toothless, a rare Night Fury, changing Berk forever.',
-   query:'how+to+train+your+dragon+2010+full+movie'},
+   url:'https://www.peacocktv.com/watch-online/movies/how-to-train-your-dragon/662df3a0-f270-3981-a890-ec44fc430fca'},
   {title:'How to Train Your Dragon 2', year:'2014', emoji:'🔥',
    desc:'Five years later, Hiccup discovers a secret ice cave — and a deadly new threat.',
-   query:'how+to+train+your+dragon+2+2014+full+movie'},
+   url:'https://www.peacocktv.com/watch-online/movies/how-to-train-your-dragon-2/e2dd0c8e-c536-389d-8713-d4b5327675aa'},
   {title:'The Hidden World', year:'2019', emoji:'🌀',
    desc:'Hiccup must let Toothless go when he discovers where dragons truly belong.',
-   query:'how+to+train+your+dragon+hidden+world+2019+full+movie'},
+   url:'https://www.peacocktv.com/watch-online/movies/how-to-train-your-dragon-the-hidden-world/3a7ad904-50f2-39d0-aa8b-21d153264498'},
 ];
 
 function drawCinema3D(x,y){
@@ -8042,11 +8042,11 @@ function openCinema(){
     html+='<div style="font-size:.65em;color:#7af;margin:2px 0">'+m.year+'</div>';
     html+='<div style="font-size:.67em;color:#bbb">'+m.desc+'</div>';
     html+='</div>';
-    html+='<a href="https://www.youtube.com/results?search_query='+m.query+'" target="_blank" rel="noopener" style="flex-shrink:0;background:linear-gradient(135deg,#1a3a6a,#0a1a3a);border:1px solid rgba(100,180,255,.4);border-radius:8px;color:#aad4ff;font-size:.72em;padding:8px 10px;text-decoration:none;text-align:center;cursor:pointer">▶ Watch</a>';
+    html+='<a href="'+m.url+'" target="_blank" rel="noopener" style="flex-shrink:0;background:linear-gradient(135deg,#1a3a6a,#0a1a3a);border:1px solid rgba(100,180,255,.4);border-radius:8px;color:#aad4ff;font-size:.72em;padding:8px 10px;text-decoration:none;text-align:center;cursor:pointer">▶ Watch</a>';
     html+='</div>';
   });
   html+='</div>';
-  html+='<div style="font-size:.6em;color:#555;margin-top:10px;text-align:center">Opens YouTube search in a new tab — find your preferred streaming service there</div>';
+  html+='<div style="font-size:.6em;color:#555;margin-top:10px;text-align:center">Streams on Peacock — a subscription may be required</div>';
   showPop('🎬 Cinema of Berk','',html);
 }
 
