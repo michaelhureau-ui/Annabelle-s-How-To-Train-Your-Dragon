@@ -8032,18 +8032,18 @@ function drawCinema3D(x,y){
 }
 
 function openCinema(){
-  var html='<div style="text-align:center;font-size:.72em;color:#7af;margin-bottom:12px">Now Showing at the Cinema of Berk</div>';
+  var html='<div style="text-align:center;font-size:.72em;color:#7af;margin-bottom:12px">Tap a movie to watch it on Peacock</div>';
   html+='<div style="display:flex;flex-direction:column;gap:8px">';
   HTTYD_MOVIES.forEach(function(m){
-    html+='<div style="background:rgba(255,255,255,.06);border:1px solid rgba(100,150,255,.25);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px">';
+    html+='<a href="'+m.url+'" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border:1px solid rgba(100,150,255,.25);border-radius:10px;padding:12px;text-decoration:none;cursor:pointer;transition:border-color .15s;" onmouseover="this.style.borderColor=\'rgba(100,180,255,.7)\'" onmouseout="this.style.borderColor=\'rgba(100,150,255,.25)\'">';
     html+='<div style="font-size:2.4em;flex-shrink:0">'+m.emoji+'</div>';
     html+='<div style="flex:1;min-width:0">';
     html+='<div style="font-family:Cinzel;font-size:.8em;color:#ffd700">'+m.title+'</div>';
     html+='<div style="font-size:.65em;color:#7af;margin:2px 0">'+m.year+'</div>';
     html+='<div style="font-size:.67em;color:#bbb">'+m.desc+'</div>';
     html+='</div>';
-    html+='<a href="'+m.url+'" target="_blank" rel="noopener" style="flex-shrink:0;background:linear-gradient(135deg,#1a3a6a,#0a1a3a);border:1px solid rgba(100,180,255,.4);border-radius:8px;color:#aad4ff;font-size:.72em;padding:8px 10px;text-decoration:none;text-align:center;cursor:pointer">▶ Watch</a>';
-    html+='</div>';
+    html+='<div style="flex-shrink:0;color:#7af;font-size:1.4em">▶</div>';
+    html+='</a>';
   });
   html+='</div>';
   html+='<div style="font-size:.6em;color:#555;margin-top:10px;text-align:center">Streams on Peacock — a subscription may be required</div>';
