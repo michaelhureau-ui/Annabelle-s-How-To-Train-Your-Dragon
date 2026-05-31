@@ -7871,7 +7871,15 @@ function showPop(title,text,extra){
   document.getElementById('pclosebtn').style.display='';
   document.getElementById('pop').classList.add('open');
 }
-function closePop(){document.getElementById('pop').classList.remove('open');battleState=null;}
+function closePop(){
+  // Stop any playing cinema iframe so its audio doesn't linger
+  var fr=document.querySelector('#pop iframe');
+  if(fr) fr.src='';
+  // Resume background music if cinema was playing
+  if(_bgMusic&&_bgMusic.paused&&!_musicMuted) _bgMusic.play().catch(function(){});
+  document.getElementById('pop').classList.remove('open');
+  battleState=null;
+}
 
 // ============================================================
 // CONTROLS
@@ -8032,6 +8040,10 @@ function drawCinema3D(x,y){
 }
 
 function openCinema(){
+  // Stop iframe and resume music when returning to movie list
+  var fr=document.querySelector('#pop iframe');
+  if(fr) fr.src='';
+  if(_bgMusic&&_bgMusic.paused&&!_musicMuted) _bgMusic.play().catch(function(){});
   var html='<div style="text-align:center;font-size:.72em;color:#7af;margin-bottom:12px">Tap a movie to watch best scenes right here</div>';
   html+='<div style="display:flex;flex-direction:column;gap:8px">';
   HTTYD_MOVIES.forEach(function(m,i){
@@ -8050,6 +8062,8 @@ function openCinema(){
 }
 
 function playCinemaVideo(i){
+  // Pause background music while video plays
+  if(_bgMusic&&!_bgMusic.paused) _bgMusic.pause();
   var m=HTTYD_MOVIES[i];
   var html='<div style="margin-bottom:8px">';
   html+='<div style="font-family:Cinzel;font-size:.82em;color:#ffd700;margin-bottom:4px">'+m.emoji+' '+m.title+' ('+m.year+')</div>';
