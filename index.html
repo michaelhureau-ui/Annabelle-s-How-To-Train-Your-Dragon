@@ -8000,10 +8000,45 @@ function _clearGame(){
   _gameState={};
 }
 
+function openActivityIntro(){
+  _clearGame();
+  var steps=[
+    {n:'1',icon:'💬',title:'Describe your game',body:'Type what you want to play in plain words. "A race where I boost my dragon to the finish" or "tap the glowing targets before they vanish" — anything works.'},
+    {n:'2',icon:'⚡',title:'Pick a difficulty',body:'Choose Easy, Medium, or Hard. Easy gives you more time and bigger zones. Hard is fast and unforgiving.'},
+    {n:'3',icon:'✦',title:'Hit Generate',body:'The builder reads your description, figures out what type of game fits best, and creates it — Dragon Race, Fishing Contest, or Target Challenge.'},
+    {n:'4',icon:'🎮',title:'Play anytime',body:'Your game is saved to your list. Play it whenever you want, beat your high score, or make more games.'},
+  ];
+  var stepsHtml='';
+  steps.forEach(function(s){
+    stepsHtml+=''
+      +'<div style="display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)">'
+      +'<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#4c1d95,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:.78em;color:#e9d5ff;flex-shrink:0;font-family:Cinzel;font-weight:bold">'+s.n+'</div>'
+      +'<div>'
+      +'<div style="font-size:.75em;color:#e9d5ff;font-family:Cinzel;margin-bottom:3px">'+s.icon+' '+s.title+'</div>'
+      +'<div style="font-size:.67em;color:#9ca3af;line-height:1.55">'+s.body+'</div>'
+      +'</div>'
+      +'</div>';
+  });
+  var examplesHtml=''
+    +'<div style="background:rgba(160,100,255,.07);border:1px solid rgba(160,100,255,.2);border-radius:10px;padding:11px;margin-top:12px;margin-bottom:14px">'
+    +'<div style="font-size:.65em;color:#a78bfa;font-family:Cinzel;margin-bottom:7px;letter-spacing:.04em">EXAMPLE IDEAS</div>'
+    +'<div style="font-size:.68em;color:#c4b5fd;line-height:2">💡 "fly my dragon faster than the AI to win the race"<br>💡 "catch fish by casting at the perfect moment"<br>💡 "hit every glowing target before it disappears"</div>'
+    +'</div>';
+  var html=''
+    +'<div style="font-size:.7em;color:#9ca3af;margin-bottom:11px;line-height:1.55">You describe the game you want to play — the builder takes your words and creates a mini-game from them, right here in Berk.</div>'
+    +'<div>'+stepsHtml+'</div>'
+    +examplesHtml
+    +'<button onclick="openActivityCreator()" style="width:100%;background:linear-gradient(135deg,#4c1d95,#2d1063);border:1px solid rgba(160,100,255,.6);border-radius:12px;color:#e9d5ff;font-family:Cinzel;font-size:.88em;padding:13px;cursor:pointer;letter-spacing:.04em">✦ Start Making a Game →</button>';
+  if(userActivities.length>0){
+    html+='<button onclick="openActivitiesPanel()" style="width:100%;margin-top:7px;background:transparent;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#555;font-size:.68em;padding:7px;cursor:pointer">← My Games</button>';
+  }
+  showPop('✦ How to Make a Game','',html);
+}
+
 function openActivitiesPanel(){
   _clearGame();
-  if(userActivities.length===0){openActivityCreator();return;}
-  var html='<button onclick="openActivityCreator()" style="width:100%;background:linear-gradient(135deg,#0a2a0a,#050f05);border:1px solid rgba(100,220,80,.35);border-radius:9px;color:#8f8;font-size:.78em;padding:9px;cursor:pointer;margin-bottom:10px">＋ Create New Activity</button>';
+  if(userActivities.length===0){openActivityIntro();return;}
+  var html='<button onclick="openActivityIntro()" style="width:100%;background:linear-gradient(135deg,#0a2a0a,#050f05);border:1px solid rgba(100,220,80,.35);border-radius:9px;color:#8f8;font-size:.78em;padding:9px;cursor:pointer;margin-bottom:10px">＋ Create New Activity</button>';
   html+='<div style="display:flex;flex-direction:column;gap:7px">';
   userActivities.forEach(function(a){
     var t=ACTIVITY_TYPES.find(function(x){return x.id===a.type;})||ACTIVITY_TYPES[0];
@@ -8053,9 +8088,7 @@ function openActivityCreator(){
     +'<div style="display:flex;gap:6px">'+diffBtns+'</div>'
     +'</div>'
     +'<button onclick="_generateGame()" style="width:100%;background:linear-gradient(135deg,#4c1d95,#2d1063);border:1px solid rgba(160,100,255,.6);border-radius:12px;color:#e9d5ff;font-family:Cinzel;font-size:.88em;padding:13px;cursor:pointer;letter-spacing:.04em">✦ Generate Game</button>';
-  if(userActivities.length>0){
-    html+='<button onclick="openActivitiesPanel()" style="width:100%;margin-top:7px;background:transparent;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#555;font-size:.68em;padding:7px;cursor:pointer">← Back to my games</button>';
-  }
+  html+='<button onclick="openActivityIntro()" style="width:100%;margin-top:7px;background:transparent;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#555;font-size:.68em;padding:7px;cursor:pointer">← How does this work?</button>';
   showPop('✦ Make a Game','',html);
 }
 
