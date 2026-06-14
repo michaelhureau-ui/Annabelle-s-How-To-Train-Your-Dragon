@@ -8050,6 +8050,7 @@ function openActivitiesPanel(){
     if(a.highScore>0) html+='<div style="font-size:.64em;color:#ffd700">🏆 Best: '+a.highScore+'</div>';
     html+='</div>';
     html+='<button onclick="launchActivity('+a.id+')" style="background:linear-gradient(135deg,#1a3a6a,#0a1a3a);border:1px solid rgba(100,180,255,.4);border-radius:7px;color:#adf;font-size:.7em;padding:6px 10px;cursor:pointer">▶ Play</button>';
+    html+='<button onclick="editActivity('+a.id+')" style="background:rgba(160,100,255,.15);border:1px solid rgba(160,100,255,.3);border-radius:7px;color:#c8a8ff;font-size:.7em;padding:6px 8px;cursor:pointer">✏️</button>';
     html+='<button onclick="deleteActivity('+a.id+')" style="background:rgba(180,40,40,.25);border:1px solid rgba(255,80,80,.25);border-radius:7px;color:#f88;font-size:.7em;padding:6px 8px;cursor:pointer">🗑</button>';
     html+='</div>';
   });
@@ -8185,6 +8186,45 @@ function _confirmCreateGame(encodedName,type,diff){
 }
 function deleteActivity(id){
   userActivities=userActivities.filter(function(a){return a.id!==id;});
+  openActivitiesPanel();
+}
+function editActivity(id){
+  var act=userActivities.find(function(a){return a.id===id;}); if(!act) return;
+  _clearGame();
+  window._editId=id;
+  window._actDiff=act.diff||'medium';
+  var diffBtns='';
+  ['easy','medium','hard'].forEach(function(d){
+    var sel=d===act.diff?'background:rgba(160,100,255,.14);border-color:rgba(160,100,255,.7);color:#c8a8ff;':'color:#666;';
+    diffBtns+='<button class="act-diff" data-diff="'+d+'" onclick="selectActDiff(\''+d+'\')" style="flex:1;border:1px solid rgba(160,100,255,.2);border-radius:8px;padding:7px;font-size:.74em;cursor:pointer;background:rgba(255,255,255,.03);'+sel+'">'+DIFFICULTY[d].label+'</button>';
+  });
+  var t=ACTIVITY_TYPES.find(function(x){return x.id===act.type;})||ACTIVITY_TYPES[0];
+  var html=''
+    +'<div style="background:rgba(20,12,36,0.85);border:1px solid rgba(160,100,255,.35);border-radius:14px;padding:13px;margin-bottom:11px">'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
+    +'<div style="font-size:1.6em">'+t.emoji+'</div>'
+    +'<div><div style="font-family:Cinzel;color:#ffd700;font-size:.8em">'+act.name+'</div>'
+    +'<div style="font-size:.63em;color:#c8a8ff">'+t.name+'</div></div>'
+    +'</div>'
+    +'<div style="font-size:.68em;color:#888;margin-bottom:5px">Rename</div>'
+    +'<input id="edit-name" value="'+act.name.replace(/"/g,'&quot;')+'" maxlength="28" style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(160,100,255,.25);border-radius:9px;color:#e8e0ff;padding:9px 11px;font-size:.8em;outline:none;box-sizing:border-box"/>'
+    +'</div>'
+    +'<div style="margin-bottom:13px">'
+    +'<div style="font-size:.68em;color:#888;margin-bottom:5px;letter-spacing:.03em">DIFFICULTY</div>'
+    +'<div style="display:flex;gap:6px">'+diffBtns+'</div>'
+    +'</div>'
+    +'<button onclick="_saveEdit()" style="width:100%;background:linear-gradient(135deg,#4c1d95,#2d1063);border:1px solid rgba(160,100,255,.6);border-radius:12px;color:#e9d5ff;font-family:Cinzel;font-size:.88em;padding:12px;cursor:pointer;letter-spacing:.04em">✔ Save Changes</button>'
+    +'<button onclick="openActivitiesPanel()" style="width:100%;margin-top:7px;background:transparent;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#555;font-size:.68em;padding:7px;cursor:pointer">← Cancel</button>';
+  showPop('✏️ Edit Game','',html);
+}
+function _saveEdit(){
+  var id=window._editId;
+  var act=userActivities.find(function(a){return a.id===id;}); if(!act) return;
+  var nameEl=document.getElementById('edit-name');
+  var name=(nameEl?nameEl.value:'').trim()||act.name;
+  act.name=name;
+  act.diff=window._actDiff||act.diff;
+  showFlash('✔ "'+name+'" updated!');
   openActivitiesPanel();
 }
 function launchActivity(id){
@@ -8596,6 +8636,8 @@ var _lastUpTap=0, _upTapTimer=null;
 var _lastDownTap=0, _downTapTimer=null;
 
 document.addEventListener('keydown',function(e){
+  var tag=(e.target||{}).tagName||'';
+  if(tag==='INPUT'||tag==='TEXTAREA') return;
   if(e.key==='ArrowLeft'||e.key==='a') keys.left=1;
   if(e.key==='ArrowRight'||e.key==='d') keys.right=1;
   if(e.key==='ArrowDown'||e.key==='s'){
@@ -8645,6 +8687,8 @@ document.addEventListener('keydown',function(e){
   if(e.key==='3') setMode('fly');
 });
 document.addEventListener('keyup',function(e){
+  var tag=(e.target||{}).tagName||'';
+  if(tag==='INPUT'||tag==='TEXTAREA') return;
   if(e.key==='ArrowLeft'||e.key==='a') keys.left=0;
   if(e.key==='ArrowRight'||e.key==='d') keys.right=0;
   if(e.key==='ArrowUp'||e.key==='w') keys.up=0;
