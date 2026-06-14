@@ -552,7 +552,7 @@ box-shadow:0 0 18px rgba(0,100,255,.2);}
   <button class="ab ahw" onclick="enterHiddenWorld()">🌀 Hidden World</button>
   <button class="ab arsc" onclick="startRescue()">🆘 Rescue</button>
   <div style="height:1px;background:rgba(255,215,0,.25);margin:2px 0;"></div>
-  <button class="ab" style="background:linear-gradient(135deg,#1a2a4a,#0a1228);border:1px solid rgba(100,160,255,.4);font-size:1.1em;" onclick="openActivitiesPanel()">＋ Make a Game</button>
+  <button class="ab" style="background:linear-gradient(135deg,#1a2a4a,#0a1228);border:1px solid rgba(100,160,255,.4);font-size:0.7em;" onclick="openActivitiesPanel()">＋ Make a Game</button>
   <button class="ab ahatch" onclick="openHatchery()">🥚 Hatchery</button>
   <button class="ab" style="background:linear-gradient(135deg,#7a1010,#4a0808);" onclick="teleportToFort()">⚓ Hunter Fort</button>
   <button class="ab" style="background:linear-gradient(135deg,#0a3a6a,#051828);" onclick="teleportToOcean()">🌊 Ocean</button>
@@ -8050,6 +8050,7 @@ function openActivitiesPanel(){
     if(a.highScore>0) html+='<div style="font-size:.64em;color:#ffd700">🏆 Best: '+a.highScore+'</div>';
     html+='</div>';
     html+='<button onclick="launchActivity('+a.id+')" style="background:linear-gradient(135deg,#1a3a6a,#0a1a3a);border:1px solid rgba(100,180,255,.4);border-radius:7px;color:#adf;font-size:.7em;padding:6px 10px;cursor:pointer">▶ Play</button>';
+    html+='<button onclick="editActivity('+a.id+')" style="background:rgba(160,100,255,.15);border:1px solid rgba(160,100,255,.3);border-radius:7px;color:#c8a8ff;font-size:.7em;padding:6px 8px;cursor:pointer">✏️</button>';
     html+='<button onclick="deleteActivity('+a.id+')" style="background:rgba(180,40,40,.25);border:1px solid rgba(255,80,80,.25);border-radius:7px;color:#f88;font-size:.7em;padding:6px 8px;cursor:pointer">🗑</button>';
     html+='</div>';
   });
@@ -8057,44 +8058,69 @@ function openActivitiesPanel(){
   showPop('🎮 Your Activities','',html);
 }
 
-function openActivityCreator(){
+function openActivityCreator(preType){
   _clearGame();
+  window._actType=preType||'';
   window._actDiff='medium';
+  // Step 1: pick a game type
+  var typeCards='';
+  ACTIVITY_TYPES.forEach(function(t){
+    typeCards+=''
+      +'<div onclick="openActivityCreator2(\''+t.id+'\')" style="background:rgba(255,255,255,.04);border:1px solid rgba(160,100,255,.25);border-radius:13px;padding:14px 8px;text-align:center;cursor:pointer;transition:background .15s" '
+      +'onmouseover="this.style.background=\'rgba(160,100,255,.14)\';this.style.borderColor=\'rgba(160,100,255,.7)\'" '
+      +'onmouseout="this.style.background=\'rgba(255,255,255,.04)\';this.style.borderColor=\'rgba(160,100,255,.25)\'">'
+      +'<div style="font-size:2.2em;margin-bottom:7px">'+t.emoji+'</div>'
+      +'<div style="font-family:Cinzel;font-size:.72em;color:#e9d5ff;margin-bottom:5px">'+t.name+'</div>'
+      +'<div style="font-size:.62em;color:#888;line-height:1.45">'+t.desc+'</div>'
+      +'</div>';
+  });
+  var html=''
+    +'<div style="font-size:.7em;color:#9ca3af;margin-bottom:12px">Pick what kind of game you want to make:</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">'+typeCards+'</div>';
+  if(userActivities.length>0){
+    html+='<button onclick="openActivitiesPanel()" style="width:100%;background:transparent;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#555;font-size:.68em;padding:7px;cursor:pointer">← My Games</button>';
+  }
+  showPop('🎮 Make a Game','',html);
+}
+
+function openActivityCreator2(type){
+  window._actType=type;
+  window._actDiff='medium';
+  var t=ACTIVITY_TYPES.find(function(x){return x.id===type;})||ACTIVITY_TYPES[0];
   var diffBtns='';
   ['easy','medium','hard'].forEach(function(d){
     var sel=d==='medium'?'background:rgba(160,100,255,.14);border-color:rgba(160,100,255,.7);color:#c8a8ff;':'color:#666;';
     diffBtns+='<button class="act-diff" data-diff="'+d+'" onclick="selectActDiff(\''+d+'\')" style="flex:1;border:1px solid rgba(160,100,255,.2);border-radius:8px;padding:7px;font-size:.74em;cursor:pointer;background:rgba(255,255,255,.03);'+sel+'">'+DIFFICULTY[d].label+'</button>';
   });
-  var chips=[
-    {label:'🏁 a dragon race',prompt:'a racing game where I fly my dragon faster than the AI dragon'},
-    {label:'🎣 a fishing contest',prompt:'catch fish by casting my line at exactly the right moment'},
-    {label:'🎯 a target challenge',prompt:'tap the glowing targets as fast as I can before they disappear'},
-  ];
-  var chipHtml='';
-  chips.forEach(function(c){
-    chipHtml+='<button onclick="_fillActPrompt(\''+c.prompt.replace(/'/g,"\\'")+'\')" style="background:rgba(160,100,255,.1);border:1px solid rgba(160,100,255,.28);border-radius:20px;color:#c8a8ff;font-size:.62em;padding:4px 9px;cursor:pointer;white-space:nowrap">'+c.label+'</button>';
-  });
   var html=''
-    +'<div style="background:rgba(20,12,36,0.85);border:1px solid rgba(160,100,255,.35);border-radius:14px;padding:13px;margin-bottom:11px">'
-    +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:9px">'
-    +'<div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:.85em;flex-shrink:0">✦</div>'
-    +'<div style="font-size:.7em;color:#c8a8ff;font-family:Cinzel;letter-spacing:.04em">Describe the game you want to make</div>'
+    +'<div style="display:flex;align-items:center;gap:10px;background:rgba(160,100,255,.08);border:1px solid rgba(160,100,255,.28);border-radius:12px;padding:12px;margin-bottom:13px">'
+    +'<div style="font-size:2em">'+t.emoji+'</div>'
+    +'<div><div style="font-family:Cinzel;color:#e9d5ff;font-size:.8em">'+t.name+'</div>'
+    +'<div style="font-size:.65em;color:#9ca3af;margin-top:2px">'+t.desc+'</div></div>'
     +'</div>'
-    +'<textarea id="act-prompt" rows="3" placeholder="e.g. a racing game where I fly my dragon through clouds and boost to win..." style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(160,100,255,.25);border-radius:9px;color:#e8e0ff;padding:9px 11px;font-size:.8em;resize:none;outline:none;box-sizing:border-box;line-height:1.55;font-family:inherit"></textarea>'
-    +'<div style="display:flex;gap:5px;margin-top:7px;flex-wrap:wrap">'+chipHtml+'</div>'
+    +'<div style="margin-bottom:11px">'
+    +'<div style="font-size:.68em;color:#888;margin-bottom:5px">Name your game</div>'
+    +'<input id="act-name2" placeholder="e.g. Berk Speed Challenge" maxlength="28" style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(160,100,255,.25);border-radius:9px;color:#e8e0ff;padding:9px 11px;font-size:.8em;outline:none;box-sizing:border-box"/>'
     +'</div>'
-    +'<div style="margin-bottom:13px">'
+    +'<div style="margin-bottom:14px">'
     +'<div style="font-size:.68em;color:#888;margin-bottom:5px;letter-spacing:.03em">DIFFICULTY</div>'
     +'<div style="display:flex;gap:6px">'+diffBtns+'</div>'
     +'</div>'
-    +'<button onclick="_generateGame()" style="width:100%;background:linear-gradient(135deg,#4c1d95,#2d1063);border:1px solid rgba(160,100,255,.6);border-radius:12px;color:#e9d5ff;font-family:Cinzel;font-size:.88em;padding:13px;cursor:pointer;letter-spacing:.04em">✦ Generate Game</button>';
-  html+='<button onclick="openActivityIntro()" style="width:100%;margin-top:7px;background:transparent;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#555;font-size:.68em;padding:7px;cursor:pointer">← How does this work?</button>';
-  showPop('✦ Make a Game','',html);
+    +'<button onclick="_createGame2()" style="width:100%;background:linear-gradient(135deg,#4c1d95,#2d1063);border:1px solid rgba(160,100,255,.6);border-radius:12px;color:#e9d5ff;font-family:Cinzel;font-size:.88em;padding:13px;cursor:pointer;letter-spacing:.04em">🎮 Create Game</button>'
+    +'<button onclick="openActivityCreator()" style="width:100%;margin-top:7px;background:transparent;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#555;font-size:.68em;padding:7px;cursor:pointer">← Pick a different type</button>';
+  showPop('🎮 Make a Game','',html);
 }
 
-function _fillActPrompt(text){
-  var el=document.getElementById('act-prompt');
-  if(el){el.value=text;el.focus();}
+function _createGame2(){
+  var nameEl=document.getElementById('act-name2');
+  var name=(nameEl?nameEl.value:'').trim();
+  if(!name){showFlash('Give your game a name first!');return;}
+  var type=window._actType||'race';
+  var diff=window._actDiff||'medium';
+  userActivities.push({id:Date.now(),name:name,type:type,diff:diff,highScore:0});
+  closePop();
+  showFlash('🎮 "'+name+'" created!');
+  setTimeout(openActivitiesPanel,350);
 }
 
 function selectActDiff(d){
@@ -8102,78 +8128,6 @@ function selectActDiff(d){
   document.querySelectorAll('.act-diff').forEach(function(el){el.style.borderColor='rgba(160,100,255,.2)';el.style.background='rgba(255,255,255,.03)';el.style.color='#666';});
   var sel=document.querySelector('.act-diff[data-diff="'+d+'"]');
   if(sel){sel.style.borderColor='rgba(160,100,255,.7)';sel.style.background='rgba(160,100,255,.14)';sel.style.color='#c8a8ff';}
-}
-
-function _generateGame(){
-  var prompt=(document.getElementById('act-prompt')||{}).value||'';
-  prompt=prompt.trim();
-  if(!prompt){showFlash('Describe your game idea first!');return;}
-  var diff=window._actDiff||'medium';
-
-  // Show streaming "generating" state
-  var body=document.getElementById('pbody'); if(!body) return;
-  var thinkLines=[
-    'Reading your idea...',
-    'Designing the mechanics...',
-    'Tuning the difficulty...',
-    'Building your game...',
-  ];
-  var lineIdx=0;
-  body.innerHTML=''
-    +'<div style="padding:18px 6px">'
-    +'<div style="display:flex;align-items:center;gap:9px;margin-bottom:16px">'
-    +'<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:.9em;flex-shrink:0">✦</div>'
-    +'<div style="font-size:.72em;color:#c8a8ff;font-family:Cinzel">Making your game...</div>'
-    +'</div>'
-    +'<div style="background:rgba(255,255,255,.04);border:1px solid rgba(160,100,255,.2);border-radius:10px;padding:11px;margin-bottom:12px">'
-    +'<div style="font-size:.7em;color:#888;margin-bottom:5px">Your idea</div>'
-    +'<div style="font-size:.75em;color:#e8e0ff;font-style:italic;line-height:1.5">"'+prompt.slice(0,80)+(prompt.length>80?'...':'')+'"</div>'
-    +'</div>'
-    +'<div id="gen-status" style="font-size:.72em;color:#a78bfa;min-height:1.4em">'+thinkLines[0]+'</div>'
-    +'<div id="gen-bar" style="margin-top:10px;background:rgba(160,100,255,.12);border-radius:99px;height:5px;overflow:hidden">'
-    +'<div id="gen-fill" style="height:100%;width:5%;background:linear-gradient(90deg,#7c3aed,#c084fc);border-radius:99px;transition:width .3s ease"></div>'
-    +'</div>'
-    +'</div>';
-
-  var pct=5;
-  var barInt=setInterval(function(){
-    pct=Math.min(92,pct+(Math.random()*8+3));
-    var fill=document.getElementById('gen-fill');
-    if(fill) fill.style.width=pct.toFixed(0)+'%';
-    var status=document.getElementById('gen-status');
-    if(status&&lineIdx<thinkLines.length-1){lineIdx++;status.textContent=thinkLines[lineIdx];}
-  },480);
-
-  setTimeout(function(){
-    clearInterval(barInt);
-    var fill=document.getElementById('gen-fill'); if(fill) fill.style.width='100%';
-
-    // Infer game type from keywords
-    var p=prompt.toLowerCase();
-    var type='race';
-    if(/fish|catch|cast|hook|reel|sea|ocean|water/.test(p)) type='fish';
-    else if(/target|hit|tap|aim|shoot|glow|bullseye|archery|spot/.test(p)) type='train';
-
-    // Generate a display name from the first 4–5 words
-    var nameWords=prompt.replace(/[^a-zA-Z0-9 ]/g,'').split(/\s+/).slice(0,5).join(' ');
-    var name=nameWords.charAt(0).toUpperCase()+nameWords.slice(1);
-    if(name.length>26) name=name.slice(0,24)+'…';
-
-    var t=ACTIVITY_TYPES.find(function(x){return x.id===type;})||ACTIVITY_TYPES[0];
-
-    setTimeout(function(){
-      var body2=document.getElementById('pbody'); if(!body2) return;
-      body2.innerHTML=''
-        +'<div style="background:rgba(20,12,36,0.9);border:1px solid rgba(160,100,255,.45);border-radius:14px;padding:16px;text-align:center;margin-bottom:13px">'
-        +'<div style="font-size:2.6em;margin-bottom:8px">'+t.emoji+'</div>'
-        +'<div style="font-family:Cinzel;color:#ffd700;font-size:.92em;margin-bottom:5px">'+name+'</div>'
-        +'<div style="font-size:.65em;color:#c8a8ff;margin-bottom:8px">'+t.name+' · '+DIFFICULTY[diff].label+'</div>'
-        +'<div style="font-size:.63em;color:#888;font-style:italic;line-height:1.5">"'+prompt.slice(0,70)+(prompt.length>70?'...':'')+'"</div>'
-        +'</div>'
-        +'<button onclick="_confirmCreateGame(\''+encodeURIComponent(name)+'\',\''+type+'\',\''+diff+'\')" style="width:100%;background:linear-gradient(135deg,#4c1d95,#2d1063);border:1px solid rgba(160,100,255,.6);border-radius:12px;color:#e9d5ff;font-family:Cinzel;font-size:.88em;padding:13px;cursor:pointer;letter-spacing:.04em">🎮 Add to My Games</button>'
-        +'<button onclick="openActivityCreator()" style="width:100%;margin-top:7px;background:transparent;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#555;font-size:.68em;padding:7px;cursor:pointer">← Try a different idea</button>';
-    },300);
-  },2100);
 }
 
 function _confirmCreateGame(encodedName,type,diff){
@@ -8185,6 +8139,45 @@ function _confirmCreateGame(encodedName,type,diff){
 }
 function deleteActivity(id){
   userActivities=userActivities.filter(function(a){return a.id!==id;});
+  openActivitiesPanel();
+}
+function editActivity(id){
+  var act=userActivities.find(function(a){return a.id===id;}); if(!act) return;
+  _clearGame();
+  window._editId=id;
+  window._actDiff=act.diff||'medium';
+  var diffBtns='';
+  ['easy','medium','hard'].forEach(function(d){
+    var sel=d===act.diff?'background:rgba(160,100,255,.14);border-color:rgba(160,100,255,.7);color:#c8a8ff;':'color:#666;';
+    diffBtns+='<button class="act-diff" data-diff="'+d+'" onclick="selectActDiff(\''+d+'\')" style="flex:1;border:1px solid rgba(160,100,255,.2);border-radius:8px;padding:7px;font-size:.74em;cursor:pointer;background:rgba(255,255,255,.03);'+sel+'">'+DIFFICULTY[d].label+'</button>';
+  });
+  var t=ACTIVITY_TYPES.find(function(x){return x.id===act.type;})||ACTIVITY_TYPES[0];
+  var html=''
+    +'<div style="background:rgba(20,12,36,0.85);border:1px solid rgba(160,100,255,.35);border-radius:14px;padding:13px;margin-bottom:11px">'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
+    +'<div style="font-size:1.6em">'+t.emoji+'</div>'
+    +'<div><div style="font-family:Cinzel;color:#ffd700;font-size:.8em">'+act.name+'</div>'
+    +'<div style="font-size:.63em;color:#c8a8ff">'+t.name+'</div></div>'
+    +'</div>'
+    +'<div style="font-size:.68em;color:#888;margin-bottom:5px">Rename</div>'
+    +'<input id="edit-name" value="'+act.name.replace(/"/g,'&quot;')+'" maxlength="28" style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(160,100,255,.25);border-radius:9px;color:#e8e0ff;padding:9px 11px;font-size:.8em;outline:none;box-sizing:border-box"/>'
+    +'</div>'
+    +'<div style="margin-bottom:13px">'
+    +'<div style="font-size:.68em;color:#888;margin-bottom:5px;letter-spacing:.03em">DIFFICULTY</div>'
+    +'<div style="display:flex;gap:6px">'+diffBtns+'</div>'
+    +'</div>'
+    +'<button onclick="_saveEdit()" style="width:100%;background:linear-gradient(135deg,#4c1d95,#2d1063);border:1px solid rgba(160,100,255,.6);border-radius:12px;color:#e9d5ff;font-family:Cinzel;font-size:.88em;padding:12px;cursor:pointer;letter-spacing:.04em">✔ Save Changes</button>'
+    +'<button onclick="openActivitiesPanel()" style="width:100%;margin-top:7px;background:transparent;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#555;font-size:.68em;padding:7px;cursor:pointer">← Cancel</button>';
+  showPop('✏️ Edit Game','',html);
+}
+function _saveEdit(){
+  var id=window._editId;
+  var act=userActivities.find(function(a){return a.id===id;}); if(!act) return;
+  var nameEl=document.getElementById('edit-name');
+  var name=(nameEl?nameEl.value:'').trim()||act.name;
+  act.name=name;
+  act.diff=window._actDiff||act.diff;
+  showFlash('✔ "'+name+'" updated!');
   openActivitiesPanel();
 }
 function launchActivity(id){
@@ -8596,6 +8589,8 @@ var _lastUpTap=0, _upTapTimer=null;
 var _lastDownTap=0, _downTapTimer=null;
 
 document.addEventListener('keydown',function(e){
+  var tag=(e.target||{}).tagName||'';
+  if(tag==='INPUT'||tag==='TEXTAREA') return;
   if(e.key==='ArrowLeft'||e.key==='a') keys.left=1;
   if(e.key==='ArrowRight'||e.key==='d') keys.right=1;
   if(e.key==='ArrowDown'||e.key==='s'){
@@ -8645,6 +8640,8 @@ document.addEventListener('keydown',function(e){
   if(e.key==='3') setMode('fly');
 });
 document.addEventListener('keyup',function(e){
+  var tag=(e.target||{}).tagName||'';
+  if(tag==='INPUT'||tag==='TEXTAREA') return;
   if(e.key==='ArrowLeft'||e.key==='a') keys.left=0;
   if(e.key==='ArrowRight'||e.key==='d') keys.right=0;
   if(e.key==='ArrowUp'||e.key==='w') keys.up=0;
