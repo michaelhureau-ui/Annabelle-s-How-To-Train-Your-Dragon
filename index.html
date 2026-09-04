@@ -8337,8 +8337,81 @@ var HTTYD_MOVIES=[
    desc:'Hiccup and Toothless reunite — the most emotional scene in the trilogy.',
    vid:'udJmk0QxcrM'},
 ];
+var HTTYD_SHOWS=[
+  {title:'Riders of Berk', year:'2012', emoji:'🛡️',
+   desc:'Hiccup and the gang train their dragons and defend Berk from new threats.',
+   vid:'Y2-Kvv5MFXY'},
+  {title:'Defenders of Berk', year:'2013', emoji:'⚔️',
+   desc:'The dragon riders face Dagur the Deranged and new enemies across the archipelago.',
+   vid:'Ywq_BdUJVkA'},
+  {title:'Race to the Edge', year:'2015', emoji:'🌍',
+   desc:'Hiccup and Toothless discover the Dragon Eye and explore the ends of the world.',
+   vid:'xF2zAlVa7yw'},
+  {title:'Rescue Riders', year:'2019', emoji:'🐲',
+   desc:'Twin dragon riders Dak and Leyla protect their friends with the help of their dragon pack.',
+   vid:'7uCf0fARJGI'},
+  {title:'The Nine Realms', year:'2021', emoji:'🌌',
+   desc:'Modern-day kids discover a hidden world of dragons beneath the Earth.',
+   vid:'sHdSgJlEQYM'},
+];
+var _cinemaTab='movies';
 
-function drawCinema3D(x,y){
+function openCinema(){
+  var fr=document.querySelector('#pop iframe');
+  if(fr) fr.src='';
+  if(_bgMusic&&_bgMusic.paused&&!_musicMuted) _bgMusic.play().catch(function(){});
+  _renderCinema();
+}
+
+function _setCinemaTab(tab){
+  _cinemaTab=tab;
+  _renderCinema();
+}
+
+function _renderCinema(){
+  var isMovies=_cinemaTab==='movies';
+  var list=isMovies?HTTYD_MOVIES:HTTYD_SHOWS;
+  var tabBar=''
+    +'<div style="display:flex;gap:0;margin-bottom:12px;border-radius:9px;overflow:hidden;border:1px solid rgba(100,150,255,.25)">'
+    +'<button onclick="_setCinemaTab(\'movies\')" style="flex:1;padding:8px;font-size:.73em;cursor:pointer;font-family:Cinzel;border:none;'+(isMovies?'background:rgba(100,150,255,.25);color:#ffd700;':'background:rgba(255,255,255,.04);color:#666;')+'">'
+    +'🎬 Movies</button>'
+    +'<button onclick="_setCinemaTab(\'shows\')" style="flex:1;padding:8px;font-size:.73em;cursor:pointer;font-family:Cinzel;border:none;border-left:1px solid rgba(100,150,255,.25);'+((!isMovies)?'background:rgba(100,150,255,.25);color:#ffd700;':'background:rgba(255,255,255,.04);color:#666;')+'">'
+    +'📺 TV Shows</button>'
+    +'</div>';
+  var html=tabBar;
+  html+='<div style="text-align:center;font-size:.68em;color:#7af;margin-bottom:10px">Tap to watch '+(isMovies?'best scenes':'episodes & clips')+' right here</div>';
+  html+='<div style="display:flex;flex-direction:column;gap:8px">';
+  list.forEach(function(m,i){
+    html+='<div onclick="_playCinemaItem('+i+',\''+_cinemaTab+'\')" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border:1px solid rgba(100,150,255,.25);border-radius:10px;padding:12px;cursor:pointer;" onmouseover="this.style.borderColor=\'rgba(100,180,255,.7)\'" onmouseout="this.style.borderColor=\'rgba(100,150,255,.25)\'">';
+    html+='<div style="font-size:2.2em;flex-shrink:0">'+m.emoji+'</div>';
+    html+='<div style="flex:1;min-width:0">';
+    html+='<div style="font-family:Cinzel;font-size:.78em;color:#ffd700">'+m.title+'</div>';
+    html+='<div style="font-size:.63em;color:#7af;margin:2px 0">'+m.year+'</div>';
+    html+='<div style="font-size:.65em;color:#bbb">'+m.desc+'</div>';
+    html+='</div>';
+    html+='<div style="flex-shrink:0;color:#7af;font-size:1.3em">▶</div>';
+    html+='</div>';
+  });
+  html+='</div>';
+  showPop('🎬 Cinema of Berk','',html);
+}
+
+function _playCinemaItem(i,tab){
+  if(_bgMusic&&!_bgMusic.paused) _bgMusic.pause();
+  var list=(tab==='movies')?HTTYD_MOVIES:HTTYD_SHOWS;
+  var m=list[i];
+  var html='<div style="margin-bottom:8px">';
+  html+='<div style="font-family:Cinzel;font-size:.8em;color:#ffd700;margin-bottom:4px">'+m.emoji+' '+m.title+' ('+m.year+')</div>';
+  html+='<div style="position:relative;width:100%;padding-top:56.25%;border-radius:8px;overflow:hidden;">';
+  html+='<iframe src="https://www.youtube.com/embed/'+m.vid+'?autoplay=1&rel=0" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allow="autoplay;encrypted-media" allowfullscreen></iframe>';
+  html+='</div></div>';
+  html+='<button onclick="openCinema()" style="margin-top:10px;background:linear-gradient(135deg,#1a1a3a,#0a0a1a);border:1px solid rgba(100,150,255,.4);border-radius:8px;color:#aad4ff;font-size:.75em;padding:7px 14px;cursor:pointer;">← Back</button>';
+  showPop('🎬 Cinema of Berk','',html);
+}
+
+function playCinemaVideo(i){
+  _playCinemaItem(i,'movies');
+}(x,y){
   // Shadow
   ctx.fillStyle='rgba(0,0,0,0.2)';
   ctx.beginPath();ctx.ellipse(x+30,y+5,44,9,0,0,Math.PI*2);ctx.fill();
@@ -8387,41 +8460,6 @@ function drawCinema3D(x,y){
     ctx.fillStyle=fg;ctx.beginPath();ctx.arc(tx,ty2-4,7,0,Math.PI*2);ctx.fill();
   }
   labelAt(ctx,'🎬 Cinema',x+30,y-92,'rgba(200,220,255,.75)');
-}
-
-function openCinema(){
-  // Stop iframe and resume music when returning to movie list
-  var fr=document.querySelector('#pop iframe');
-  if(fr) fr.src='';
-  if(_bgMusic&&_bgMusic.paused&&!_musicMuted) _bgMusic.play().catch(function(){});
-  var html='<div style="text-align:center;font-size:.72em;color:#7af;margin-bottom:12px">Tap a movie to watch best scenes right here</div>';
-  html+='<div style="display:flex;flex-direction:column;gap:8px">';
-  HTTYD_MOVIES.forEach(function(m,i){
-    html+='<div onclick="playCinemaVideo('+i+')" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border:1px solid rgba(100,150,255,.25);border-radius:10px;padding:12px;cursor:pointer;" onmouseover="this.style.borderColor=\'rgba(100,180,255,.7)\'" onmouseout="this.style.borderColor=\'rgba(100,150,255,.25)\'">';
-    html+='<div style="font-size:2.4em;flex-shrink:0">'+m.emoji+'</div>';
-    html+='<div style="flex:1;min-width:0">';
-    html+='<div style="font-family:Cinzel;font-size:.8em;color:#ffd700">'+m.title+'</div>';
-    html+='<div style="font-size:.65em;color:#7af;margin:2px 0">'+m.year+'</div>';
-    html+='<div style="font-size:.67em;color:#bbb">'+m.desc+'</div>';
-    html+='</div>';
-    html+='<div style="flex-shrink:0;color:#7af;font-size:1.4em">▶</div>';
-    html+='</div>';
-  });
-  html+='</div>';
-  showPop('🎬 Cinema of Berk','',html);
-}
-
-function playCinemaVideo(i){
-  // Pause background music while video plays
-  if(_bgMusic&&!_bgMusic.paused) _bgMusic.pause();
-  var m=HTTYD_MOVIES[i];
-  var html='<div style="margin-bottom:8px">';
-  html+='<div style="font-family:Cinzel;font-size:.82em;color:#ffd700;margin-bottom:4px">'+m.emoji+' '+m.title+' ('+m.year+')</div>';
-  html+='<div style="position:relative;width:100%;padding-top:56.25%;border-radius:8px;overflow:hidden;">';
-  html+='<iframe src="https://www.youtube.com/embed/'+m.vid+'?autoplay=1&rel=0" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allow="autoplay;encrypted-media" allowfullscreen></iframe>';
-  html+='</div></div>';
-  html+='<button onclick="openCinema()" style="margin-top:10px;background:linear-gradient(135deg,#1a1a3a,#0a0a1a);border:1px solid rgba(100,150,255,.4);border-radius:8px;color:#aad4ff;font-size:.75em;padding:7px 14px;cursor:pointer;">← Back to movies</button>';
-  showPop('🎬 Cinema of Berk','',html);
 }
 
 // ============================================================
