@@ -8411,7 +8411,9 @@ function _playCinemaItem(i,tab){
 
 function playCinemaVideo(i){
   _playCinemaItem(i,'movies');
-}(x,y){
+}
+
+function drawCinema3D(x,y){
   // Shadow
   ctx.fillStyle='rgba(0,0,0,0.2)';
   ctx.beginPath();ctx.ellipse(x+30,y+5,44,9,0,0,Math.PI*2);ctx.fill();
