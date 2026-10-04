@@ -552,6 +552,7 @@ box-shadow:0 0 18px rgba(0,100,255,.2);}
   <button class="ab ahw" onclick="enterHiddenWorld()">🌀 Hidden World</button>
   <button class="ab arsc" onclick="startRescue()">🆘 Rescue</button>
   <div style="height:1px;background:rgba(255,215,0,.25);margin:2px 0;"></div>
+  <button class="ab" style="background:linear-gradient(135deg,#2a1a08,#150c04);border:1px solid rgba(200,160,80,.4);font-size:0.7em;" onclick="openBerkAlphabet()">ᚠ Berk Letters</button>
   <button class="ab" style="background:linear-gradient(135deg,#1a2a4a,#0a1228);border:1px solid rgba(100,160,255,.4);font-size:0.7em;" onclick="openActivitiesPanel()">＋ Make a Game</button>
   <button class="ab ahatch" onclick="openHatchery()">🥚 Hatchery</button>
   <button class="ab" style="background:linear-gradient(135deg,#7a1010,#4a0808);" onclick="teleportToFort()">⚓ Hunter Fort</button>
@@ -2792,9 +2793,15 @@ function renderOutdoor(){
     drawWinterSky();
   } else {
     var sg=ctx.createLinearGradient(0,0,0,GL);
-    if(n){sg.addColorStop(0,'#020310');sg.addColorStop(1,'#0a1430');}
-    else {sg.addColorStop(0,'#1a7ec8');sg.addColorStop(1,'#87CEEB');}
+    if(n){sg.addColorStop(0,'#010208');sg.addColorStop(0.5,'#020d20');sg.addColorStop(1,'#0d1f40');}
+    else{sg.addColorStop(0,'#0a4a8a');sg.addColorStop(0.45,'#2a8fd4');sg.addColorStop(0.78,'#7ac8f0');sg.addColorStop(1,'#c8e8f8');}
     ctx.fillStyle=sg; ctx.fillRect(0,0,WW,GL);
+    // Horizon atmospheric warmth
+    if(!n){
+      var hw=ctx.createLinearGradient(0,GL-80,0,GL);
+      hw.addColorStop(0,'rgba(255,200,120,0)');hw.addColorStop(1,'rgba(255,180,80,0.22)');
+      ctx.fillStyle=hw;ctx.fillRect(0,GL-80,WW,80);
+    }
     if(n) drawNight(); else drawDay();
   }
 
@@ -2960,6 +2967,10 @@ function renderOutdoor(){
   // === PLAYER VIKING ===
   var vbob=(keys.left||keys.right)&&moveMode!=='fly'?Math.sin(animF*0.3)*4:0;
   if(moveMode!=='fly'){
+    // Soft ground shadow under viking
+    ctx.save();ctx.globalAlpha=0.22;ctx.fillStyle='#000';
+    ctx.beginPath();ctx.ellipse(drX,GL+5,16,5,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
     drawViking(ctx,vik,drX,GL-2+vbob,0.88);
   } else {
     drawVikingRiding(ctx,vik,drX+60,dsy+10,dscale,facing===1);
@@ -3074,42 +3085,71 @@ function drawCloud3D(x,y,sc){
 
 function drawMountains(){
   var n=isNight;
-  // Far mountains
+  // Distant hazy mountains (atmospheric perspective — pale blue/grey)
+  ctx.fillStyle=n?'rgba(18,28,45,0.7)':'rgba(160,185,215,0.6)';
+  ctx.beginPath();ctx.moveTo(0,GL);
+  [[0,GL-18],[70,GL-48],[170,GL-34],[290,GL-62],[400,GL-44],[500,GL-72],[610,GL-50],[710,GL-66],[WW,GL-38],[WW,GL]]
+    .forEach(function(p){ctx.lineTo(p[0],p[1]);});
+  ctx.closePath();ctx.fill();
+  // Mid mountains — main layer
   ctx.fillStyle=n?'#0a1a10':'#4a8a5a';
   ctx.beginPath();ctx.moveTo(0,GL);
   [[0,GL],[50,GL-80],[130,GL-55],[230,GL-110],[370,GL-75],[480,GL-130],[590,GL-85],[700,GL-105],[WW,GL-65],[WW,GL]]
     .forEach(function(p){ctx.lineTo(p[0],p[1]);});
-  ctx.fill();
-  // Snow caps
-  ctx.fillStyle='rgba(255,255,255,.55)';
-  [[230,GL-110],[480,GL-130],[700,GL-105]].forEach(function(p){
-    ctx.beginPath();ctx.moveTo(p[0]-18,p[1]+22);ctx.lineTo(p[0],p[1]);ctx.lineTo(p[0]+18,p[1]+22);ctx.fill();
+  ctx.closePath();ctx.fill();
+  // Right-face shadow on peaks (makes them look 3D)
+  ctx.fillStyle=n?'rgba(0,0,0,0.32)':'rgba(30,60,30,0.25)';
+  [[230,GL-110,60],[480,GL-130,58],[700,GL-105,52]].forEach(function(p){
+    ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(p[0]+p[2],GL-55);ctx.lineTo(p[0]+p[2],GL);ctx.lineTo(p[0],GL);ctx.fill();
   });
-  // Near hill strip
-  ctx.fillStyle=n?'#060e08':'#2a5a2a';
-  ctx.beginPath();ctx.moveTo(0,GL);ctx.lineTo(0,GL-28);ctx.lineTo(WW,GL-28);ctx.lineTo(WW,GL);ctx.fill();
+  // Snow caps with highlight
+  [[230,GL-110],[480,GL-130],[700,GL-105]].forEach(function(p){
+    ctx.fillStyle='rgba(235,245,255,0.85)';
+    ctx.beginPath();ctx.moveTo(p[0]-20,p[1]+24);ctx.lineTo(p[0],p[1]);ctx.lineTo(p[0]+20,p[1]+24);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.5)';
+    ctx.beginPath();ctx.moveTo(p[0]-8,p[1]+14);ctx.lineTo(p[0]-1,p[1]);ctx.lineTo(p[0]+6,p[1]+13);ctx.fill();
+  });
+  // Near hill strip with gradient edge
+  var hg=ctx.createLinearGradient(0,GL-30,0,GL);
+  hg.addColorStop(0,n?'#0a1408':'#357535');hg.addColorStop(1,n?'#060e06':'#2a5a2a');
+  ctx.fillStyle=hg;
+  ctx.beginPath();ctx.moveTo(0,GL);ctx.lineTo(0,GL-30);ctx.lineTo(WW,GL-30);ctx.lineTo(WW,GL);ctx.fill();
 }
 
 function drawGround3D(){
   var n=isNight;
-  // Main ground fill
+  // Main ground fill — richer gradient
   var gg=ctx.createLinearGradient(0,GL,0,WH);
-  gg.addColorStop(0,n?'#182812':'#3d6b2a');
-  gg.addColorStop(0.3,n?'#0e1c0a':'#2a5a1a');
-  gg.addColorStop(1,'#080d04');
+  gg.addColorStop(0,n?'#1e3218':'#4a7830');
+  gg.addColorStop(0.25,n?'#121e0d':'#336022');
+  gg.addColorStop(0.7,n?'#0a1208':'#224a18');
+  gg.addColorStop(1,'#060a04');
   ctx.fillStyle=gg;ctx.fillRect(0,GL,WW,WH-GL);
-  // Depth shading lines
-  ctx.strokeStyle=n?'rgba(0,80,0,.18)':'rgba(0,120,0,.22)';ctx.lineWidth=1.5;
-  for(var ln=1;ln<8;ln++){
-    var lny=GL+ln*(WH-GL)/8;
-    ctx.beginPath();ctx.moveTo(0,lny);ctx.lineTo(WW,lny);ctx.stroke();
+  // Perspective grid lines converging to horizon vanishing point
+  var vx=WW*0.5, vy=GL;
+  ctx.strokeStyle=n?'rgba(50,120,50,0.12)':'rgba(60,160,60,0.15)';ctx.lineWidth=1;
+  var numLines=14;
+  for(var ln=0;ln<=numLines;ln++){
+    var bx=ln*(WW/numLines);
+    ctx.beginPath();ctx.moveTo(vx+(bx-vx)*0.08,vy+2);ctx.lineTo(bx,WH);ctx.stroke();
   }
-  // Grass tufts at ground line
-  ctx.fillStyle=n?'#1a3010':'#4a7c2a';
-  for(var g=0;g<WW;g+=16){
-    var gh=5+Math.sin(g*0.31)*3;
-    ctx.beginPath();ctx.moveTo(g,GL);ctx.lineTo(g+3,GL-gh);ctx.lineTo(g+7,GL);ctx.fill();
+  // Horizontal depth bands
+  ctx.strokeStyle=n?'rgba(0,100,0,0.12)':'rgba(0,140,0,0.14)';ctx.lineWidth=1;
+  for(var hln=1;hln<7;hln++){
+    var hly=GL+hln*(WH-GL)/7;
+    ctx.beginPath();ctx.moveTo(0,hly);ctx.lineTo(WW,hly);ctx.stroke();
   }
+  // Dense grass tufts at ground line
+  ctx.fillStyle=n?'#1e3a12':'#5a8c2e';
+  for(var g=0;g<WW;g+=10){
+    var gh=4+Math.sin(g*0.43)*3+Math.cos(g*0.17)*2;
+    ctx.beginPath();ctx.moveTo(g,GL);ctx.lineTo(g+2,GL-gh);ctx.lineTo(g+5,GL-gh*0.6);ctx.lineTo(g+8,GL-gh*0.9);ctx.lineTo(g+10,GL);ctx.fill();
+  }
+  // Subtle ground fog at horizon
+  var fog=ctx.createLinearGradient(0,GL,0,GL+50);
+  fog.addColorStop(0,n?'rgba(10,20,15,0.3)':'rgba(200,230,200,0.18)');
+  fog.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=fog;ctx.fillRect(0,GL,WW,50);
 }
 
 function drawCloud3D(x,y,sc){
@@ -3590,7 +3630,28 @@ function drawDragonCtx(ctx2,dr,x,y,scale,faceR,flying,frame,chewing,drinking,isA
   else if(shape==='alpha') drawAlphaDragon(ctx2,dr.color,dr.accent||dr.acc,dr.eye,bob,frame,flying);
   else if(shape==='titan') drawTitanDragon(ctx2,dr.color,dr.accent||dr.acc,dr.eye,bob,frame,flying);
   else drawSleekDragon(ctx2,dr.color,dr.accent||dr.acc,dr.eye,bob,frame,flying,chewing,drinking);
+  // 3D lighting pass over every dragon type
+  _dragonLightPass(ctx2,bob);
   ctx2.restore();
+}
+function _dragonLightPass(ctx2,bob){
+  // Top-left highlight (simulates sunlight from upper-left)
+  var hl=ctx2.createRadialGradient(-10,-14+bob,0,-10,-14+bob,34);
+  hl.addColorStop(0,'rgba(255,255,255,0.22)');
+  hl.addColorStop(0.45,'rgba(255,255,255,0.07)');
+  hl.addColorStop(1,'rgba(255,255,255,0)');
+  ctx2.fillStyle=hl;
+  ctx2.beginPath();ctx2.ellipse(2,4+bob,40,28,0,0,Math.PI*2);ctx2.fill();
+  // Bottom-right rim shadow
+  var sh=ctx2.createRadialGradient(16,20+bob,2,16,20+bob,38);
+  sh.addColorStop(0,'rgba(0,0,0,0.28)');
+  sh.addColorStop(0.55,'rgba(0,0,0,0.10)');
+  sh.addColorStop(1,'rgba(0,0,0,0)');
+  ctx2.fillStyle=sh;
+  ctx2.beginPath();ctx2.ellipse(2,4+bob,40,28,0,0,Math.PI*2);ctx2.fill();
+  // Specular glint
+  ctx2.fillStyle='rgba(255,255,255,0.35)';
+  ctx2.beginPath();ctx2.ellipse(-6,-16+bob,4,2.5,-0.5,0,Math.PI*2);ctx2.fill();
 }
 
 function drawFishInMouth(ctx2,jx,jy,frame){
@@ -8588,6 +8649,71 @@ function buildStructure(id){
   closePop();
   showFlash(b.emoji+' '+b.name+' built!');
   setTimeout(openInventory,300);
+}
+
+// ============================================================
+// BERK ALPHABET (Viking Runes)
+// ============================================================
+var BERK_RUNES=[
+  {r:'ᚠ',l:'F',n:'Fehu',m:'Wealth, cattle, abundance'},
+  {r:'ᚢ',l:'U',n:'Uruz',m:'Strength, wild ox, health'},
+  {r:'ᚦ',l:'TH',n:'Thurisaz',m:'Thor\'s hammer, protection'},
+  {r:'ᚨ',l:'A',n:'Ansuz',m:'Odin, wisdom, messages'},
+  {r:'ᚱ',l:'R',n:'Raidho',m:'Journey, riding, travel'},
+  {r:'ᚲ',l:'K',n:'Kenaz',m:'Torch, fire, knowledge'},
+  {r:'ᚷ',l:'G',n:'Gebo',m:'Gift, generosity, exchange'},
+  {r:'ᚹ',l:'W',n:'Wunjo',m:'Joy, harmony, fellowship'},
+  {r:'ᚺ',l:'H',n:'Hagalaz',m:'Hail, disruption, change'},
+  {r:'ᚾ',l:'N',n:'Nauthiz',m:'Need, necessity, endurance'},
+  {r:'ᛁ',l:'I',n:'Isa',m:'Ice, stillness, patience'},
+  {r:'ᛃ',l:'J',n:'Jera',m:'Year, harvest, reward'},
+  {r:'ᛇ',l:'EI',n:'Eihwaz',m:'Yew tree, Yggdrasil, endurance'},
+  {r:'ᛈ',l:'P',n:'Perthro',m:'Luck, mystery, fate'},
+  {r:'ᛉ',l:'Z',n:'Algiz',m:'Elk, protection, defence'},
+  {r:'ᛊ',l:'S',n:'Sowilo',m:'Sun, success, victory'},
+  {r:'ᛏ',l:'T',n:'Tiwaz',m:'Tyr, justice, honour'},
+  {r:'ᛒ',l:'B',n:'Berkano',m:'Birch, birth, growth'},
+  {r:'ᛖ',l:'E',n:'Ehwaz',m:'Horse, trust, partnership'},
+  {r:'ᛗ',l:'M',n:'Mannaz',m:'Mankind, self, community'},
+  {r:'ᛚ',l:'L',n:'Laguz',m:'Water, lake, flow'},
+  {r:'ᛜ',l:'NG',n:'Ingwaz',m:'Ing, fertility, completion'},
+  {r:'ᛞ',l:'D',n:'Dagaz',m:'Day, breakthrough, clarity'},
+  {r:'ᛟ',l:'O',n:'Othala',m:'Home, heritage, Berk itself'},
+];
+var _runeFlip={};
+function openBerkAlphabet(){
+  _runeFlip={};
+  var grid='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">';
+  BERK_RUNES.forEach(function(rv,i){
+    grid+=''
+      +'<div id="rc'+i+'" onclick="_flipRune('+i+')" style="background:rgba(40,25,8,0.85);border:1px solid rgba(200,160,80,.3);border-radius:10px;padding:9px 4px;text-align:center;cursor:pointer;transition:background .15s;" '
+      +'onmouseover="this.style.borderColor=\'rgba(255,215,0,.7)\'" onmouseout="this.style.borderColor=\'rgba(200,160,80,.3)\'">'
+      +'<div style="font-size:1.9em;color:#ffd700;font-family:serif;line-height:1">'+rv.r+'</div>'
+      +'<div style="font-size:.62em;color:#c8a860;margin-top:3px;font-family:Cinzel">'+rv.l+'</div>'
+      +'</div>';
+  });
+  grid+='</div>';
+  var tip=''
+    +'<div style="background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.2);border-radius:9px;padding:9px;font-size:.67em;color:#c8a860;text-align:center">'
+    +'Tap any rune to learn its name and meaning 👆'
+    +'</div>'
+    +'<div id="rune-detail" style="margin-top:9px;min-height:56px"></div>';
+  showPop('ᚠ Berk Letters','',grid+tip);
+}
+function _flipRune(i){
+  var rv=BERK_RUNES[i];
+  var el=document.getElementById('rune-detail'); if(!el) return;
+  document.querySelectorAll('[id^="rc"]').forEach(function(c){c.style.background='rgba(40,25,8,0.85)';});
+  var card=document.getElementById('rc'+i);
+  if(card) card.style.background='rgba(80,50,10,0.9)';
+  el.innerHTML=''
+    +'<div style="background:linear-gradient(135deg,rgba(60,35,8,.9),rgba(30,16,4,.9));border:1px solid rgba(255,215,0,.4);border-radius:12px;padding:13px;display:flex;align-items:center;gap:12px">'
+    +'<div style="font-size:3.2em;color:#ffd700;font-family:serif;flex-shrink:0;text-shadow:0 0 18px rgba(255,200,80,.6)">'+rv.r+'</div>'
+    +'<div>'
+    +'<div style="font-family:Cinzel;color:#ffd700;font-size:.85em;margin-bottom:2px">'+rv.n+' &nbsp;·&nbsp; <span style="color:#e8d090">'+rv.l+'</span></div>'
+    +'<div style="font-size:.68em;color:#c8a860;line-height:1.5">'+rv.m+'</div>'
+    +'</div>'
+    +'</div>';
 }
 
 // ============================================================
