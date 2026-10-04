@@ -8655,50 +8655,58 @@ function buildStructure(id){
 // BERK ALPHABET (Viking Runes)
 // ============================================================
 var BERK_RUNES=[
-  {r:'ᚠ',l:'F',n:'Fehu',m:'Wealth, cattle, abundance'},
-  {r:'ᚢ',l:'U',n:'Uruz',m:'Strength, wild ox, health'},
-  {r:'ᚦ',l:'TH',n:'Thurisaz',m:'Thor\'s hammer, protection'},
-  {r:'ᚨ',l:'A',n:'Ansuz',m:'Odin, wisdom, messages'},
-  {r:'ᚱ',l:'R',n:'Raidho',m:'Journey, riding, travel'},
-  {r:'ᚲ',l:'K',n:'Kenaz',m:'Torch, fire, knowledge'},
-  {r:'ᚷ',l:'G',n:'Gebo',m:'Gift, generosity, exchange'},
-  {r:'ᚹ',l:'W',n:'Wunjo',m:'Joy, harmony, fellowship'},
-  {r:'ᚺ',l:'H',n:'Hagalaz',m:'Hail, disruption, change'},
-  {r:'ᚾ',l:'N',n:'Nauthiz',m:'Need, necessity, endurance'},
-  {r:'ᛁ',l:'I',n:'Isa',m:'Ice, stillness, patience'},
-  {r:'ᛃ',l:'J',n:'Jera',m:'Year, harvest, reward'},
-  {r:'ᛇ',l:'EI',n:'Eihwaz',m:'Yew tree, Yggdrasil, endurance'},
-  {r:'ᛈ',l:'P',n:'Perthro',m:'Luck, mystery, fate'},
-  {r:'ᛉ',l:'Z',n:'Algiz',m:'Elk, protection, defence'},
-  {r:'ᛊ',l:'S',n:'Sowilo',m:'Sun, success, victory'},
-  {r:'ᛏ',l:'T',n:'Tiwaz',m:'Tyr, justice, honour'},
-  {r:'ᛒ',l:'B',n:'Berkano',m:'Birch, birth, growth'},
-  {r:'ᛖ',l:'E',n:'Ehwaz',m:'Horse, trust, partnership'},
-  {r:'ᛗ',l:'M',n:'Mannaz',m:'Mankind, self, community'},
-  {r:'ᛚ',l:'L',n:'Laguz',m:'Water, lake, flow'},
-  {r:'ᛜ',l:'NG',n:'Ingwaz',m:'Ing, fertility, completion'},
-  {r:'ᛞ',l:'D',n:'Dagaz',m:'Day, breakthrough, clarity'},
-  {r:'ᛟ',l:'O',n:'Othala',m:'Home, heritage, Berk itself'},
+  {p:'M14,4 L14,40 M14,14 L24,6 M14,22 L24,14',l:'F',n:'Fehu',m:'Wealth, cattle, abundance'},
+  {p:'M6,4 L6,40 M22,16 L22,40 M6,4 L22,16',l:'U',n:'Uruz',m:'Strength, wild ox, health'},
+  {p:'M14,4 L14,40 M14,16 L24,22 L14,28',l:'TH',n:'Thurisaz',m:"Thor's hammer, protection"},
+  {p:'M14,4 L14,40 M14,14 L4,6 M14,22 L4,14',l:'A',n:'Ansuz',m:'Odin, wisdom, messages'},
+  {p:'M6,4 L6,40 M6,4 L20,12 L6,22 M6,22 L20,40',l:'R',n:'Raidho',m:'Journey, riding, travel'},
+  {p:'M20,4 L6,22 L20,40',l:'K',n:'Kenaz',m:'Torch, fire, knowledge'},
+  {p:'M4,4 L24,40 M24,4 L4,40',l:'G',n:'Gebo',m:'Gift, generosity, exchange'},
+  {p:'M14,4 L14,40 M14,4 L24,16 L14,28',l:'W',n:'Wunjo',m:'Joy, harmony, fellowship'},
+  {p:'M6,4 L6,40 M22,4 L22,40 M6,14 L22,30',l:'H',n:'Hagalaz',m:'Hail, disruption, change'},
+  {p:'M6,4 L6,40 M22,4 L22,40 M6,4 L22,40',l:'N',n:'Nauthiz',m:'Need, necessity, endurance'},
+  {p:'M14,4 L14,40',l:'I',n:'Isa',m:'Ice, stillness, patience'},
+  {p:'M4,16 L14,6 L24,16 M4,28 L14,38 L24,28',l:'J',n:'Jera',m:'Year, harvest, reward'},
+  {p:'M14,4 L14,40 M14,12 L22,4 M14,32 L6,40',l:'EI',n:'Eihwaz',m:'Yew tree, Yggdrasil, endurance'},
+  {p:'M8,4 L8,40 M8,4 L22,14 L8,24 M8,24 L22,34 L8,40',l:'P',n:'Perthro',m:'Luck, mystery, fate'},
+  {p:'M14,4 L14,40 M14,20 L4,4 M14,20 L24,4',l:'Z',n:'Algiz',m:'Elk, protection, defence'},
+  {p:'M22,4 L4,16 L22,28 L4,40',l:'S',n:'Sowilo',m:'Sun, success, victory'},
+  {p:'M14,4 L14,40 M14,12 L4,4 M14,12 L24,4',l:'T',n:'Tiwaz',m:'Tyr, justice, honour'},
+  {p:'M6,4 L6,40 M6,4 L20,10 L6,22 M6,22 L20,30 L6,40',l:'B',n:'Berkano',m:'Birch, birth, growth'},
+  {p:'M6,4 L6,40 M22,4 L22,40 M6,4 L14,22 L22,4',l:'E',n:'Ehwaz',m:'Horse, trust, partnership'},
+  {p:'M4,4 L4,40 M24,4 L24,40 M4,4 L14,20 L24,4 M4,20 L14,36 L24,20',l:'M',n:'Mannaz',m:'Mankind, self, community'},
+  {p:'M8,4 L8,40 M8,24 L22,40',l:'L',n:'Laguz',m:'Water, lake, flow'},
+  {p:'M14,4 L26,22 L14,40 L2,22 Z',l:'NG',n:'Ingwaz',m:'Ing, fertility, completion'},
+  {p:'M4,4 L24,4 L14,22 L4,4 M14,22 L24,40 L4,40 L14,22',l:'D',n:'Dagaz',m:'Day, breakthrough, clarity'},
+  {p:'M14,6 L24,20 L14,34 L4,20 Z M4,20 L2,40 M24,20 L26,40',l:'O',n:'Othala',m:'Home, heritage, Berk itself'},
 ];
+function _runesvg(p,w,h,glow){
+  var sw=glow?'3':'2.5', sc=glow?'#ffd700':'#d4a020';
+  var filter=glow?'<defs><filter id="rg"><feGaussianBlur in="SourceGraphic" stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>':''
+  var fa=glow?' filter="url(#rg)"':'';
+  return '<svg viewBox="0 0 28 44" width="'+w+'" height="'+h+'" style="display:block;margin:0 auto">'+filter
+    +'<path d="'+p+'" stroke="'+sc+'" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round" fill="none"'+fa+'/>'
+    +'</svg>';
+}
 var _runeFlip={};
 function openBerkAlphabet(){
   _runeFlip={};
   var grid='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">';
   BERK_RUNES.forEach(function(rv,i){
     grid+=''
-      +'<div id="rc'+i+'" onclick="_flipRune('+i+')" style="background:rgba(40,25,8,0.85);border:1px solid rgba(200,160,80,.3);border-radius:10px;padding:9px 4px;text-align:center;cursor:pointer;transition:background .15s;" '
+      +'<div id="rc'+i+'" onclick="_flipRune('+i+')" style="background:rgba(40,25,8,0.85);border:1px solid rgba(200,160,80,.3);border-radius:10px;padding:8px 4px 5px;text-align:center;cursor:pointer;transition:background .15s;" '
       +'onmouseover="this.style.borderColor=\'rgba(255,215,0,.7)\'" onmouseout="this.style.borderColor=\'rgba(200,160,80,.3)\'">'
-      +'<div style="font-size:1.9em;color:#ffd700;font-family:serif;line-height:1">'+rv.r+'</div>'
+      +_runesvg(rv.p,30,42,false)
       +'<div style="font-size:.62em;color:#c8a860;margin-top:3px;font-family:Cinzel">'+rv.l+'</div>'
       +'</div>';
   });
   grid+='</div>';
   var tip=''
     +'<div style="background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.2);border-radius:9px;padding:9px;font-size:.67em;color:#c8a860;text-align:center">'
-    +'Tap any rune to learn its name and meaning 👆'
+    +'Tap any rune to learn its name and meaning'
     +'</div>'
     +'<div id="rune-detail" style="margin-top:9px;min-height:56px"></div>';
-  showPop('ᚠ Berk Letters','',grid+tip);
+  showPop('Berk Letters','',grid+tip);
 }
 function _flipRune(i){
   var rv=BERK_RUNES[i];
@@ -8708,7 +8716,7 @@ function _flipRune(i){
   if(card) card.style.background='rgba(80,50,10,0.9)';
   el.innerHTML=''
     +'<div style="background:linear-gradient(135deg,rgba(60,35,8,.9),rgba(30,16,4,.9));border:1px solid rgba(255,215,0,.4);border-radius:12px;padding:13px;display:flex;align-items:center;gap:12px">'
-    +'<div style="font-size:3.2em;color:#ffd700;font-family:serif;flex-shrink:0;text-shadow:0 0 18px rgba(255,200,80,.6)">'+rv.r+'</div>'
+    +'<div style="flex-shrink:0">'+_runesvg(rv.p,52,72,true)+'</div>'
     +'<div>'
     +'<div style="font-family:Cinzel;color:#ffd700;font-size:.85em;margin-bottom:2px">'+rv.n+' &nbsp;·&nbsp; <span style="color:#e8d090">'+rv.l+'</span></div>'
     +'<div style="font-size:.68em;color:#c8a860;line-height:1.5">'+rv.m+'</div>'
