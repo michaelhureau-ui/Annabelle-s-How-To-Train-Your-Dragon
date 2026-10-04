@@ -552,7 +552,6 @@ box-shadow:0 0 18px rgba(0,100,255,.2);}
   <button class="ab ahw" onclick="enterHiddenWorld()">🌀 Hidden World</button>
   <button class="ab arsc" onclick="startRescue()">🆘 Rescue</button>
   <div style="height:1px;background:rgba(255,215,0,.25);margin:2px 0;"></div>
-  <button class="ab" style="background:linear-gradient(135deg,#2a1a08,#150c04);border:1px solid rgba(200,160,80,.4);font-size:0.7em;" onclick="openBerkAlphabet()">ᚠ Berk Letters</button>
   <button class="ab" style="background:linear-gradient(135deg,#1a2a4a,#0a1228);border:1px solid rgba(100,160,255,.4);font-size:0.7em;" onclick="openActivitiesPanel()">＋ Make a Game</button>
   <button class="ab ahatch" onclick="openHatchery()">🥚 Hatchery</button>
   <button class="ab" style="background:linear-gradient(135deg,#7a1010,#4a0808);" onclick="teleportToFort()">⚓ Hunter Fort</button>
@@ -8649,71 +8648,6 @@ function buildStructure(id){
   closePop();
   showFlash(b.emoji+' '+b.name+' built!');
   setTimeout(openInventory,300);
-}
-
-// ============================================================
-// BERK ALPHABET (Viking Runes)
-// ============================================================
-var BERK_RUNES=[
-  {r:'ᚠ',l:'F',n:'Fehu',m:'Wealth, cattle, abundance'},
-  {r:'ᚢ',l:'U',n:'Uruz',m:'Strength, wild ox, health'},
-  {r:'ᚦ',l:'TH',n:'Thurisaz',m:'Thor\'s hammer, protection'},
-  {r:'ᚨ',l:'A',n:'Ansuz',m:'Odin, wisdom, messages'},
-  {r:'ᚱ',l:'R',n:'Raidho',m:'Journey, riding, travel'},
-  {r:'ᚲ',l:'K',n:'Kenaz',m:'Torch, fire, knowledge'},
-  {r:'ᚷ',l:'G',n:'Gebo',m:'Gift, generosity, exchange'},
-  {r:'ᚹ',l:'W',n:'Wunjo',m:'Joy, harmony, fellowship'},
-  {r:'ᚺ',l:'H',n:'Hagalaz',m:'Hail, disruption, change'},
-  {r:'ᚾ',l:'N',n:'Nauthiz',m:'Need, necessity, endurance'},
-  {r:'ᛁ',l:'I',n:'Isa',m:'Ice, stillness, patience'},
-  {r:'ᛃ',l:'J',n:'Jera',m:'Year, harvest, reward'},
-  {r:'ᛇ',l:'EI',n:'Eihwaz',m:'Yew tree, Yggdrasil, endurance'},
-  {r:'ᛈ',l:'P',n:'Perthro',m:'Luck, mystery, fate'},
-  {r:'ᛉ',l:'Z',n:'Algiz',m:'Elk, protection, defence'},
-  {r:'ᛊ',l:'S',n:'Sowilo',m:'Sun, success, victory'},
-  {r:'ᛏ',l:'T',n:'Tiwaz',m:'Tyr, justice, honour'},
-  {r:'ᛒ',l:'B',n:'Berkano',m:'Birch, birth, growth'},
-  {r:'ᛖ',l:'E',n:'Ehwaz',m:'Horse, trust, partnership'},
-  {r:'ᛗ',l:'M',n:'Mannaz',m:'Mankind, self, community'},
-  {r:'ᛚ',l:'L',n:'Laguz',m:'Water, lake, flow'},
-  {r:'ᛜ',l:'NG',n:'Ingwaz',m:'Ing, fertility, completion'},
-  {r:'ᛞ',l:'D',n:'Dagaz',m:'Day, breakthrough, clarity'},
-  {r:'ᛟ',l:'O',n:'Othala',m:'Home, heritage, Berk itself'},
-];
-var _runeFlip={};
-function openBerkAlphabet(){
-  _runeFlip={};
-  var grid='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">';
-  BERK_RUNES.forEach(function(rv,i){
-    grid+=''
-      +'<div id="rc'+i+'" onclick="_flipRune('+i+')" style="background:rgba(40,25,8,0.85);border:1px solid rgba(200,160,80,.3);border-radius:10px;padding:9px 4px;text-align:center;cursor:pointer;transition:background .15s;" '
-      +'onmouseover="this.style.borderColor=\'rgba(255,215,0,.7)\'" onmouseout="this.style.borderColor=\'rgba(200,160,80,.3)\'">'
-      +'<div style="font-size:1.9em;color:#ffd700;font-family:serif;line-height:1">'+rv.r+'</div>'
-      +'<div style="font-size:.62em;color:#c8a860;margin-top:3px;font-family:Cinzel">'+rv.l+'</div>'
-      +'</div>';
-  });
-  grid+='</div>';
-  var tip=''
-    +'<div style="background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.2);border-radius:9px;padding:9px;font-size:.67em;color:#c8a860;text-align:center">'
-    +'Tap any rune to learn its name and meaning 👆'
-    +'</div>'
-    +'<div id="rune-detail" style="margin-top:9px;min-height:56px"></div>';
-  showPop('ᚠ Berk Letters','',grid+tip);
-}
-function _flipRune(i){
-  var rv=BERK_RUNES[i];
-  var el=document.getElementById('rune-detail'); if(!el) return;
-  document.querySelectorAll('[id^="rc"]').forEach(function(c){c.style.background='rgba(40,25,8,0.85)';});
-  var card=document.getElementById('rc'+i);
-  if(card) card.style.background='rgba(80,50,10,0.9)';
-  el.innerHTML=''
-    +'<div style="background:linear-gradient(135deg,rgba(60,35,8,.9),rgba(30,16,4,.9));border:1px solid rgba(255,215,0,.4);border-radius:12px;padding:13px;display:flex;align-items:center;gap:12px">'
-    +'<div style="font-size:3.2em;color:#ffd700;font-family:serif;flex-shrink:0;text-shadow:0 0 18px rgba(255,200,80,.6)">'+rv.r+'</div>'
-    +'<div>'
-    +'<div style="font-family:Cinzel;color:#ffd700;font-size:.85em;margin-bottom:2px">'+rv.n+' &nbsp;·&nbsp; <span style="color:#e8d090">'+rv.l+'</span></div>'
-    +'<div style="font-size:.68em;color:#c8a860;line-height:1.5">'+rv.m+'</div>'
-    +'</div>'
-    +'</div>';
 }
 
 // ============================================================
