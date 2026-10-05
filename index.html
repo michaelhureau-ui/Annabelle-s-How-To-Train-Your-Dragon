@@ -2796,11 +2796,15 @@ function renderOutdoor(){
     if(n){sg.addColorStop(0,'#010208');sg.addColorStop(0.5,'#020d20');sg.addColorStop(1,'#0d1f40');}
     else{sg.addColorStop(0,'#0a4a8a');sg.addColorStop(0.45,'#2a8fd4');sg.addColorStop(0.78,'#7ac8f0');sg.addColorStop(1,'#c8e8f8');}
     ctx.fillStyle=sg; ctx.fillRect(0,0,WW,GL);
-    // Horizon atmospheric warmth
+    // Horizon glow — wide warm band just above ground
     if(!n){
-      var hw=ctx.createLinearGradient(0,GL-80,0,GL);
-      hw.addColorStop(0,'rgba(255,200,120,0)');hw.addColorStop(1,'rgba(255,180,80,0.22)');
-      ctx.fillStyle=hw;ctx.fillRect(0,GL-80,WW,80);
+      var hw=ctx.createLinearGradient(0,GL-120,0,GL);
+      hw.addColorStop(0,'rgba(255,200,120,0)');hw.addColorStop(0.6,'rgba(255,170,60,0.18)');hw.addColorStop(1,'rgba(255,140,30,0.38)');
+      ctx.fillStyle=hw;ctx.fillRect(0,GL-120,WW,120);
+      // Sun shaft glow on horizon
+      var shaftG=ctx.createRadialGradient(WW-90,GL,0,WW-90,GL,WW*0.5);
+      shaftG.addColorStop(0,'rgba(255,200,80,0.22)');shaftG.addColorStop(1,'rgba(255,200,80,0)');
+      ctx.fillStyle=shaftG;ctx.fillRect(0,GL-60,WW,60);
     }
     if(n) drawNight(); else drawDay();
   }
@@ -3118,38 +3122,83 @@ function drawMountains(){
 
 function drawGround3D(){
   var n=isNight;
-  // Main ground fill — richer gradient
-  var gg=ctx.createLinearGradient(0,GL,0,WH);
-  gg.addColorStop(0,n?'#1e3218':'#4a7830');
-  gg.addColorStop(0.25,n?'#121e0d':'#336022');
-  gg.addColorStop(0.7,n?'#0a1208':'#224a18');
-  gg.addColorStop(1,'#060a04');
-  ctx.fillStyle=gg;ctx.fillRect(0,GL,WW,WH-GL);
-  // Perspective grid lines converging to horizon vanishing point
   var vx=WW*0.5, vy=GL;
-  ctx.strokeStyle=n?'rgba(50,120,50,0.12)':'rgba(60,160,60,0.15)';ctx.lineWidth=1;
-  var numLines=14;
+
+  // Base ground fill — dark near horizon, richer near camera
+  var gg=ctx.createLinearGradient(0,GL,0,WH);
+  if(n){gg.addColorStop(0,'#182a12');gg.addColorStop(0.35,'#0e1a0a');gg.addColorStop(0.8,'#080e06');gg.addColorStop(1,'#030502');}
+  else{gg.addColorStop(0,'#3a7228');gg.addColorStop(0.25,'#4a8a30');gg.addColorStop(0.6,'#306018');gg.addColorStop(1,'#0e2006');}
+  ctx.fillStyle=gg;ctx.fillRect(0,GL,WW,WH-GL);
+
+  // Converging road/path from camera to horizon — strongest 3D cue
+  var pTL=WW*0.46, pTR=WW*0.54;  // road at horizon (narrow)
+  var pBL=WW*0.08, pBR=WW*0.92;  // road at screen bottom (wide)
+  ctx.fillStyle=n?'rgba(30,55,22,0.55)':'rgba(75,125,45,0.6)';
+  ctx.beginPath();
+  ctx.moveTo(pTL,GL);ctx.lineTo(pTR,GL);
+  ctx.lineTo(pBR,WH);ctx.lineTo(pBL,WH);
+  ctx.closePath();ctx.fill();
+
+  // Road edge highlight lines (strong perspective convergence)
+  ctx.strokeStyle=n?'rgba(80,140,60,0.55)':'rgba(110,200,70,0.65)';
+  ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(pTL,GL);ctx.lineTo(pBL,WH);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(pTR,GL);ctx.lineTo(pBR,WH);ctx.stroke();
+
+  // Perspective grid lines — strong and clearly visible
+  var numLines=20;
   for(var ln=0;ln<=numLines;ln++){
-    var bx=ln*(WW/numLines);
-    ctx.beginPath();ctx.moveTo(vx+(bx-vx)*0.08,vy+2);ctx.lineTo(bx,WH);ctx.stroke();
+    var bx=WW*0.02+ln*(WW*0.96/numLines);
+    var dist=Math.abs(bx-vx)/vx;
+    var alp=(n?0.38:0.48)*(1-dist*0.4);
+    ctx.strokeStyle=n?'rgba(45,110,35,'+alp+')':'rgba(65,155,45,'+alp+')';
+    ctx.lineWidth=dist<0.08?2:1;
+    ctx.beginPath();
+    ctx.moveTo(vx+(bx-vx)*0.03,vy+1);
+    ctx.lineTo(bx,WH);
+    ctx.stroke();
   }
-  // Horizontal depth bands
-  ctx.strokeStyle=n?'rgba(0,100,0,0.12)':'rgba(0,140,0,0.14)';ctx.lineWidth=1;
-  for(var hln=1;hln<7;hln++){
-    var hly=GL+hln*(WH-GL)/7;
-    ctx.beginPath();ctx.moveTo(0,hly);ctx.lineTo(WW,hly);ctx.stroke();
+
+  // Horizontal bands with perspective spacing (closer = further apart)
+  for(var hb=1;hb<=10;hb++){
+    var t=Math.pow(hb/11,0.42);  // perspective: bands expand near camera
+    var hy=GL+t*(WH-GL);
+    ctx.strokeStyle=n?'rgba(35,90,28,0.35)':'rgba(60,140,42,0.4)';
+    ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,hy);ctx.lineTo(WW,hy);ctx.stroke();
+    // Alternating tint strips
+    if(hb<10){
+      var hy2=GL+Math.pow((hb+1)/11,0.42)*(WH-GL);
+      if(hb%2===0){
+        ctx.fillStyle=n?'rgba(0,0,0,0.07)':'rgba(0,0,0,0.05)';
+        ctx.fillRect(0,hy,WW,hy2-hy);
+      }
+    }
   }
-  // Dense grass tufts at ground line
-  ctx.fillStyle=n?'#1e3a12':'#5a8c2e';
+
+  // Grass tufts at ground line
+  ctx.fillStyle=n?'#1e3a12':'#5a9030';
   for(var g=0;g<WW;g+=10){
     var gh=4+Math.sin(g*0.43)*3+Math.cos(g*0.17)*2;
     ctx.beginPath();ctx.moveTo(g,GL);ctx.lineTo(g+2,GL-gh);ctx.lineTo(g+5,GL-gh*0.6);ctx.lineTo(g+8,GL-gh*0.9);ctx.lineTo(g+10,GL);ctx.fill();
   }
-  // Subtle ground fog at horizon
-  var fog=ctx.createLinearGradient(0,GL,0,GL+50);
-  fog.addColorStop(0,n?'rgba(10,20,15,0.3)':'rgba(200,230,200,0.18)');
+
+  // LARGE foreground grass at screen bottom — near-camera depth cue
+  ctx.fillStyle=n?'#2a4820':'#72b838';
+  for(var fg=0;fg<WW;fg+=22){
+    var fgh=14+Math.sin(fg*0.19)*7+Math.cos(fg*0.31)*5;
+    ctx.beginPath();ctx.moveTo(fg,WH);ctx.lineTo(fg+3,WH-fgh);ctx.lineTo(fg+7,WH-fgh*0.75);ctx.lineTo(fg+12,WH-fgh*0.9);ctx.lineTo(fg+18,WH);ctx.fill();
+  }
+  // Darker foreground shadow strip at very bottom
+  var fgsh=ctx.createLinearGradient(0,WH-18,0,WH);
+  fgsh.addColorStop(0,'rgba(0,0,0,0)');fgsh.addColorStop(1,'rgba(0,0,0,0.35)');
+  ctx.fillStyle=fgsh;ctx.fillRect(0,WH-18,WW,18);
+
+  // Horizon fog/mist
+  var fog=ctx.createLinearGradient(0,GL,0,GL+70);
+  fog.addColorStop(0,n?'rgba(8,18,12,0.5)':'rgba(200,235,210,0.35)');
   fog.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=fog;ctx.fillRect(0,GL,WW,50);
+  ctx.fillStyle=fog;ctx.fillRect(0,GL,WW,70);
 }
 
 function drawCloud3D(x,y,sc){
@@ -3164,8 +3213,22 @@ function drawCloud3D(x,y,sc){
   });
 }
 
+function _bldgShadow(x,gl,halfW,buildH){
+  // Long parallelogram shadow stretching right and down from base
+  var sl=halfW*1.8+buildH*0.55;  // shadow length scales with building height
+  ctx.save();ctx.globalAlpha=0.22;
+  ctx.fillStyle='rgba(0,0,0,1)';
+  ctx.beginPath();
+  ctx.moveTo(x-halfW,gl);
+  ctx.lineTo(x+halfW,gl);
+  ctx.lineTo(x+halfW+sl,gl+18+buildH*0.12);
+  ctx.lineTo(x-halfW+sl*0.5,gl+18+buildH*0.12);
+  ctx.closePath();ctx.fill();
+  ctx.restore();
+}
 function drawHouse3D(x,gl){
   var w=100,h=88,n=isNight;
+  _bldgShadow(x,gl,w/2+14,h);
   ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(x,gl+6,w/2+10,10,0,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#4a3a2a';ctx.beginPath();
   ctx.moveTo(x-w/2-5,gl);ctx.lineTo(x+w/2+5,gl);ctx.lineTo(x+w/2+12,gl+10);ctx.lineTo(x-w/2-12,gl+10);ctx.closePath();ctx.fill();
@@ -3198,6 +3261,7 @@ function drawHouse3D(x,gl){
 
 function drawBlacksmith3D(x,gl){
   var n=isNight;
+  _bldgShadow(x,gl,50,118);
   ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(x,gl+6,48,9,0,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#5a4a3a';ctx.fillRect(x-38,gl-82,76,82);
   var bg=ctx.createLinearGradient(x-38,0,x+38,0);
@@ -3218,6 +3282,7 @@ function drawBlacksmith3D(x,gl){
 
 function drawFishStand3D(x,gl){
   var n=isNight;
+  _bldgShadow(x,gl,44,65);
   ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.ellipse(x,gl+5,40,8,0,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#7a6040';ctx.fillRect(x-36,gl-40,72,40);
   ctx.fillStyle='#c89060';ctx.fillRect(x-34,gl-38,68,36);
@@ -3233,6 +3298,7 @@ function drawFishStand3D(x,gl){
 
 function drawWateringHole3D(x,gl){
   var n=isNight;
+  _bldgShadow(x,gl,58,60);
   ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.ellipse(x,gl+5,55,12,0,0,Math.PI*2);ctx.fill();
   // Stone rim
   ctx.fillStyle='#7a6a5a';ctx.beginPath();ctx.ellipse(x,gl,52,22,0,0,Math.PI*2);ctx.fill();
