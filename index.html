@@ -4173,42 +4173,76 @@ function drawAlphaDragon(ctx2,c,a,e,bob,frame,fly){
 // ============================================================
 function drawViking(ctx2,vc,x,y,scale){
   ctx2.save();ctx2.translate(x,y);ctx2.scale(scale,scale);
-  // 3D shading - legs
-  ctx2.fillStyle='#4a4040';ctx2.fillRect(-6,20,5,18);ctx2.fillRect(2,20,5,18);
-  ctx2.fillStyle='rgba(255,255,255,.1)';ctx2.fillRect(-6,20,2,18);ctx2.fillRect(2,20,2,18);
-  ctx2.fillStyle='#2a1a0a';ctx2.fillRect(-7,34,7,5);ctx2.fillRect(1,34,7,5);
-  // Body with gradient
-  var bg=ctx2.createLinearGradient(-12,0,13,24);bg.addColorStop(0,lighten(vc.tunic,.2));bg.addColorStop(1,vc.tunic);
+  // Ground shadow
+  ctx2.fillStyle='rgba(0,0,0,0.28)';
+  ctx2.beginPath();ctx2.ellipse(0,40,16,5,0,0,Math.PI*2);ctx2.fill();
+  // Legs — cylinder shading
+  ctx2.fillStyle='#3a3030';ctx2.fillRect(-7,20,6,18);ctx2.fillRect(2,20,6,18);
+  ctx2.fillStyle='rgba(255,255,255,0.20)';ctx2.fillRect(-7,20,2,18);ctx2.fillRect(2,20,2,18);
+  ctx2.fillStyle='rgba(0,0,0,0.25)';ctx2.fillRect(-4,20,3,18);ctx2.fillRect(5,20,3,18);
+  // Boots
+  ctx2.fillStyle='#1a0a02';ctx2.fillRect(-8,34,8,6);ctx2.fillRect(1,34,8,6);
+  ctx2.fillStyle='rgba(255,255,255,0.15)';ctx2.fillRect(-8,34,2,6);ctx2.fillRect(1,34,2,6);
+  // Body torso — radial 3-stop sphere shading
+  var bg=ctx2.createRadialGradient(-5,8,2,-2,10,20);
+  bg.addColorStop(0,lighten(vc.tunic,.48));bg.addColorStop(0.45,lighten(vc.tunic,.12));bg.addColorStop(1,darken(vc.tunic,.32));
   ctx2.fillStyle=bg;ctx2.beginPath();ctx2.roundRect(-12,0,25,24,4);ctx2.fill();
-  ctx2.fillStyle='#2a1a0a';ctx2.fillRect(-12,18,25,4);
-  ctx2.fillStyle=vc.tunic;ctx2.fillRect(-18,2,8,16);ctx2.fillRect(11,2,8,16);
-  // Side arm shading
-  ctx2.fillStyle='rgba(0,0,0,.15)';ctx2.fillRect(-18,2,3,16);ctx2.fillRect(16,2,3,16);
-  ctx2.fillStyle=vc.skin;ctx2.beginPath();ctx2.ellipse(-14,19,4,4,0,0,Math.PI*2);ctx2.fill();ctx2.beginPath();ctx2.ellipse(15,19,4,4,0,0,Math.PI*2);ctx2.fill();
+  // Belt
+  ctx2.fillStyle='#1a0c04';ctx2.fillRect(-12,17,25,4);
+  ctx2.fillStyle='#c8a000';ctx2.beginPath();ctx2.roundRect(-3,17,6,4,1);ctx2.fill();
+  // Arms — cylinder shading
+  ctx2.fillStyle=vc.tunic;ctx2.fillRect(-19,2,8,17);ctx2.fillRect(12,2,8,17);
+  ctx2.fillStyle='rgba(255,255,255,0.22)';ctx2.fillRect(-19,2,3,17);ctx2.fillRect(12,2,3,17);
+  ctx2.fillStyle='rgba(0,0,0,0.22)';ctx2.fillRect(-14,2,3,17);ctx2.fillRect(17,2,3,17);
+  // Hands — radial gradient
+  var hnd1=ctx2.createRadialGradient(-15,17,1,-14,19,5);
+  hnd1.addColorStop(0,lighten(vc.skin,.42));hnd1.addColorStop(1,darken(vc.skin,.18));
+  ctx2.fillStyle=hnd1;ctx2.beginPath();ctx2.ellipse(-14,19,4.5,4.5,0,0,Math.PI*2);ctx2.fill();
+  var hnd2=ctx2.createRadialGradient(14,17,1,15,19,5);
+  hnd2.addColorStop(0,lighten(vc.skin,.42));hnd2.addColorStop(1,darken(vc.skin,.18));
+  ctx2.fillStyle=hnd2;ctx2.beginPath();ctx2.ellipse(15,19,4.5,4.5,0,0,Math.PI*2);ctx2.fill();
+  // Neck
   ctx2.fillStyle=vc.skin;ctx2.fillRect(-4,-8,9,10);
-  // Head with 3D shading
-  ctx2.fillStyle=vc.skin;ctx2.beginPath();ctx2.ellipse(0,-18,13,13,0,0,Math.PI*2);ctx2.fill();
-  ctx2.fillStyle='rgba(0,0,0,.1)';ctx2.beginPath();ctx2.ellipse(4,-16,9,11,0,0,Math.PI*2);ctx2.fill();
+  // Head — radial 3-stop sphere shading
+  var hdg=ctx2.createRadialGradient(-4,-23,2,0,-18,14);
+  hdg.addColorStop(0,lighten(vc.skin,.55));hdg.addColorStop(0.45,lighten(vc.skin,.15));hdg.addColorStop(1,darken(vc.skin,.22));
+  ctx2.fillStyle=hdg;ctx2.beginPath();ctx2.ellipse(0,-18,13,13,0,0,Math.PI*2);ctx2.fill();
+  // Hair
   ctx2.fillStyle=vc.hair;ctx2.beginPath();ctx2.ellipse(0,-24,13,8,0,Math.PI,Math.PI*2);ctx2.fill();
   if(vc.helm==='none'){ctx2.beginPath();ctx2.ellipse(-11,-18,4,8,-0.3,0,Math.PI*2);ctx2.fill();}
+  // Eyes with glint
   ctx2.fillStyle='#fff';ctx2.beginPath();ctx2.ellipse(-5,-18,3,3.5,0,0,Math.PI*2);ctx2.fill();ctx2.beginPath();ctx2.ellipse(5,-18,3,3.5,0,0,Math.PI*2);ctx2.fill();
   ctx2.fillStyle='#3a2010';ctx2.beginPath();ctx2.ellipse(-5,-18,1.8,2.2,0,0,Math.PI*2);ctx2.fill();ctx2.beginPath();ctx2.ellipse(5,-18,1.8,2.2,0,0,Math.PI*2);ctx2.fill();
-  ctx2.fillStyle='rgba(255,255,255,.4)';ctx2.beginPath();ctx2.arc(-6,-20,1,0,Math.PI*2);ctx2.fill();ctx2.beginPath();ctx2.arc(4,-20,1,0,Math.PI*2);ctx2.fill();
-  ctx2.fillStyle=vc.skin;ctx2.beginPath();ctx2.ellipse(0,-15,2,2.5,0,0,Math.PI*2);ctx2.fill();
+  ctx2.fillStyle='rgba(255,255,255,.72)';ctx2.beginPath();ctx2.arc(-6,-20,1.3,0,Math.PI*2);ctx2.fill();ctx2.beginPath();ctx2.arc(4,-20,1.3,0,Math.PI*2);ctx2.fill();
+  // Nose
+  ctx2.fillStyle=darken(vc.skin,.10);ctx2.beginPath();ctx2.ellipse(0,-15,2,2.5,0,0,Math.PI*2);ctx2.fill();
+  // Mouth
+  ctx2.strokeStyle=darken(vc.skin,.22);ctx2.lineWidth=1;ctx2.beginPath();ctx2.arc(0,-12,4,0.25,Math.PI-0.25);ctx2.stroke();
+  // Helmet — metallic radial gradient
   if(vc.helm==='iron'){
-    ctx2.fillStyle='#999';ctx2.beginPath();ctx2.ellipse(0,-26,14,10,0,Math.PI,Math.PI*2);ctx2.fill();
-    ctx2.fillStyle='rgba(255,255,255,.2)';ctx2.beginPath();ctx2.ellipse(-4,-28,6,4,0,Math.PI,Math.PI*2);ctx2.fill();
-    ctx2.fillStyle='#777';ctx2.fillRect(-14,-26,28,4);ctx2.fillStyle='#666';ctx2.fillRect(-2,-28,4,14);
+    var htG=ctx2.createRadialGradient(-5,-31,2,0,-26,16);
+    htG.addColorStop(0,'#ddd');htG.addColorStop(0.45,'#999');htG.addColorStop(1,'#444');
+    ctx2.fillStyle=htG;ctx2.beginPath();ctx2.ellipse(0,-26,14,10,0,Math.PI,Math.PI*2);ctx2.fill();
+    ctx2.fillStyle='#777';ctx2.fillRect(-14,-26,28,4);
+    ctx2.fillStyle='rgba(255,255,255,0.48)';ctx2.beginPath();ctx2.ellipse(-4,-29,5,3,-0.3,Math.PI,Math.PI*2);ctx2.fill();
+    ctx2.fillStyle='#666';ctx2.fillRect(-2,-28,4,14);
   }else if(vc.helm==='gold'){
-    ctx2.fillStyle='#c8a000';ctx2.beginPath();ctx2.ellipse(0,-26,14,10,0,Math.PI,Math.PI*2);ctx2.fill();
-    ctx2.fillStyle='rgba(255,255,150,.3)';ctx2.beginPath();ctx2.ellipse(-4,-28,6,4,0,Math.PI,Math.PI*2);ctx2.fill();
+    var hgG=ctx2.createRadialGradient(-5,-31,2,0,-26,16);
+    hgG.addColorStop(0,'#ffe87a');hgG.addColorStop(0.45,'#c8a000');hgG.addColorStop(1,'#6a5000');
+    ctx2.fillStyle=hgG;ctx2.beginPath();ctx2.ellipse(0,-26,14,10,0,Math.PI,Math.PI*2);ctx2.fill();
     ctx2.fillStyle='#c8a000';ctx2.fillRect(-14,-26,28,4);
     ctx2.fillStyle='#ffd700';for(var p=0;p<5;p++){ctx2.beginPath();ctx2.moveTo(-10+p*5,-26);ctx2.lineTo(-8+p*5,-34);ctx2.lineTo(-6+p*5,-26);ctx2.fill();}
+    ctx2.fillStyle='rgba(255,240,120,0.58)';ctx2.beginPath();ctx2.ellipse(-4,-29,5,3,-0.3,Math.PI,Math.PI*2);ctx2.fill();
   }else if(vc.helm==='horn'){
-    ctx2.fillStyle='#777';ctx2.beginPath();ctx2.ellipse(0,-26,14,10,0,Math.PI,Math.PI*2);ctx2.fill();ctx2.fillRect(-14,-26,28,4);
-    ctx2.fillStyle='#ddd';
+    var hhG=ctx2.createRadialGradient(-5,-31,2,0,-26,16);
+    hhG.addColorStop(0,'#ccc');hhG.addColorStop(0.45,'#777');hhG.addColorStop(1,'#333');
+    ctx2.fillStyle=hhG;ctx2.beginPath();ctx2.ellipse(0,-26,14,10,0,Math.PI,Math.PI*2);ctx2.fill();
+    ctx2.fillRect(-14,-26,28,4);
+    var hornG=ctx2.createLinearGradient(-22,-38,0,-26);hornG.addColorStop(0,'#fff');hornG.addColorStop(1,'#aaa');
+    ctx2.fillStyle=hornG;
     ctx2.beginPath();ctx2.moveTo(-14,-26);ctx2.bezierCurveTo(-22,-30,-26,-38,-20,-36);ctx2.bezierCurveTo(-16,-34,-14,-28,-14,-26);ctx2.fill();
     ctx2.beginPath();ctx2.moveTo(14,-26);ctx2.bezierCurveTo(22,-30,26,-38,20,-36);ctx2.bezierCurveTo(16,-34,14,-28,14,-26);ctx2.fill();
+    ctx2.fillStyle='rgba(255,255,255,0.48)';ctx2.beginPath();ctx2.ellipse(-4,-29,5,3,-0.3,Math.PI,Math.PI*2);ctx2.fill();
   }
   ctx2.restore();
 }
@@ -8569,8 +8603,10 @@ function _playCinemaItem(i,tab){
   var html='<div style="margin-bottom:8px">';
   html+='<div style="font-family:Cinzel;font-size:.8em;color:#ffd700;margin-bottom:4px">'+m.emoji+' '+m.title+' ('+m.year+')</div>';
   html+='<div style="position:relative;width:100%;padding-top:56.25%;border-radius:8px;overflow:hidden;">';
-  html+='<iframe src="https://www.youtube.com/embed/'+m.vid+'?autoplay=1&rel=0" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allow="autoplay;encrypted-media" allowfullscreen></iframe>';
-  html+='</div></div>';
+  html+='<iframe src="https://www.youtube-nocookie.com/embed/'+m.vid+'?rel=0&modestbranding=1&playsinline=1" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+  html+='</div>';
+  html+='<a href="https://www.youtube.com/watch?v='+m.vid+'" target="_blank" rel="noopener" style="display:block;margin-top:7px;text-align:center;font-size:.65em;color:#7af;text-decoration:underline">Video not loading? Open on YouTube ↗</a>';
+  html+='</div>';
   html+='<button onclick="openCinema()" style="margin-top:10px;background:linear-gradient(135deg,#1a1a3a,#0a0a1a);border:1px solid rgba(100,150,255,.4);border-radius:8px;color:#aad4ff;font-size:.75em;padding:7px 14px;cursor:pointer;">← Back</button>';
   showPop('🎬 Cinema of Berk','',html);
 }
