@@ -4483,36 +4483,185 @@ function drawVikingRiding(ctx2,vc,dx,dy,scale,faceR){
 
   var rx=-2,ry=-14;
   ctx2.save();ctx2.translate(rx,ry);ctx2.rotate(0.15);ctx2.scale(0.52,0.52);
-  ctx2.fillStyle='#7a5030';ctx2.beginPath();ctx2.ellipse(0,28,13,5,0,0,Math.PI*2);ctx2.fill();
-  ctx2.fillStyle='#4a4040';
-  ctx2.save();ctx2.rotate(-0.45);ctx2.fillRect(-4,18,5,14);ctx2.restore();
-  ctx2.save();ctx2.rotate(0.45);ctx2.fillRect(0,18,5,14);ctx2.restore();
-  ctx2.fillStyle='#2a1a0a';
-  ctx2.save();ctx2.rotate(-0.45);ctx2.fillRect(-5,30,8,5);ctx2.restore();
-  ctx2.save();ctx2.rotate(0.45);ctx2.fillRect(-1,30,8,5);ctx2.restore();
-  var bg=ctx2.createLinearGradient(-11,0,14,22);bg.addColorStop(0,lighten(vc.tunic,.2));bg.addColorStop(1,vc.tunic);
-  ctx2.fillStyle=bg;ctx2.beginPath();ctx2.roundRect(-11,0,22,22,4);ctx2.fill();
-  ctx2.fillStyle='#2a1a0a';ctx2.fillRect(-11,16,22,3);
-  ctx2.fillStyle=vc.tunic;
-  ctx2.save();ctx2.translate(-10,6);ctx2.rotate(-0.6);ctx2.fillRect(-3,0,7,12);ctx2.restore();
-  ctx2.save();ctx2.translate(6,6);ctx2.rotate(-0.4);ctx2.fillRect(-3,0,7,12);ctx2.restore();
-  ctx2.fillStyle=vc.skin;
-  ctx2.save();ctx2.translate(-10,6);ctx2.rotate(-0.6);ctx2.beginPath();ctx2.ellipse(0,13,4,4,0,0,Math.PI*2);ctx2.fill();ctx2.restore();
-  ctx2.save();ctx2.translate(6,6);ctx2.rotate(-0.4);ctx2.beginPath();ctx2.ellipse(0,13,4,4,0,0,Math.PI*2);ctx2.fill();ctx2.restore();
+
+  // Legs — thighs spread on saddle
+  var lgLG=ctx2.createLinearGradient(-10,18,0,18);
+  lgLG.addColorStop(0,'#2e2626');lgLG.addColorStop(0.3,'#4a3c3c');lgLG.addColorStop(1,'#1a1414');
+  ctx2.fillStyle=lgLG;
+  ctx2.save();ctx2.rotate(-0.45);ctx2.beginPath();ctx2.roundRect(-4,18,6,13,2);ctx2.fill();ctx2.restore();
+  var lgRG=ctx2.createLinearGradient(0,18,8,18);
+  lgRG.addColorStop(0,'#4a3c3c');lgRG.addColorStop(0.7,'#2e2626');lgRG.addColorStop(1,'#1a1414');
+  ctx2.fillStyle=lgRG;
+  ctx2.save();ctx2.rotate(0.45);ctx2.beginPath();ctx2.roundRect(0,18,6,13,2);ctx2.fill();ctx2.restore();
+  // Boots
+  ctx2.fillStyle='#2a1406';
+  ctx2.save();ctx2.rotate(-0.45);ctx2.beginPath();ctx2.roundRect(-5,29,9,5,2);ctx2.fill();
+  ctx2.fillStyle='rgba(255,255,255,0.14)';ctx2.fillRect(-5,29,2,5);ctx2.restore();
+  ctx2.fillStyle='#2a1406';
+  ctx2.save();ctx2.rotate(0.45);ctx2.beginPath();ctx2.roundRect(-2,29,9,5,2);ctx2.fill();
+  ctx2.fillStyle='rgba(255,255,255,0.14)';ctx2.fillRect(-2,29,2,5);ctx2.restore();
+  // Fur boot trim
+  ctx2.fillStyle='#e8dcc0';
+  ctx2.save();ctx2.rotate(-0.45);for(var ft=0;ft<3;ft++){ctx2.beginPath();ctx2.ellipse(-4+ft*2.5,30,1.2,1.6,0,0,Math.PI*2);ctx2.fill();}ctx2.restore();
+  ctx2.save();ctx2.rotate(0.45);for(var ft2=0;ft2<3;ft2++){ctx2.beginPath();ctx2.ellipse(-1+ft2*2.5,30,1.2,1.6,0,0,Math.PI*2);ctx2.fill();}ctx2.restore();
+
+  // Torso — tunic with radial shading
+  var bg=ctx2.createRadialGradient(-6,6,1,-2,8,18);
+  bg.addColorStop(0,lighten(vc.tunic,.52));bg.addColorStop(0.4,lighten(vc.tunic,.14));bg.addColorStop(1,darken(vc.tunic,.36));
+  ctx2.fillStyle=bg;ctx2.beginPath();ctx2.roundRect(-11,0,22,20,3);ctx2.fill();
+  // Leather vest overlay
+  var vstG=ctx2.createLinearGradient(-8,0,8,0);
+  vstG.addColorStop(0,'rgba(0,0,0,0.28)');vstG.addColorStop(0.5,'rgba(0,0,0,0.10)');vstG.addColorStop(1,'rgba(0,0,0,0.28)');
+  ctx2.fillStyle=vstG;ctx2.beginPath();ctx2.roundRect(-8,0,16,14,3);ctx2.fill();
+  // Vest stitch line
+  ctx2.strokeStyle='rgba(0,0,0,0.32)';ctx2.lineWidth=0.7;ctx2.setLineDash([1.5,1.5]);
+  ctx2.beginPath();ctx2.moveTo(0,1);ctx2.lineTo(0,13);ctx2.stroke();
+  ctx2.setLineDash([]);
+  // Fur collar
+  ctx2.fillStyle='#d8ccaa';
+  for(var fc=0;fc<6;fc++){ctx2.beginPath();ctx2.ellipse(-7.5+fc*3,0,1.8,2.5,0,0,Math.PI*2);ctx2.fill();}
+  // Belt
+  var bltG=ctx2.createLinearGradient(-11,16,11,16);
+  bltG.addColorStop(0,'#0d0702');bltG.addColorStop(0.5,'#2a1808');bltG.addColorStop(1,'#0d0702');
+  ctx2.fillStyle=bltG;ctx2.beginPath();ctx2.roundRect(-11,16,22,4,1);ctx2.fill();
+  // Belt buckle
+  var bkG=ctx2.createRadialGradient(-1,18,0,0,18,4);
+  bkG.addColorStop(0,'#ffe87a');bkG.addColorStop(0.6,'#c8a000');bkG.addColorStop(1,'#6a5000');
+  ctx2.fillStyle=bkG;ctx2.beginPath();ctx2.roundRect(-3,16,6,4,1);ctx2.fill();
+
+  // Reins / arms
+  var armLG=ctx2.createLinearGradient(-10,0,-16,0);
+  armLG.addColorStop(0,lighten(vc.tunic,.35));armLG.addColorStop(1,darken(vc.tunic,.25));
+  ctx2.fillStyle=armLG;
+  ctx2.save();ctx2.translate(-10,6);ctx2.rotate(-0.6);ctx2.beginPath();ctx2.roundRect(-3,0,7,11,2);ctx2.fill();ctx2.restore();
+  var armRG=ctx2.createLinearGradient(6,0,14,0);
+  armRG.addColorStop(0,lighten(vc.tunic,.35));armRG.addColorStop(1,darken(vc.tunic,.25));
+  ctx2.fillStyle=armRG;
+  ctx2.save();ctx2.translate(6,6);ctx2.rotate(-0.4);ctx2.beginPath();ctx2.roundRect(-3,0,7,11,2);ctx2.fill();ctx2.restore();
+  // Bracers
+  ctx2.fillStyle='#5a2e0a';
+  ctx2.save();ctx2.translate(-10,6);ctx2.rotate(-0.6);ctx2.beginPath();ctx2.roundRect(-3,9,7,4,1);ctx2.fill();ctx2.restore();
+  ctx2.fillStyle='#5a2e0a';
+  ctx2.save();ctx2.translate(6,6);ctx2.rotate(-0.4);ctx2.beginPath();ctx2.roundRect(-3,9,7,4,1);ctx2.fill();ctx2.restore();
+  // Hands
+  var hnd1=ctx2.createRadialGradient(-10,18,1,-9,19,5);
+  hnd1.addColorStop(0,lighten(vc.skin,.45));hnd1.addColorStop(1,darken(vc.skin,.22));
+  ctx2.fillStyle=hnd1;
+  ctx2.save();ctx2.translate(-10,6);ctx2.rotate(-0.6);ctx2.beginPath();ctx2.ellipse(0,13,4,3.5,0,0,Math.PI*2);ctx2.fill();ctx2.restore();
+  var hnd2=ctx2.createRadialGradient(6,18,1,7,19,5);
+  hnd2.addColorStop(0,lighten(vc.skin,.45));hnd2.addColorStop(1,darken(vc.skin,.22));
+  ctx2.fillStyle=hnd2;
+  ctx2.save();ctx2.translate(6,6);ctx2.rotate(-0.4);ctx2.beginPath();ctx2.ellipse(0,13,4,3.5,0,0,Math.PI*2);ctx2.fill();ctx2.restore();
+  // Reins straps
   ctx2.strokeStyle='#7a5030';ctx2.lineWidth=1.5;
   ctx2.save();ctx2.translate(-10,6);ctx2.rotate(-0.6);ctx2.beginPath();ctx2.moveTo(0,13);ctx2.lineTo(10,22);ctx2.stroke();ctx2.restore();
   ctx2.save();ctx2.translate(6,6);ctx2.rotate(-0.4);ctx2.beginPath();ctx2.moveTo(0,13);ctx2.lineTo(10,22);ctx2.stroke();ctx2.restore();
-  ctx2.fillStyle=vc.skin;ctx2.fillRect(-4,-7,8,9);
+
+  // Neck
+  var nkG=ctx2.createLinearGradient(-4,-7,4,-7);
+  nkG.addColorStop(0,darken(vc.skin,.14));nkG.addColorStop(0.4,vc.skin);nkG.addColorStop(1,darken(vc.skin,.18));
+  ctx2.fillStyle=nkG;ctx2.beginPath();ctx2.roundRect(-4,-7,8,9,2);ctx2.fill();
+
+  // Beard
+  var brdG=ctx2.createLinearGradient(-5,-6,5,5);
+  brdG.addColorStop(0,vc.hair);brdG.addColorStop(1,darken(vc.hair,.30));
+  ctx2.fillStyle=brdG;
+  ctx2.beginPath();ctx2.moveTo(-5,-6);ctx2.bezierCurveTo(-7,-3,-8,1,-6,6);ctx2.bezierCurveTo(-4,10,4,10,6,6);ctx2.bezierCurveTo(8,1,7,-3,5,-6);ctx2.bezierCurveTo(3,-8,-3,-8,-5,-6);ctx2.fill();
+  ctx2.strokeStyle='rgba(0,0,0,0.20)';ctx2.lineWidth=0.7;
+  ctx2.beginPath();ctx2.moveTo(0,-3);ctx2.bezierCurveTo(0,1,0,5,0,8);ctx2.stroke();
+  ctx2.beginPath();ctx2.moveTo(-3,-2);ctx2.bezierCurveTo(-4,2,-3,6,-2,8);ctx2.stroke();
+  ctx2.beginPath();ctx2.moveTo(3,-2);ctx2.bezierCurveTo(4,2,3,6,2,8);ctx2.stroke();
+
+  // Head — leaning forward slightly, bezier shaped
   ctx2.save();ctx2.translate(0,-17);ctx2.rotate(-0.2);
-  ctx2.fillStyle=vc.skin;ctx2.beginPath();ctx2.ellipse(0,0,11,11,0,0,Math.PI*2);ctx2.fill();
-  ctx2.fillStyle=vc.hair;ctx2.beginPath();ctx2.ellipse(0,-6,11,7,0,Math.PI,Math.PI*2);ctx2.fill();
-  ctx2.beginPath();ctx2.ellipse(8,-4,4,2.5,.8,0,Math.PI*2);ctx2.fill();
-  ctx2.fillStyle='#fff';ctx2.beginPath();ctx2.ellipse(-4,0,2.5,2,0,0,Math.PI*2);ctx2.fill();ctx2.beginPath();ctx2.ellipse(4,0,2.5,2,0,0,Math.PI*2);ctx2.fill();
-  ctx2.fillStyle='#3a2010';ctx2.beginPath();ctx2.ellipse(-4,0,1.5,1.5,0,0,Math.PI*2);ctx2.fill();ctx2.beginPath();ctx2.ellipse(4,0,1.5,1.5,0,0,Math.PI*2);ctx2.fill();
-  ctx2.strokeStyle='#3a2010';ctx2.lineWidth=1.2;ctx2.beginPath();ctx2.arc(0,3,4,.1,Math.PI-.1);ctx2.stroke();
-  if(vc.helm==='iron'){ctx2.fillStyle='#888';ctx2.beginPath();ctx2.ellipse(0,-8,12,8,0,Math.PI,Math.PI*2);ctx2.fill();ctx2.fillRect(-12,-8,24,3);ctx2.fillStyle='#666';ctx2.fillRect(-2,-10,4,10);}
-  else if(vc.helm==='gold'){ctx2.fillStyle='#c8a000';ctx2.beginPath();ctx2.ellipse(0,-8,12,8,0,Math.PI,Math.PI*2);ctx2.fill();ctx2.fillRect(-12,-8,24,3);ctx2.fillStyle='#ffd700';for(var pp=0;pp<5;pp++){ctx2.beginPath();ctx2.moveTo(-8+pp*4,-8);ctx2.lineTo(-7+pp*4,-14);ctx2.lineTo(-6+pp*4,-8);ctx2.fill();}}
-  else if(vc.helm==='horn'){ctx2.fillStyle='#777';ctx2.beginPath();ctx2.ellipse(0,-8,12,8,0,Math.PI,Math.PI*2);ctx2.fill();ctx2.fillRect(-12,-8,24,3);ctx2.fillStyle='#ddd';ctx2.beginPath();ctx2.moveTo(-12,-8);ctx2.bezierCurveTo(-18,-12,-20,-18,-15,-17);ctx2.bezierCurveTo(-12,-16,-12,-10,-12,-8);ctx2.fill();ctx2.beginPath();ctx2.moveTo(12,-8);ctx2.bezierCurveTo(18,-12,20,-18,15,-17);ctx2.bezierCurveTo(12,-16,12,-10,12,-8);ctx2.fill();}
+  var hdg=ctx2.createRadialGradient(-4,-10,2,0,-6,13);
+  hdg.addColorStop(0,lighten(vc.skin,.60));hdg.addColorStop(0.40,lighten(vc.skin,.18));hdg.addColorStop(1,darken(vc.skin,.25));
+  ctx2.fillStyle=hdg;
+  ctx2.beginPath();
+  ctx2.moveTo(-2,4);
+  ctx2.bezierCurveTo(-11,4,-13,-3,-12,-9);
+  ctx2.bezierCurveTo(-11,-17,-6,-20,0,-20);
+  ctx2.bezierCurveTo(6,-20,11,-17,12,-9);
+  ctx2.bezierCurveTo(13,-3,11,4,2,4);
+  ctx2.bezierCurveTo(1,5,0,6,0,6);
+  ctx2.bezierCurveTo(-1,5,-1,4,-2,4);
+  ctx2.fill();
+  // Ear
+  var earG=ctx2.createRadialGradient(-14,-4,0,-13,-4,5);
+  earG.addColorStop(0,lighten(vc.skin,.35));earG.addColorStop(1,darken(vc.skin,.20));
+  ctx2.fillStyle=earG;ctx2.beginPath();ctx2.ellipse(-13,-4,3.5,5,0.1,0,Math.PI*2);ctx2.fill();
+  ctx2.fillStyle='rgba(0,0,0,0.16)';ctx2.beginPath();ctx2.ellipse(-13,-4,1.8,3,0.1,0,Math.PI*2);ctx2.fill();
+  // Hair
+  if(vc.helm==='none'){
+    var hrG=ctx2.createRadialGradient(-3,-16,1,0,-13,11);
+    hrG.addColorStop(0,lighten(vc.hair,.35));hrG.addColorStop(0.5,vc.hair);hrG.addColorStop(1,darken(vc.hair,.30));
+    ctx2.fillStyle=hrG;ctx2.beginPath();ctx2.ellipse(0,-13,11,7,0,Math.PI,Math.PI*2);ctx2.fill();
+    ctx2.fillStyle=darken(vc.hair,.15);
+    ctx2.beginPath();ctx2.moveTo(10,-6);ctx2.bezierCurveTo(13,-3,12,3,10,6);ctx2.bezierCurveTo(9,8,7,8,7,6);ctx2.bezierCurveTo(9,3,10,-2,9,-6);ctx2.fill();
+    ctx2.fillStyle='rgba(255,255,255,0.22)';ctx2.beginPath();ctx2.ellipse(-2,-15,4,2.5,-0.2,Math.PI,Math.PI*2);ctx2.fill();
+  }
+  // Eyebrows
+  ctx2.fillStyle=darken(vc.hair,.05);
+  ctx2.beginPath();ctx2.moveTo(-8,-10);ctx2.bezierCurveTo(-6,-12,-3,-12,-1,-11);ctx2.lineTo(-1,-10);ctx2.bezierCurveTo(-3,-10.5,-6,-10.5,-8,-9.5);ctx2.fill();
+  ctx2.beginPath();ctx2.moveTo(8,-10);ctx2.bezierCurveTo(6,-12,3,-12,1,-11);ctx2.lineTo(1,-10);ctx2.bezierCurveTo(3,-10.5,6,-10.5,8,-9.5);ctx2.fill();
+  // Eye whites
+  ctx2.fillStyle='#f0ece4';ctx2.beginPath();ctx2.ellipse(-4,-6,3,2.5,0,0,Math.PI*2);ctx2.fill();ctx2.beginPath();ctx2.ellipse(4,-6,3,2.5,0,0,Math.PI*2);ctx2.fill();
+  // Iris + pupil
+  var irisC=vc.hair==='#4a3000'?'#5a8a40':vc.hair==='#cc8800'?'#4a6aaa':'#3a7040';
+  ctx2.fillStyle=irisC;ctx2.beginPath();ctx2.ellipse(-4,-6,1.8,2,0,0,Math.PI*2);ctx2.fill();ctx2.beginPath();ctx2.ellipse(4,-6,1.8,2,0,0,Math.PI*2);ctx2.fill();
+  ctx2.fillStyle='#0a0a0a';ctx2.beginPath();ctx2.ellipse(-4,-6,1,1.1,0,0,Math.PI*2);ctx2.fill();ctx2.beginPath();ctx2.ellipse(4,-6,1,1.1,0,0,Math.PI*2);ctx2.fill();
+  ctx2.fillStyle='rgba(255,255,255,0.78)';ctx2.beginPath();ctx2.arc(-5,-7,0.9,0,Math.PI*2);ctx2.fill();ctx2.beginPath();ctx2.arc(3,-7,0.9,0,Math.PI*2);ctx2.fill();
+  // Upper eyelid shadow
+  ctx2.fillStyle='rgba(0,0,0,0.16)';ctx2.beginPath();ctx2.ellipse(-4,-5,3,1,0,Math.PI,Math.PI*2);ctx2.fill();ctx2.beginPath();ctx2.ellipse(4,-5,3,1,0,Math.PI,Math.PI*2);ctx2.fill();
+  // Nose with nostrils
+  var noseG=ctx2.createRadialGradient(-1,-1,0,0,-1,4);
+  noseG.addColorStop(0,lighten(vc.skin,.12));noseG.addColorStop(1,darken(vc.skin,.22));
+  ctx2.fillStyle=noseG;
+  ctx2.beginPath();ctx2.moveTo(-1,-4);ctx2.bezierCurveTo(-3,-3,-3,0,-2,1);ctx2.bezierCurveTo(0,2,2,2,4,1);ctx2.bezierCurveTo(5,0,5,-3,3,-4);ctx2.bezierCurveTo(2,-5,0,-5,-1,-4);ctx2.fill();
+  ctx2.fillStyle='rgba(0,0,0,0.28)';ctx2.beginPath();ctx2.ellipse(-1,1,1.3,0.8,0.3,0,Math.PI*2);ctx2.fill();ctx2.beginPath();ctx2.ellipse(3,1,1.3,0.8,-0.3,0,Math.PI*2);ctx2.fill();
+  // Cheek blush
+  ctx2.fillStyle='rgba(200,100,80,0.12)';ctx2.beginPath();ctx2.ellipse(-7,-4,3,2.5,0,0,Math.PI*2);ctx2.fill();ctx2.beginPath();ctx2.ellipse(7,-4,3,2.5,0,0,Math.PI*2);ctx2.fill();
+  // Mouth
+  ctx2.strokeStyle=darken(vc.skin,.28);ctx2.lineWidth=1;
+  ctx2.beginPath();ctx2.moveTo(-3,3);ctx2.bezierCurveTo(-2,4.5,2,4.5,3,3);ctx2.stroke();
+  ctx2.fillStyle=darken(vc.skin,.14);ctx2.beginPath();ctx2.ellipse(0,4,2,0.8,0,0,Math.PI);ctx2.fill();
+
+  // Helmet
+  if(vc.helm==='iron'){
+    var htG=ctx2.createRadialGradient(-5,-17,2,0,-12,14);
+    htG.addColorStop(0,'#e0e0e0');htG.addColorStop(0.40,'#909090');htG.addColorStop(1,'#3a3a3a');
+    ctx2.fillStyle=htG;ctx2.beginPath();ctx2.moveTo(-12,-11);ctx2.bezierCurveTo(-12,-21,12,-21,12,-11);ctx2.bezierCurveTo(12,-9,-12,-9,-12,-11);ctx2.fill();
+    var brimG=ctx2.createLinearGradient(0,-11,0,-8);brimG.addColorStop(0,'#aaa');brimG.addColorStop(1,'#555');
+    ctx2.fillStyle=brimG;ctx2.beginPath();ctx2.roundRect(-13,-11,26,4,1);ctx2.fill();
+    ctx2.fillStyle='#d0d0d0';[-9,-4,0,4,9].forEach(function(rx){ctx2.beginPath();ctx2.arc(rx,-9,1.2,0,Math.PI*2);ctx2.fill();});
+    var nasG=ctx2.createLinearGradient(-2,-11,2,-11);nasG.addColorStop(0,'#ccc');nasG.addColorStop(0.5,'#eee');nasG.addColorStop(1,'#888');
+    ctx2.fillStyle=nasG;ctx2.beginPath();ctx2.moveTo(-2,-11);ctx2.bezierCurveTo(-2,-8,-1,-3,0,-1);ctx2.lineTo(1,-1);ctx2.bezierCurveTo(2,-3,2,-8,2,-11);ctx2.fill();
+    ctx2.fillStyle='rgba(255,255,255,0.42)';ctx2.beginPath();ctx2.ellipse(-3,-16,4,2.5,-0.3,Math.PI,Math.PI*2);ctx2.fill();
+    ctx2.fillStyle='rgba(130,130,130,0.50)';ctx2.beginPath();ctx2.roundRect(-14,-8,3,7,1);ctx2.fill();ctx2.beginPath();ctx2.roundRect(11,-8,3,7,1);ctx2.fill();
+  }else if(vc.helm==='gold'){
+    var hgG=ctx2.createRadialGradient(-5,-17,2,0,-12,14);
+    hgG.addColorStop(0,'#ffe87a');hgG.addColorStop(0.40,'#c8a000');hgG.addColorStop(1,'#6a5000');
+    ctx2.fillStyle=hgG;ctx2.beginPath();ctx2.moveTo(-12,-11);ctx2.bezierCurveTo(-12,-21,12,-21,12,-11);ctx2.bezierCurveTo(12,-9,-12,-9,-12,-11);ctx2.fill();
+    ctx2.fillStyle='#c8a000';ctx2.beginPath();ctx2.roundRect(-13,-11,26,4,1);ctx2.fill();
+    ctx2.fillStyle='#ffd700';for(var pp=0;pp<5;pp++){ctx2.beginPath();ctx2.moveTo(-8+pp*4,-11);ctx2.lineTo(-7+pp*4,-17);ctx2.lineTo(-6+pp*4,-11);ctx2.fill();}
+    ctx2.fillStyle='#ffe87a';[-9,-4,0,4,9].forEach(function(rx){ctx2.beginPath();ctx2.arc(rx,-9,1.2,0,Math.PI*2);ctx2.fill();});
+    ctx2.fillStyle='#c8a000';ctx2.beginPath();ctx2.moveTo(-2,-11);ctx2.bezierCurveTo(-2,-8,-1,-3,0,-1);ctx2.lineTo(1,-1);ctx2.bezierCurveTo(2,-3,2,-8,2,-11);ctx2.fill();
+    ctx2.fillStyle='rgba(255,240,120,0.55)';ctx2.beginPath();ctx2.ellipse(-3,-16,4,2.5,-0.3,Math.PI,Math.PI*2);ctx2.fill();
+  }else if(vc.helm==='horn'){
+    var hhG=ctx2.createRadialGradient(-5,-17,2,0,-12,14);
+    hhG.addColorStop(0,'#d0d0d0');hhG.addColorStop(0.40,'#787878');hhG.addColorStop(1,'#303030');
+    ctx2.fillStyle=hhG;ctx2.beginPath();ctx2.moveTo(-12,-11);ctx2.bezierCurveTo(-12,-21,12,-21,12,-11);ctx2.bezierCurveTo(12,-9,-12,-9,-12,-11);ctx2.fill();
+    var hbG=ctx2.createLinearGradient(0,-11,0,-8);hbG.addColorStop(0,'#999');hbG.addColorStop(1,'#444');
+    ctx2.fillStyle=hbG;ctx2.beginPath();ctx2.roundRect(-13,-11,26,4,1);ctx2.fill();
+    var hornG=ctx2.createLinearGradient(-18,-22,0,-11);hornG.addColorStop(0,'#fff');hornG.addColorStop(0.5,'#ccc');hornG.addColorStop(1,'#888');
+    ctx2.fillStyle=hornG;
+    ctx2.beginPath();ctx2.moveTo(-12,-10);ctx2.bezierCurveTo(-17,-13,-20,-22,-15,-20);ctx2.bezierCurveTo(-12,-18,-12,-13,-12,-10);ctx2.fill();
+    ctx2.beginPath();ctx2.moveTo(12,-10);ctx2.bezierCurveTo(17,-13,20,-22,15,-20);ctx2.bezierCurveTo(12,-18,12,-13,12,-10);ctx2.fill();
+    ctx2.fillStyle='#aaa';[-9,-4,0,4,9].forEach(function(rx){ctx2.beginPath();ctx2.arc(rx,-9,1.2,0,Math.PI*2);ctx2.fill();});
+    var hnG=ctx2.createLinearGradient(-2,-11,2,-11);hnG.addColorStop(0,'#aaa');hnG.addColorStop(0.5,'#ddd');hnG.addColorStop(1,'#777');
+    ctx2.fillStyle=hnG;ctx2.beginPath();ctx2.moveTo(-2,-11);ctx2.bezierCurveTo(-2,-8,-1,-3,0,-1);ctx2.lineTo(1,-1);ctx2.bezierCurveTo(2,-3,2,-8,2,-11);ctx2.fill();
+    ctx2.fillStyle='rgba(255,255,255,0.40)';ctx2.beginPath();ctx2.ellipse(-3,-16,4,2.5,-0.3,Math.PI,Math.PI*2);ctx2.fill();
+  }
   ctx2.restore();
   ctx2.restore();ctx2.restore();
 }
@@ -8779,12 +8928,21 @@ function _playCinemaItem(i,tab){
   if(_bgMusic&&!_bgMusic.paused) _bgMusic.pause();
   var list=(tab==='movies')?HTTYD_MOVIES:HTTYD_SHOWS;
   var m=list[i];
+  var ytUrl='https://www.youtube.com/watch?v='+m.vid;
+  var thumbUrl='https://img.youtube.com/vi/'+m.vid+'/hqdefault.jpg';
   var html='<div style="margin-bottom:8px">';
-  html+='<div style="font-family:Cinzel;font-size:.8em;color:#ffd700;margin-bottom:4px">'+m.emoji+' '+m.title+' ('+m.year+')</div>';
-  html+='<div style="position:relative;width:100%;padding-top:56.25%;border-radius:8px;overflow:hidden;">';
-  html+='<iframe src="https://www.youtube-nocookie.com/embed/'+m.vid+'?rel=0&modestbranding=1&playsinline=1" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
-  html+='</div>';
-  html+='<a href="https://www.youtube.com/watch?v='+m.vid+'" target="_blank" rel="noopener" style="display:block;margin-top:7px;text-align:center;font-size:.65em;color:#7af;text-decoration:underline">Video not loading? Open on YouTube ↗</a>';
+  html+='<div style="font-family:Cinzel;font-size:.8em;color:#ffd700;margin-bottom:8px">'+m.emoji+' '+m.title+' ('+m.year+')</div>';
+  // Thumbnail with play button — opens YouTube directly (always works, no embed restrictions)
+  html+='<a href="'+ytUrl+'" target="_blank" rel="noopener" style="display:block;position:relative;width:100%;padding-top:56.25%;border-radius:8px;overflow:hidden;cursor:pointer;text-decoration:none;">';
+  html+='<img src="'+thumbUrl+'" alt="'+m.title+'" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:8px;" onerror="this.style.background=\'#111\';">';
+  // Play button overlay
+  html+='<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.25);">';
+  html+='<div style="width:64px;height:64px;background:rgba(255,0,0,0.88);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,0.6);">';
+  html+='<div style="width:0;height:0;border-top:18px solid transparent;border-bottom:18px solid transparent;border-left:28px solid #fff;margin-left:6px;"></div>';
+  html+='</div></div>';
+  html+='</a>';
+  html+='<a href="'+ytUrl+'" target="_blank" rel="noopener" style="display:block;margin-top:8px;text-align:center;font-size:.72em;color:#7af;text-decoration:none;background:rgba(100,150,255,.12);padding:6px;border-radius:6px;border:1px solid rgba(100,150,255,.3);">▶ Watch on YouTube ↗</a>';
+  html+='<div style="margin-top:6px;font-size:.65em;color:rgba(255,255,255,.5);text-align:center;">'+m.desc+'</div>';
   html+='</div>';
   html+='<button onclick="openCinema()" style="margin-top:10px;background:linear-gradient(135deg,#1a1a3a,#0a0a1a);border:1px solid rgba(100,150,255,.4);border-radius:8px;color:#aad4ff;font-size:.75em;padding:7px 14px;cursor:pointer;">← Back</button>';
   showPop('🎬 Cinema of Berk','',html);
