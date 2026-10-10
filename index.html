@@ -4424,7 +4424,7 @@ function drawViking(ctx2,vc,x,y,scale){
     ctx2.fillStyle='rgba(255,255,255,0.42)';ctx2.beginPath();ctx2.ellipse(-4,-33,5,3,-0.3,Math.PI,Math.PI*2);ctx2.fill();
   }
   // Viking hand axe — held in right hand, blade at hip height, handle alongside leg
-  ctx2.save();ctx2.translate(18,21);ctx2.rotate(0.06);
+  ctx2.save();ctx2.translate(18,21);ctx2.rotate(0.06);ctx2.scale(1.7,1.7);
   // Handle
   var axHG=ctx2.createLinearGradient(-2.5,0,2.5,0);
   axHG.addColorStop(0,'#3a1c08');axHG.addColorStop(0.4,'#6a3c14');axHG.addColorStop(1,'#2a1404');
@@ -4695,7 +4695,7 @@ function drawVikingRiding(ctx2,vc,dx,dy,scale,faceR){
     ctx2.fillStyle='rgba(255,255,255,0.40)';ctx2.beginPath();ctx2.ellipse(-3,-16,4,2.5,-0.3,Math.PI,Math.PI*2);ctx2.fill();
   }
   // Axe raised in right hand — battle/riding pose
-  ctx2.save();ctx2.translate(13,14);ctx2.rotate(-0.3);
+  ctx2.save();ctx2.translate(13,14);ctx2.rotate(-0.3);ctx2.scale(1.6,1.6);
   // Handle going up
   var raxH=ctx2.createLinearGradient(-2,0,2,0);
   raxH.addColorStop(0,'#3a1c08');raxH.addColorStop(0.4,'#6a3c14');raxH.addColorStop(1,'#2a1404');
