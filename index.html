@@ -4200,6 +4200,36 @@ function drawViking(ctx2,vc,x,y,scale){
   ctx2.fillStyle='#e8dcc0';
   for(var ft=0;ft<4;ft++){ctx2.beginPath();ctx2.ellipse(-8+ft*2.5,34,1.5,2,0,0,Math.PI*2);ctx2.fill();}
   for(var ft2=0;ft2<4;ft2++){ctx2.beginPath();ctx2.ellipse(2+ft2*2.5,34,1.5,2,0,0,Math.PI*2);ctx2.fill();}
+  // Round Viking shield — on left arm, drawn behind body
+  ctx2.save();ctx2.translate(-26,10);ctx2.scale(1.55,1.55);
+  // Shield shadow
+  ctx2.fillStyle='rgba(0,0,0,0.22)';ctx2.beginPath();ctx2.ellipse(2,2,14,14,0,0,Math.PI*2);ctx2.fill();
+  // Shield rim — dark iron band
+  ctx2.fillStyle='#2a1c08';ctx2.beginPath();ctx2.arc(0,0,14,0,Math.PI*2);ctx2.fill();
+  // Shield face — wooden planks gradient
+  var shFace=ctx2.createRadialGradient(-3,-4,1,0,0,13);
+  shFace.addColorStop(0,'#c87828');shFace.addColorStop(0.5,'#8a4e12');shFace.addColorStop(1,'#4a2408');
+  ctx2.fillStyle=shFace;ctx2.beginPath();ctx2.arc(0,0,12,0,Math.PI*2);ctx2.fill();
+  // Plank lines across face
+  ctx2.strokeStyle='rgba(0,0,0,0.28)';ctx2.lineWidth=1;
+  [-6,0,6].forEach(function(py){ctx2.beginPath();ctx2.moveTo(-12,py);ctx2.lineTo(12,py);ctx2.stroke();});
+  // Iron cross brace
+  ctx2.strokeStyle='#3a3030';ctx2.lineWidth=2.2;
+  ctx2.beginPath();ctx2.moveTo(-12,0);ctx2.lineTo(12,0);ctx2.stroke();
+  ctx2.beginPath();ctx2.moveTo(0,-12);ctx2.lineTo(0,12);ctx2.stroke();
+  // Boss (centre iron knob)
+  var shBoss=ctx2.createRadialGradient(-2,-2,0,0,0,6);
+  shBoss.addColorStop(0,'#d8d8d8');shBoss.addColorStop(0.4,'#909090');shBoss.addColorStop(1,'#2a2a2a');
+  ctx2.fillStyle=shBoss;ctx2.beginPath();ctx2.arc(0,0,5.5,0,Math.PI*2);ctx2.fill();
+  // Boss highlight
+  ctx2.fillStyle='rgba(255,255,255,0.55)';ctx2.beginPath();ctx2.arc(-1.5,-1.5,2,0,Math.PI*2);ctx2.fill();
+  // Rim rivets
+  ctx2.fillStyle='#888';
+  for(var ri=0;ri<8;ri++){
+    var ra=ri/8*Math.PI*2;
+    ctx2.beginPath();ctx2.arc(Math.cos(ra)*12.5,Math.sin(ra)*12.5,1.2,0,Math.PI*2);ctx2.fill();
+  }
+  ctx2.restore();
   // Body torso — tunic with radial shading
   var bg=ctx2.createRadialGradient(-6,6,1,-2,10,22);
   bg.addColorStop(0,lighten(vc.tunic,.52));bg.addColorStop(0.4,lighten(vc.tunic,.14));bg.addColorStop(1,darken(vc.tunic,.36));
@@ -4537,6 +4567,25 @@ function drawVikingRiding(ctx2,vc,dx,dy,scale,faceR){
   ctx2.save();ctx2.rotate(-0.45);for(var ft=0;ft<3;ft++){ctx2.beginPath();ctx2.ellipse(-4+ft*2.5,30,1.2,1.6,0,0,Math.PI*2);ctx2.fill();}ctx2.restore();
   ctx2.save();ctx2.rotate(0.45);for(var ft2=0;ft2<3;ft2++){ctx2.beginPath();ctx2.ellipse(-1+ft2*2.5,30,1.2,1.6,0,0,Math.PI*2);ctx2.fill();}ctx2.restore();
 
+  // Round Viking shield — on left side, drawn behind torso
+  ctx2.save();ctx2.translate(-20,8);ctx2.scale(1.3,1.3);
+  ctx2.fillStyle='rgba(0,0,0,0.20)';ctx2.beginPath();ctx2.ellipse(2,2,12,12,0,0,Math.PI*2);ctx2.fill();
+  ctx2.fillStyle='#2a1c08';ctx2.beginPath();ctx2.arc(0,0,12,0,Math.PI*2);ctx2.fill();
+  var shF2=ctx2.createRadialGradient(-2,-3,1,0,0,11);
+  shF2.addColorStop(0,'#c87828');shF2.addColorStop(0.5,'#8a4e12');shF2.addColorStop(1,'#4a2408');
+  ctx2.fillStyle=shF2;ctx2.beginPath();ctx2.arc(0,0,10,0,Math.PI*2);ctx2.fill();
+  ctx2.strokeStyle='rgba(0,0,0,0.28)';ctx2.lineWidth=1;
+  [-5,0,5].forEach(function(py){ctx2.beginPath();ctx2.moveTo(-10,py);ctx2.lineTo(10,py);ctx2.stroke();});
+  ctx2.strokeStyle='#3a3030';ctx2.lineWidth=2;
+  ctx2.beginPath();ctx2.moveTo(-10,0);ctx2.lineTo(10,0);ctx2.stroke();
+  ctx2.beginPath();ctx2.moveTo(0,-10);ctx2.lineTo(0,10);ctx2.stroke();
+  var shB2=ctx2.createRadialGradient(-1.5,-1.5,0,0,0,5);
+  shB2.addColorStop(0,'#d8d8d8');shB2.addColorStop(0.4,'#909090');shB2.addColorStop(1,'#2a2a2a');
+  ctx2.fillStyle=shB2;ctx2.beginPath();ctx2.arc(0,0,4.5,0,Math.PI*2);ctx2.fill();
+  ctx2.fillStyle='rgba(255,255,255,0.52)';ctx2.beginPath();ctx2.arc(-1,-1,1.8,0,Math.PI*2);ctx2.fill();
+  ctx2.fillStyle='#888';
+  for(var ri2=0;ri2<8;ri2++){var ra2=ri2/8*Math.PI*2;ctx2.beginPath();ctx2.arc(Math.cos(ra2)*10.5,Math.sin(ra2)*10.5,1,0,Math.PI*2);ctx2.fill();}
+  ctx2.restore();
   // Torso — tunic with radial shading
   var bg=ctx2.createRadialGradient(-6,6,1,-2,8,18);
   bg.addColorStop(0,lighten(vc.tunic,.52));bg.addColorStop(0.4,lighten(vc.tunic,.14));bg.addColorStop(1,darken(vc.tunic,.36));
