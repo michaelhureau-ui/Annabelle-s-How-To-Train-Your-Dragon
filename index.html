@@ -4213,6 +4213,58 @@ function drawViking(ctx2,vc,x,y,scale){
   // Plank lines across face
   ctx2.strokeStyle='rgba(0,0,0,0.28)';ctx2.lineWidth=1;
   [-6,0,6].forEach(function(py){ctx2.beginPath();ctx2.moveTo(-12,py);ctx2.lineTo(12,py);ctx2.stroke();});
+  // Dragon design painted on shield face
+  ctx2.save();ctx2.scale(0.82,0.82);
+  // Clip to shield circle so paint stays inside
+  ctx2.beginPath();ctx2.arc(0,0,14,0,Math.PI*2);ctx2.clip();
+  var drCol='#8a1a00';
+  ctx2.fillStyle=drCol;
+  // Body — elongated oval
+  ctx2.beginPath();ctx2.ellipse(1,1,7,3.5,0.2,0,Math.PI*2);ctx2.fill();
+  // Neck + head
+  ctx2.beginPath();
+  ctx2.moveTo(5,-1);
+  ctx2.bezierCurveTo(8,-3,10,-5,9,-7);  // neck up to snout
+  ctx2.bezierCurveTo(11,-7,11,-5,10,-4); // upper jaw
+  ctx2.bezierCurveTo(12,-3,11,-1,9,-2);  // lower jaw / chin
+  ctx2.bezierCurveTo(8,-1,7,0,5,-1);     // back to neck base
+  ctx2.fill();
+  // Eye on head
+  ctx2.fillStyle='#ff6600';ctx2.beginPath();ctx2.arc(9.5,-5.5,1,0,Math.PI*2);ctx2.fill();
+  ctx2.fillStyle='#1a0800';ctx2.beginPath();ctx2.arc(9.5,-5.5,0.5,0,Math.PI*2);ctx2.fill();
+  ctx2.fillStyle=drCol;
+  // Tail — curves out to the right/down
+  ctx2.beginPath();
+  ctx2.moveTo(-5,2);
+  ctx2.bezierCurveTo(-7,4,-9,6,-10,8);
+  ctx2.bezierCurveTo(-10,9,-9,9,-8,8);
+  ctx2.bezierCurveTo(-7,6,-5,4,-4,2);
+  ctx2.fill();
+  // Tail spike tip
+  ctx2.beginPath();ctx2.moveTo(-10,8);ctx2.lineTo(-12,10);ctx2.lineTo(-9,9);ctx2.fill();
+  // Wing — large swept back
+  ctx2.beginPath();
+  ctx2.moveTo(3,-1);
+  ctx2.bezierCurveTo(2,-5,1,-9,-2,-10);  // leading edge up
+  ctx2.bezierCurveTo(-5,-10,-7,-8,-6,-5); // wingtip
+  ctx2.bezierCurveTo(-4,-3,-1,-2,1,0);   // trailing edge back
+  ctx2.fill();
+  // Wing membrane lighter tint
+  ctx2.fillStyle='rgba(180,40,0,0.45)';
+  ctx2.beginPath();
+  ctx2.moveTo(2,-2);
+  ctx2.bezierCurveTo(1,-6,0,-8,-2,-9);
+  ctx2.bezierCurveTo(-4,-9,-5,-7,-4,-5);
+  ctx2.bezierCurveTo(-3,-3,-1,-2,0,-1);
+  ctx2.fill();
+  // Small front leg claw
+  ctx2.fillStyle=drCol;
+  ctx2.beginPath();ctx2.moveTo(3,3);ctx2.bezierCurveTo(4,5,3,7,2,7);ctx2.bezierCurveTo(1,7,1,5,3,3);ctx2.fill();
+  ctx2.beginPath();ctx2.moveTo(5,3);ctx2.bezierCurveTo(6,5,5,7,4,7);ctx2.bezierCurveTo(3,7,3,5,5,3);ctx2.fill();
+  // Outline stroke to make it pop on wood
+  ctx2.strokeStyle='rgba(60,10,0,0.55)';ctx2.lineWidth=0.6;
+  ctx2.beginPath();ctx2.ellipse(1,1,7,3.5,0.2,0,Math.PI*2);ctx2.stroke();
+  ctx2.restore();
   // Iron cross brace
   ctx2.strokeStyle='#3a3030';ctx2.lineWidth=2.2;
   ctx2.beginPath();ctx2.moveTo(-12,0);ctx2.lineTo(12,0);ctx2.stroke();
@@ -4576,6 +4628,22 @@ function drawVikingRiding(ctx2,vc,dx,dy,scale,faceR){
   ctx2.fillStyle=shF2;ctx2.beginPath();ctx2.arc(0,0,10,0,Math.PI*2);ctx2.fill();
   ctx2.strokeStyle='rgba(0,0,0,0.28)';ctx2.lineWidth=1;
   [-5,0,5].forEach(function(py){ctx2.beginPath();ctx2.moveTo(-10,py);ctx2.lineTo(10,py);ctx2.stroke();});
+  // Dragon design on riding shield (scaled to fit)
+  ctx2.save();ctx2.scale(0.68,0.68);
+  ctx2.beginPath();ctx2.arc(0,0,14,0,Math.PI*2);ctx2.clip();
+  var drC2='#8a1a00';
+  ctx2.fillStyle=drC2;
+  ctx2.beginPath();ctx2.ellipse(1,1,7,3.5,0.2,0,Math.PI*2);ctx2.fill();
+  ctx2.beginPath();ctx2.moveTo(5,-1);ctx2.bezierCurveTo(8,-3,10,-5,9,-7);ctx2.bezierCurveTo(11,-7,11,-5,10,-4);ctx2.bezierCurveTo(12,-3,11,-1,9,-2);ctx2.bezierCurveTo(8,-1,7,0,5,-1);ctx2.fill();
+  ctx2.fillStyle='#ff6600';ctx2.beginPath();ctx2.arc(9.5,-5.5,1,0,Math.PI*2);ctx2.fill();
+  ctx2.fillStyle='#1a0800';ctx2.beginPath();ctx2.arc(9.5,-5.5,0.5,0,Math.PI*2);ctx2.fill();
+  ctx2.fillStyle=drC2;
+  ctx2.beginPath();ctx2.moveTo(-5,2);ctx2.bezierCurveTo(-7,4,-9,6,-10,8);ctx2.bezierCurveTo(-10,9,-9,9,-8,8);ctx2.bezierCurveTo(-7,6,-5,4,-4,2);ctx2.fill();
+  ctx2.beginPath();ctx2.moveTo(-10,8);ctx2.lineTo(-12,10);ctx2.lineTo(-9,9);ctx2.fill();
+  ctx2.beginPath();ctx2.moveTo(3,-1);ctx2.bezierCurveTo(2,-5,1,-9,-2,-10);ctx2.bezierCurveTo(-5,-10,-7,-8,-6,-5);ctx2.bezierCurveTo(-4,-3,-1,-2,1,0);ctx2.fill();
+  ctx2.fillStyle='rgba(180,40,0,0.45)';
+  ctx2.beginPath();ctx2.moveTo(2,-2);ctx2.bezierCurveTo(1,-6,0,-8,-2,-9);ctx2.bezierCurveTo(-4,-9,-5,-7,-4,-5);ctx2.bezierCurveTo(-3,-3,-1,-2,0,-1);ctx2.fill();
+  ctx2.restore();
   ctx2.strokeStyle='#3a3030';ctx2.lineWidth=2;
   ctx2.beginPath();ctx2.moveTo(-10,0);ctx2.lineTo(10,0);ctx2.stroke();
   ctx2.beginPath();ctx2.moveTo(0,-10);ctx2.lineTo(0,10);ctx2.stroke();
